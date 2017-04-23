@@ -1,0 +1,332 @@
+-------------------------------------
+SCRIPT INSPECTOR 3
+version 3.0.17, December 2016
+Copyright © 2012-2016, Flipbook Games
+-------------------------------------
+
+
+Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text, now transformed into an advanced C# IDE!!!
+
+
+IMPORTANT NOTE to all OS X users with Unity 5 Personal or Professional and Unity 4 Pro:
+You may want to extend Si3's functionality with @inventor2010's amazing free plugin posted here:
+	http://forum.unity3d.com/threads/script-inspector-3.195218/page-13#post-2226154
+or even better, the updated version posted here:
+	http://forum.unity3d.com/threads/script-inspector-3.195218/page-20#post-2414302
+The plugin allows handling Cmd-S, Cmd-Z, and Shift-Cmd-Z in Unity on OS X for more natural shortcuts for Save, Undo, and Redo operations in Si3!
+Thank you @inventor2010 for being awesome!!! :)
+
+
+Script Inspector 3 - Version History
+=====================================
+
+New in version 3.0.17:
+- Si3 tabs auto-docking updated for Unity 5.5.0 - thanks @jrDev & @JoeStrout
+- Added autocompletion filtering when only a type is expected - thanks @laurentlavigne
+- Added Shift+F10 as an alternative shortcut to Context Menu key
+- Added option for ordering members in Code Navigation Toolbar by name or in order of appearance - thanks @Thon Lorenz
+- Aligned context menu with the token under caret
+- Added option to disable live inspection of property values - thanks @_Adriaan
+- Added filtering option for unresolved symbols in References window
+- Improved incremental code analysis for generic partial types - thanks @eagleeyez
+- Fixed text flickering on pressing PageDown at end of file
+- Fixed navigation to operator members using Code Navigation Toolbar
+- Fixed grouping by #region of operator members
+- Fixed Context Menu shortcut not always working
+- Fixed a NullRef on context menu - thanks @thienhaflash
+- Fixed excessive width of dropdown menu in Code Navigation Toolbar - thanks @JoeStrout
+- Fixed default position when opening new tabs - thanks @laurentlavigne
+- Fixed context menu on some Si3 tabs titles
+- Fixed restoring focus on toggling floating tabs
+- Fixed NullRef exception on deleting scripts opened in Si3 tabs - thanks @_Adriaan
+- Fixed resolving of extension methods defined in parent namespace
+- Fixed resolving type of jagged array fields - thanks @sngdan
+- Fixed Go to Definition for generic methods
+- Fixed NullRef in Si3 UnityEventDrawer - thanks @thienhaflash
+
+New in version 3.0.16:
+- Applied all @broberson's changes to allow compiling Si3 as a DLL
+- Fixed exceptions when drawing uninitialized arrays of UnityEvent - thanks @thienhaflash
+- Added support for Tooltip attribute on UnityEvent field - thanks @JoeStrout
+- Fixed an exception on attempting to read a write-only property while constructing its tooltip text
+
+Fixed in version 3.0.15f:
+- Fixed resolving methods overloads with parameters of a generic delegate type for which a method group is specified as an argument - thanks @thienhaflash
+
+New in version 3.0.15:
+- Added easy navigation to handlers in your code from UnityEvent fields in the Inspector - thanks @JoeStrout
+- Auto-fixing corrupted window layout data :)
+- Customizable tabs size - thanks @dstanley
+- Help on unresolved symbols opens search on Unity Scripting References - thanks @_Adriaan
+- New option to disable changing font size with Ctrl/Cmd + MouseWheel - thanks @Mocho & @Sarinen
+- SI tabs now show the filename and path
+- Auto-closing SI tabs for missing scripts
+- Cmd-Shift-W and Cmd-F4 are closing the current SI tab on OS X - thanks @_Adriaan & @mcmorry
+- Fixed a crash of Unity with recently updated Mono runtime caused by infinite recursion while resolving certain constructed generic types - thanks @JoeStrout
+- Removed unnecessary calls to EditorWindow.mouseOverWindow since accessing that property may crash Unity 5.4 on OS X - thanks @sngdan
+- Attempt to avoid another crash in Unity 5.4 on OS X - thanks @sngdan
+- Fixed initial repainting of SI tabs after reloading assemblies
+- Fixed keyboard shortcut for Replace All command - thanks @Sarinen
+- Fixed finding references to virtual properties - thanks @Eduardnaut
+- Fixed listing operator method definitions in code navigation toolbar
+- Fixed operator methods shown as completions
+- Fixed resolving method overloads that take a parameter of type double - thanks @_Daniel_
+- Fixed resolving extension methods hidden by a member with the same name - thanks @JoeStrout
+- Fixed word wrap formatting on resize when docking SI tabs - thanks @AdamBuckner
+- Fixed word wrap in Inspector view on retina displays - thanks @sngdan
+- More retina display fixes
+
+New in version 3.0.14:
+- Search field shows "no results" when no results are found
+- Disabled smooth scrolling for mousewheel events - thanks @Novack
+- Fixed positioning of floating Si3 tabs - thanks @mcmorry, @JoeStrout, @SquareZhao
+- Fixed color theme selection for text assets - thanks @2dgame
+- Fixed a NullRef exception in FindMatchingMethod()
+- Fixed a NullRef in FGTextEditor.DoGui()
+- Fixed NullRef on Closing All Si3 Tabs
+
+New in version 3.0.13:
+- Tons of optimizations for speed and memory consumption
+- Members are now listed in groups by #region in code navigation toolbar
+- Added option to disable members grouping by #region
+- New option: Always Open in External IDE - thanks @UnLogick
+- Added Go to Type Definition feature - thanks @Jimww
+- Added support for 4th (Go Back) and 5th (Go Forward) mouse buttons on Windows
+- Added option to keep changes in memory without asking - thanks @Jimww
+- Added C# rules for implicit conversions of numeric literals
+- Better handling of C# operators
+- Improved handling of constants and literals in C#
+- Fixed C# code navigation toolbar for destructors, operators and constant declarations
+- Fixed a typo in OnSelectionChange() magic method - thanks @bocs
+- Fixed the error logged by Unity 5.4 beta
+- Fixed autocompletion for namespaces distributed across multiple assemblies - thanks @DshFox
+- Fixed C# grammar rules for "orderby" keyword in LINQ expressions
+- Improved C# symbol resolving for method groups used as delegate targets
+- Improved incremental semantic analysis
+- Improved resolving of method overloads
+- Fixed resolving of base types for some types defined in DLL's
+- Fixed resolving of parameter names in some specific cases
+- Fixed theme colors when Color Space is set to Linear
+- Fixed a index out of range error - thanks @thienhaflash
+- Fixed "second F12 goes back" after moving the caret with a mouse click - thanks @castor76
+- Fixed a tab-switching bug
+- Improved text buffer loading speed after reloading assemblies
+- Fixed handling of changes made in-memory after reloading assemblies
+
+New in version 3.0.12:
+- Critical fix! Fixed smart semicolon crash - thanks @bocs
+- After pressing F12 to go to definition, pressing it again returns the cursor back - thanks @Victor_Kallai
+- New Shift+Delete behavior on Windows: "Cuts" the current line to clipboard unless there's nothing selected and "Copy/Cut full line if no selection" is turned off (in which case it will delete the line, same as before) - thanks @ddt2015 and @FatIgor
+- Disabled live inspection of 'mesh' and 'material' properties to avoid unintentional creation of unique instances - thanks @ElSenyor_Eduard
+- Fixed smart semicolon in lines ending with comments - thanks @jrDev
+- Fixed compile warning in FGConsole for Unity 5.4 beta
+- Fixed exception on closing Find Results window
+- Fixed resolving method declarations with syntax errors - thanks @Gorgor
+- Fixed copying full lines and then pasting them in another file - thanks @ElSenyor_Eduard
+- Fixed displaying shortcuts in context menus in Unity 5.3+ on Windows - thanks @bocs
+- Fixed finding (non) references in preprocessor directives - thanks @castor76
+
+New in version 3.0.11:
+- Updated for compatibility with Unity 4.7.0
+- Auto-expanding /// as XMLDoc comments
+- Fixed resolving of destructors and showing them in breadcrumbs
+- Fixed resolving generic method overloads which was breaking the parameter hints - thanks @Sarper Soher
+- Fixed Results windows after maximizing and restoring a tab - thanks @Sarper Soher
+
+New in version 3.0.10:
+- Find All References feature with results filtering
+- Alt+Up/Down keys now move and re-indent line(s) - thanks @s1m0n1stv4n
+- New search box behavior:
+   * Enter/Shift+Enter finds next/previous occurrence and keeps keyboard focus on search box
+   * Escape moves keyboard focus back to code editor
+- Popup windows will close on any keyboard modifier and up/down arrows
+- Resolving anonymous method expressions
+- Updated for obsolete API in Unity 5.3
+- "Show auto-complete on Esc" is now turned on by default on OS X instead on Windows - thanks @Kiupe
+- Fixed Go To Definition in some cases
+- Fixed resolving method overloads
+- Fixed base type references in some reflected types - thanks @FireMutant & @Victor_Kallai
+
+New in version 3.0.9:
+- Replace in Files with ability to preview and select which occurrences to replace
+- Global Undo/Redo after Replace in Files
+- New cursor navigation mode that matches OS X text editing apps (optional, customizable, and even available on Windows) - thanks @JoeStrout
+- New alternative shortcut for Duplicate Line(s) on OS X: Alt-Cmd-Down arrow
+- New scope option for Find/Replace in Files: Current Tab
+- Go to method overload definition - thanks @mcmorry
+- Edit-in-memory dialog now shows the filename
+- New hotkey: Alt+M (Ctrl-M on OS X) opens the last code navigation breadcrumb button - thanks @CaptainCatnip
+- Optional non-aggressive auto-complete mode that only accepts completions with the Tab key - thanks @JoeStrout
+- Auto-complete doesn't insist on accepting completions where lambdas are expected - thanks @JoeStrout
+- Type parameter constraints are now used in resolving members and in auto-completion - thanks @thienhaflash
+- Fixed NullRef while resolving overloads of a method with params parameter
+- Fixed NullRef on toggling maximize tab
+- Fixed NullRef in resolving interfaces on a constructed generic type
+- Fixed conversions of constructed generic types - thanks @bocs
+- Fixed NullRef in GetTokenSpan - thanks @thienhaflash
+- Fixed opening shaders with Open Any File dialog - thanks @Sarper Soher
+- Fixed resolving of pre-increment-expression and pre-decrement-expression
+- Fixed the "multiple managers" warning - thanks @jrDev
+- Fixed auto-generating override methods in some edge cases
+- Fixed NullRef in Go to definition
+- Fixed updating text buffers in some rare cases after Undo or Redo
+- Fixed Unity Scripting Reference links for generic symbols
+- Fixed arguments hints so that they remain hidden after hiding them with Esc key - thanks @thienhaflash
+- Fixed selection priority of exactly typed names of auto-completion list items - thanks @JoeStrout
+- Fixed expected argument type for extension methods
+- Fixed keyboard handling in Tab Switcher if CapsLock or NumLock is on
+- Changed on OS X to avoid conflicts: Controlling SI tabs with Alt-Ctrl-Left/Right arrows instead of Alt-Cmd-Left/Right on OS X
+
+New in version 3.0.8:
+- Updated editor scripts rules for Unity 5.2.1p4 and newer versions
+- Unity 5+: Allowed editing assets of DefaultAsset type (currently for files of type: md, xaml, text, bat, cmd, sh, command, ini, rsp, plist, log, and lua)
+- Smart semicolon placement (optional and disabled by default) - thanks @Novack
+- Added alternative shortcut for Redo on Windows - Ctrl+Y - thanks @Victor_Kallai
+- A smarter set of characters that trigger accepting suggested completions - thanks @Adam Buckner
+- Color themes now support different colors for punctuators and operators - thanks @Korindian
+- Tweaked Monokai tooltip colors - thanks @mcmorry
+- Slightly increased font size in auto-complete lists - thanks @mcmorry
+- Implemented the special handling of Nullable LHS operand for the null-coalescing operator
+- Fixed code generator for override methods - thanks @thienhaflash
+- Fixed an error in Execute Static Method command (Ctrl/Cmd+E) - thanks @mcmorry
+- Fixed resolving generic methods overloaded with a non-generic one - thanks @mcmorry
+- Fixed code generator for relative names of members of a nested types and nested namespaces - thanks @mcmorry
+- Fixed duplicated suggestions of enums and constructors after new
+- Fixed resolving of qualified identifiers in explicit interface implementation methods
+- Fixed implicit conversions of Nullable<T> to T - thanks @Victor_Kallai
+- Fixed resolving conversions for constructed generic types
+- Fixed Open at Line shortcut in Unity 5 on OS X - thanks @mcmorry
+- Fixed an error in ConstructedTypeDefinition.BaseType() - thanks @thienhaflash
+- Fixed the error when trying to open a built-in shader in Si3
+- Fixed Find Results window after searching for text that starts or ends with whitespace characters
+
+New in version 3.0.7:
+- Auto-generated override methods
+- New toolbar button: Version Control
+- Massively improved type inference for generic methods and lambda parameters
+- Added option to Find Text in the open tabs only
+- Using only local Unity documentation when internet is not available
+- Bug fixes
+
+New in version 3.0.6:
+- Partial classes, structs & interfaces are supported now
+- Magic methods respect implementation in a base class
+- Group by File & Keep Results added to Find Results window
+- Bug fixes
+
+New in version 3.0.5:
+- Fixed finding full lines matching the search string in Find in Files
+- Fixed searching for TextAssets in Find in Files
+- Added search history to Find in Files window
+- Added auto-focus options to SI Console
+- New color theme: VS Dark with ReSharper (thanks Sarper Soher!)
+- Xcode theme update to Xcode 5 (thanks inventor2010!)
+
+New in version 3.0.4:
+- Added smart code snippets for generating magic methods for MonoBehaviour, Editor, EditorWindow, AssetPostprocessor, ScriptableWizard, and ScriptableObject classes
+- Grouped all Si3 related main menu commands in a single place under Window->Script Inspector 3
+- Tab switcher is now accessible from any Si3 window
+- Si3 Preferences accessible from menus
+- Support for Unity's built-in version control integrations
+- Fixed keyboard shortcut for Find in Files on OS X
+- Fixed read/write reference highlighting
+- Fixed generic types inference in extension methods
+
+New in version 3.0.3:
+- Find in Files! :)
+- Support for Smart Code Snippets (including user-defined ones)
+- Smart Code Snippet to auto-generate property for a field
+- Inspecting fields and properties of Component and derived classes for all scene objects or the one selected
+- Improved support for generics and extension methods
+- Improved auto-suggestions for enums and after the 'new' keyword
+- Improved type inference for lambda parameters
+- Improvements in auto-completion
+- Added option to Cut or Copy full line of text when there is no selection
+- Search field shows whitespaces when not focused
+- Bug fixes
+
+New in version 3.0.2:
+- Auto-suggestions for enum literals and constructors after "new"
+- Added "Open File in Si3" and "Open Any File in Si3" extensions under the File menu
+- New option to use the online version of Unity Scripting Reference instead of the local one
+- Bug fixes and improvements
+
+
+New in Version 3.0.0:
+
+
+C# Specific Features:
+
+- Automatic code completion, a.k.a. Intellisense
+- Lightning fast incremental parsing and code analysis
+- Semantic highlighting
+- Semantic info tooltips for symbols
+- Semantic and syntax errors highlighting
+- Parameter hints for method's arguments
+- Customizable code snippets
+- Auto-generating Unity event handlers (Magic Methods)
+- Auto-generating override methods
+- Automatic code indentation
+- Symbol reference highlighting
+- Go To Definition for any symbol defined in source code
+- Go To Definition for .Net symbols
+- Semantic info powered Scripting Reference for all Unity symbols
+- Semantic info powered MSDN Reference for .Net symbols
+- Semantic info powered C# Language Reference for keywords
+- Short description for Unity symbols in tooltips
+- Code Navigation toolbar including Go To #region
+- Execute Static Methods from context-menu
+
+
+All Script Types and Shader Features:
+
+- Significantly faster tokenizer and reduced loading time
+- Auto-closing braces, brackets, parentheses, and double-quotes
+- Matching braces/brackets/parentheses highlighting
+- Quick Save alternative option (without compile)
+
+
+Other Features:
+
+- Extensive list of keyboard shortcuts for editing
+- Shortcuts to switch between active Si3 windows
+- Navigation history
+- Smooth scrolling
+- Toggle (Show/Hide) all floating Si3 windows
+- Script Inspector options page in Unity Preferences window
+- P4Connect integration
+
+
+Optional Experimental Features:
+
+- Inspect simple type values of static C# fields and properties
+- Inspect simple type values of non-static C# fields and properties for instances derived from Component or ScriptableObject
+- Auto-Expanding tab titles for Script Inspector windows
+- Compile in Background (on Windows only)
+
+
+Main Features in Previous Versions:
+
+- Editing scripts, shaders, and text files
+- Advanced editor with extensive mouse and keyboard support
+- Undo and Redo functions for each file independently
+- Editing in the Inspector or in dedicated dockable windows
+- Syntax highlighting for scripts and shaders
+- Word-wrap option
+- Improved Console window with call stack navigation
+- Fast editor for really, really long files
+- Fast editor for really long single line files (no, even Visual Studio can't do that!)
+- Shader code editing directly in the shader inspector
+- Variable font sizes
+- Text search and quick-search shortcuts
+- Track changes indicators
+- Preserved text encoding and line ending style
+- Automatic saving before entering game mode
+- External changes detection and reloading
+- Multiple color themes
+- Multiple fonts
+
+
+The Best "Feature":
+
+- Full source code included!!!
