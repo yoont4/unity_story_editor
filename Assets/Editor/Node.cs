@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -8,12 +9,32 @@ public class Node {
 	public Rect rect;
 	public string title;
 	public bool isDragged;
+	public bool isSelected;
+	
+	public ConnectionPoint inPoint;
+	public ConnectionPoint outPoint;
 	
 	public GUIStyle style;
+	public GUIStyle defaultNodeStyle;
+	public GUIStyle selectedNodeStyle;
 	
-	public Node(Vector2 position, float width, float height, GUIStyle nodeStyle) {
+	public Action<Node> OnRemoveNode;
+	
+	public Node(
+		Vector2 position, float width, float height, 
+		GUIStyle nodeStyle, GUIStyle selectedStyle,
+		GUIStyle inPointStyle, GUIStyle outPointStyle, 
+		Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint,
+		Action<Node> OnClickRemoveNode)
+	{
 		rect = new Rect(position.x, position.y, width, height);
 		style = nodeStyle;
+		defaultNodeStyle = nodeStyle;
+		selectedNodeStyle = selectedStyle;
+		inPoint = new ConnectionPoint(this, ConnectionPointType.In, inPointStyle, OnClickInPoint);
+		outPoint = new ConnectionPoint(this, ConnectionPointType.Out, outPointStyle, OnClickOutPoint);
+		OnRemoveNode = OnClickRemoveNode;
+			
 	}
 	
 	public void Drag(Vector2 delta) {
@@ -21,6 +42,8 @@ public class Node {
 	}
 	
 	public void Draw() {
+		inPoint.Draw();
+		outPoint.Draw();
 		GUI.Box(rect, title, style);
 	}
 	
@@ -30,10 +53,19 @@ public class Node {
 				if (e.button == 0) {
 					if (rect.Contains(e.mousePosition)) {
 						isDragged = true;
+						isSelected = true;
+						style = selectedNodeStyle;
 						GUI.changed = true;
 					} else {
+						isSelected = false;
+						style = defaultNodeStyle;
 						GUI.changed = true;
 					}
+				}
+				
+				if (e.button == 1 && isSelected && rect.Contains(e.mousePosition)) {
+					ProcessContextMenu();
+					e.Use();
 				}
 				break;
 			
@@ -51,6 +83,18 @@ public class Node {
 		}
 		
 		return false;
+	}
+	
+	private void ProcessContextMenu() {
+		GenericMenu genericMenu = new GenericMenu();
+		genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
+		genericMenu.ShowAsContext();
+	}
+	
+	private void OnClickRemoveNode() {
+		if (OnRemoveNode != null) {
+			OnRemoveNode(this);
+		}
 	}
 	
 }
