@@ -68,14 +68,14 @@ public static class StyleManager {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointBG.png") as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointOnBG.png") as Texture2D;
-		style.border = new RectOffset(6, 5, 4, 4);
+		style.border = new RectOffset(6, 5, 5, 5);
 		return style;
 	}
 	
 	private static GUIStyle ControlPointSelectedStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointSelectedBG.png") as Texture2D;
-		style.border = new RectOffset(6, 5, 4, 4);
+		style.border = new RectOffset(6, 5, 5, 5);
 		return style;
 	}
 }

@@ -115,6 +115,20 @@ public class StoryDialogueEditor : EditorWindow {
 				// reshift everything by this new average, including window size
 				OnDrag(-avgPosition + (position.size/2));
 			}
+			
+			// 'D' delete everything in the editor window
+			if (e.keyCode == KeyCode.D) {
+				Debug.Log("delete");
+				if (ConnectionManager.connections != null) {
+					ConnectionManager.connections.Clear();
+					ConnectionManager.connections = null;
+				}
+				
+				if (NodeManager.nodes != null) {
+					NodeManager.nodes.Clear();
+					NodeManager.nodes = null;
+				}
+			}
 			break;
 		}
 	}

@@ -44,6 +44,7 @@ public class Node {
 		inPoint.Draw();
 		outPoint.Draw();
 		GUI.Box(rect, title, style);
+		TestDrawTextBox();
 	}
 	
 	public bool ProcessEvent(Event e) {
@@ -63,6 +64,11 @@ public class Node {
 					StyleSelect();
 				} else {
 					StyleDeselect();
+					
+					// ------- TEXT BOX TEST CODE ------ //
+					if (!textRect.Contains(e.mousePosition)) {
+						GUIUtility.keyboardControl = 0;
+					}
 				}
 			}
 			
@@ -87,6 +93,21 @@ public class Node {
 		}
 		
 		return false;
+	}
+	
+	// -------------- TEXT BOX TEST CODE ------------- //
+	private string testString = "hello";
+	private Rect textRect;
+	private GUIStyle textStyle;
+	
+	private void TestDrawTextBox() {
+		textRect = new Rect(rect.position.x, rect.position.y-40, 200, 40);
+		textStyle = new GUIStyle();
+		textStyle.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
+		textStyle.border = new RectOffset(5, 5, 5, 5);
+		textStyle.wordWrap = true;
+		textStyle.alignment = TextAnchor.MiddleCenter;
+		testString = GUI.TextArea(textRect, testString, textStyle);
 	}
 	
 	private void ProcessContextMenu() {
