@@ -8,21 +8,33 @@ public enum ConnectionPointType { In, Out }
 public class ConnectionPoint {
 	
 	public Rect rect;
-	
-	public ConnectionPointType type;
-	
 	public Node node;
-	
 	public GUIStyle style;
-	
+	public GUIStyle defaultControlPointStyle;
+	public GUIStyle selectedControlPointStyle;
+	public ConnectionPointType type;
 	public Action<ConnectionPoint> OnClickConnectionPoint;
 	
-	public ConnectionPoint(Node node, ConnectionPointType type, GUIStyle style, Action<ConnectionPoint> OnClickConnectionPoint) {
+	public bool isSelected;
+	
+	public ConnectionPoint(Node node, ConnectionPointType type) {
 		this.node = node;
 		this.type = type;
-		this.style = style;
-		this.OnClickConnectionPoint = OnClickConnectionPoint;
-		rect = new Rect(0, 0, 10f, 20f);
+		this.style = ConnectionManager.defaultControlPointStyle;
+		this.defaultControlPointStyle = ConnectionManager.defaultControlPointStyle;
+		this.selectedControlPointStyle = ConnectionManager.selectedControlPointStyle;
+		
+		if (this.type == ConnectionPointType.In) {
+			this.OnClickConnectionPoint = ConnectionManager.OnClickInPoint;
+		} else {
+			this.OnClickConnectionPoint = ConnectionManager.OnClickOutPoint;
+		}
+		
+		rect = new Rect(
+			0, 0, 
+			ConnectionManager.CONNECTIONPOINT_WIDTH,
+			ConnectionManager.CONNECTIONPOINT_HEIGHT
+		);
 	}
 	
 	public void Draw() {
@@ -31,11 +43,11 @@ public class ConnectionPoint {
 		
 		switch (type) {
 			case ConnectionPointType.In:
-				rect.x = node.rect.x - rect.width + 8f;
+				rect.x = node.rect.x - rect.width + 7f;
 				break;
 			
 			case ConnectionPointType.Out:
-				rect.x = node.rect.x + node.rect.width - 8f;
+				rect.x = node.rect.x + node.rect.width - 7f;
 				break;
 		}
 		
@@ -44,6 +56,36 @@ public class ConnectionPoint {
 				OnClickConnectionPoint(this);
 			}
 		}
+	}
+	
+	public void ProcessEvent(Event e) {
+		switch(e.type) {
+			case EventType.MouseDown:
+				if (e.button == 0) {
+					if (rect.Contains(e.mousePosition)) {
+						// prevent overlapping lower-ordered nodes from being selected
+						e.Use();
+						
+						Select();
+					} else {
+						Deselect();
+						ConnectionManager.ClearConnectionSelection();
+					}
+				}
+				break;
+		}
+	}
+	
+	public void Deselect() {
+		isSelected = false;
+		style = defaultControlPointStyle;
+		GUI.changed = true;
+	}
+	
+	public void Select() {
+		isSelected = true;
+		style = selectedControlPointStyle;
+		GUI.changed = true;
 	}
 	
 }

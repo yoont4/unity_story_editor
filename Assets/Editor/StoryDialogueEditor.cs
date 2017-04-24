@@ -3,49 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class StoryEditor : EditorWindow {
-	
-	private List<Node> nodes;
-	private List<Connection> connections;
-	
-	private GUIStyle nodeStyle;
-	private GUIStyle selectedNodeStyle;
-	private GUIStyle inPointStyle;
-	private GUIStyle outPointStyle;
-	public const int NODE_WIDTH = 200;
-	public const int NODE_HEIGHT = 50;
-	
-	private ConnectionPoint selectedInPoint;
-	private ConnectionPoint selectedOutPoint;
+public class StoryDialogueEditor : EditorWindow {
 	
 	private Vector2 offset;
 	private Vector2 drag;
 	private Rect windowRect;
 	
 	[MenuItem("Window/Story & Dialogue Editor")]
-	private static void OpenWindow() {
-		StoryEditor window = GetWindow<StoryEditor>();
+	public static void OpenWindow() {
+		StoryDialogueEditor window = GetWindow<StoryDialogueEditor>();
 		window.titleContent = new GUIContent("Story & Dialogue Editor");
 	}
 	
 	private void OnEnable() {
-		nodeStyle = new GUIStyle();
-		nodeStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node1.png") as Texture2D;
-		nodeStyle.border = new RectOffset(12, 12, 12, 12);
+		// initialize component managers
+		NodeManager.mainEditor = this;
+		ConnectionManager.mainEditor = this;
 		
-		selectedNodeStyle = new GUIStyle();
-		selectedNodeStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node1 on.png") as Texture2D;
-		selectedNodeStyle.border = new RectOffset(12, 12, 12, 12);
 		
-		inPointStyle = new GUIStyle();
-		inPointStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left.png") as Texture2D;
-		inPointStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn left on.png") as Texture2D;
-		inPointStyle.border = new RectOffset(4, 4, 12, 12);
+		// instantiate GUI styles
+		NodeManager.defaultNodeStyle = StyleManager.LoadStyle(Style.NodeDefault);
+		NodeManager.selectedNodeStyle = StyleManager.LoadStyle(Style.NodeSelected);
 		
-		outPointStyle = new GUIStyle();
-		outPointStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right.png") as Texture2D;
-		outPointStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right on.png") as Texture2D;
-		inPointStyle.border = new RectOffset(4, 4, 12, 12);
+		ConnectionManager.defaultControlPointStyle = StyleManager.LoadStyle(Style.ControlPointDefault);
+		ConnectionManager.selectedControlPointStyle = StyleManager.LoadStyle(Style.ControlPointSelected);
 	}
 	
 	private void OnGUI() {
@@ -60,15 +41,16 @@ public class StoryEditor : EditorWindow {
 		DrawGrid(100, 0.4f, Color.gray);
 		
 		// draw nodes on top of background
-		DrawNodes();
+		NodeManager.DrawNodes();
 		
 		// draw the connections between nodes
-		DrawConnections();
+		ConnectionManager.DrawConnections();
 		
 		// draw the current connection as it's being selected
-		DrawCurrentConnection(Event.current);
+		ConnectionManager.DrawConnectionHandle(Event.current);
 		
-		ProcessNodeEvents(Event.current);
+		// process events on nodes, than over the entire editor
+		NodeManager.ProcessEvents(Event.current);
 		ProcessEvents(Event.current);
 		
 		if (GUI.changed) Repaint();
@@ -100,62 +82,14 @@ public class StoryEditor : EditorWindow {
 		Handles.color = Color.white;
 		Handles.EndGUI();
 	}
-	
-	private void DrawNodes() {
-		if (nodes != null) {
-			for (int i = 0; i < nodes.Count; i++) {
-				nodes[i].Draw();
-			}
-		}
-	}
-	
-	private void DrawConnections() {
-		if (connections != null) {
-			for (int i = 0; i < connections.Count; i++) {
-				connections[i].Draw();
-			}
-		}
-	}
-	
-	private void DrawCurrentConnection(Event e) {
-		if (e.type == EventType.mouseDown && e.button == 1) {
-			ClearConnectionSelection();
-			e.Use();
-			return;
-		}
-		
-		if (selectedInPoint != null && selectedOutPoint == null) {
-			Handles.DrawBezier(
-				selectedInPoint.rect.center,
-				e.mousePosition,
-				selectedInPoint.rect.center + Vector2.left * 50f,
-				e.mousePosition - Vector2.left * 50f,
-				Color.white,
-				null,
-				2f);
-		}
-		
-		if (selectedInPoint == null && selectedOutPoint != null) {
-			Handles.DrawBezier(
-				selectedOutPoint.rect.center,
-				e.mousePosition,
-				selectedOutPoint.rect.center - Vector2.left * 50f,
-				e.mousePosition + Vector2.left * 50f,
-				Color.white,
-				null,
-				2f);
-		}
-		
-		GUI.changed = true;
-	}
-	
+
 	private void ProcessEvents(Event e) {
 		drag = Vector2.zero;
 		
 		switch (e.type) {
 			case EventType.MouseDown:
 				if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
-					OnClickAddNode(e.mousePosition);
+					NodeManager.OnClickAddNode(e.mousePosition);
 				} else if(e.button == 1) {
 					ProcessContextMenu(e.mousePosition);
 				}
@@ -166,105 +100,37 @@ public class StoryEditor : EditorWindow {
 					OnDrag(e.delta);
 				}
 				break;
-		}
-	}
-	
-	private void ProcessNodeEvents(Event e) {
-		if (nodes != null) {
-			// processed backwards because nodes on the top are rendered on top
-			for (int i = nodes.Count - 1; i >= 0; i--) {
-				bool guiChanged = nodes[i].ProcessEvent(e);
-				if (guiChanged) {
-					GUI.changed = true;
+			
+			// listen for key commands
+			case EventType.KeyDown:
+				// 'C' center on node positions
+				if (e.keyCode == KeyCode.C) {
+					// calculate current average
+					Vector2 avgPosition = new Vector2();
+					for (int i = 0; i < NodeManager.nodes.Count; i++) {
+						avgPosition += NodeManager.nodes[i].rect.center;
+					}
+					avgPosition /= NodeManager.nodes.Count;
+					
+					// reshift everything by this new average, including window size
+					OnDrag(-avgPosition + (position.size/2));
 				}
-			}
+				break;
 		}
 	}
 	
 	private void ProcessContextMenu(Vector2 mousePosition) {
 		GenericMenu genericMenu = new GenericMenu();
-		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>OnClickAddNode(mousePosition));
+		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>NodeManager.OnClickAddNode(mousePosition));
 		genericMenu.ShowAsContext();
-	}
-	
-	private void OnClickAddNode(Vector2 mousePosition) {
-		if (nodes == null) {
-			nodes = new List<Node>();
-		}
-		
-		Vector2 nodePosition = new Vector2(mousePosition.x - NODE_WIDTH/2, mousePosition.y - NODE_HEIGHT/2);
-		
-		nodes.Add(new Node(
-			nodePosition, NODE_WIDTH, NODE_HEIGHT, 
-			nodeStyle, selectedNodeStyle, 
-			inPointStyle, outPointStyle,
-			OnClickInPoint, OnClickOutPoint,
-			OnClickRemoveNode)
-		);
-	}
-	
-	private void OnClickRemoveNode(Node node) {
-		if (connections != null) {
-			List<Connection> connectionsToRemove = new List<Connection>();
-			for (int i = 0; i < connections.Count; i++) {
-				if (connections[i].inPoint == node.inPoint || connections[i].outPoint == node.outPoint) {
-					connectionsToRemove.Add(connections[i]);
-				}
-			}
-			
-			for (int i = 0; i < connectionsToRemove.Count; i++) {
-				connections.Remove(connectionsToRemove[i]);
-			}
-			
-			connectionsToRemove = null;
-		}
-		
-		nodes.Remove(node);
-	}
-	
-	private void OnClickInPoint(ConnectionPoint inPoint) {
-		selectedInPoint = inPoint;
-		OnClickPoint(inPoint);
-	}
-	
-	private void OnClickOutPoint(ConnectionPoint outPoint) {
-		selectedOutPoint = outPoint;
-		OnClickPoint(outPoint);
-	}
-	
-	// helper function for OnClick[In/Out]Point
-	private void OnClickPoint(ConnectionPoint point) {
-		if (selectedOutPoint != null && selectedInPoint != null) {
-			if (selectedOutPoint.node != selectedInPoint.node) {
-				CreateConnection();
-			} 
-			ClearConnectionSelection();
-		}
-	}
-	
-	private void OnClickRemoveConnection(Connection connection) {
-		connections.Remove(connection);
-	}
-	
-	private void CreateConnection() {
-		if (connections  == null) {
-			connections = new List<Connection>();
-		}
-		
-		connections.Add(new Connection(selectedInPoint, selectedOutPoint, OnClickRemoveConnection));
-	}
-	
-	private void ClearConnectionSelection() {
-		selectedInPoint = null;
-		selectedOutPoint = null;
 	}
 	
 	private void OnDrag(Vector2 delta) {
 		drag = delta;
 		
-		if (nodes != null) {
-			for (int i = 0; i < nodes.Count; i++) {
-				nodes[i].Drag(delta);
+		if (NodeManager.nodes != null) {
+			for (int i = 0; i < NodeManager.nodes.Count; i++) {
+				NodeManager.nodes[i].Drag(delta);
 			}
 		}
 		

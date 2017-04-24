@@ -8,6 +8,7 @@ public class Node {
 
 	public Rect rect;
 	public string title;
+	
 	public bool isDragged;
 	public bool isSelected;
 	
@@ -22,17 +23,15 @@ public class Node {
 	
 	public Node(
 		Vector2 position, float width, float height, 
-		GUIStyle nodeStyle, GUIStyle selectedStyle,
-		GUIStyle inPointStyle, GUIStyle outPointStyle, 
-		Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint,
+		GUIStyle defaultStyle, GUIStyle selectedStyle,
 		Action<Node> OnClickRemoveNode)
 	{
 		rect = new Rect(position.x, position.y, width, height);
-		style = nodeStyle;
-		defaultNodeStyle = nodeStyle;
+		style = defaultStyle;
+		defaultNodeStyle = defaultStyle;
 		selectedNodeStyle = selectedStyle;
-		inPoint = new ConnectionPoint(this, ConnectionPointType.In, inPointStyle, OnClickInPoint);
-		outPoint = new ConnectionPoint(this, ConnectionPointType.Out, outPointStyle, OnClickOutPoint);
+		inPoint = new ConnectionPoint(this, ConnectionPointType.In);
+		outPoint = new ConnectionPoint(this, ConnectionPointType.Out);
 		OnRemoveNode = OnClickRemoveNode;
 			
 	}
@@ -48,10 +47,17 @@ public class Node {
 	}
 	
 	public bool ProcessEvent(Event e) {
+		// process control point events first
+		inPoint.ProcessEvent(e);
+		outPoint.ProcessEvent(e);
+		
 		switch(e.type) {
 			case EventType.MouseDown:
 				if (e.button == 0) {
 					if (rect.Contains(e.mousePosition)) {
+						// prevent overlapping lower-ordered nodes from being selected
+						e.Use();
+						
 						isDragged = true;
 						isSelected = true;
 						style = selectedNodeStyle;
@@ -96,5 +102,7 @@ public class Node {
 			OnRemoveNode(this);
 		}
 	}
+	
+	
 	
 }
