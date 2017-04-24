@@ -87,35 +87,35 @@ public class StoryDialogueEditor : EditorWindow {
 		drag = Vector2.zero;
 		
 		switch (e.type) {
-			case EventType.MouseDown:
-				if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
-					NodeManager.OnClickAddNode(e.mousePosition);
-				} else if(e.button == 1) {
-					ProcessContextMenu(e.mousePosition);
+		case EventType.MouseDown:
+			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
+				NodeManager.OnClickAddNode(e.mousePosition);
+			} else if(e.button == 1) {
+				ProcessContextMenu(e.mousePosition);
+			}
+			break;
+		
+		case EventType.MouseDrag:
+			if (e.button == 0) {
+				OnDrag(e.delta);
+			}
+			break;
+		
+		// listen for key commands
+		case EventType.KeyDown:
+			// 'C' center on node positions
+			if (e.keyCode == KeyCode.C) {
+				// calculate current average
+				Vector2 avgPosition = new Vector2();
+				for (int i = 0; i < NodeManager.nodes.Count; i++) {
+					avgPosition += NodeManager.nodes[i].rect.center;
 				}
-				break;
-			
-			case EventType.MouseDrag:
-				if (e.button == 0) {
-					OnDrag(e.delta);
-				}
-				break;
-			
-			// listen for key commands
-			case EventType.KeyDown:
-				// 'C' center on node positions
-				if (e.keyCode == KeyCode.C) {
-					// calculate current average
-					Vector2 avgPosition = new Vector2();
-					for (int i = 0; i < NodeManager.nodes.Count; i++) {
-						avgPosition += NodeManager.nodes[i].rect.center;
-					}
-					avgPosition /= NodeManager.nodes.Count;
-					
-					// reshift everything by this new average, including window size
-					OnDrag(-avgPosition + (position.size/2));
-				}
-				break;
+				avgPosition /= NodeManager.nodes.Count;
+				
+				// reshift everything by this new average, including window size
+				OnDrag(-avgPosition + (position.size/2));
+			}
+			break;
 		}
 	}
 	

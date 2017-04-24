@@ -60,19 +60,19 @@ public class ConnectionPoint {
 	
 	public void ProcessEvent(Event e) {
 		switch(e.type) {
-			case EventType.MouseDown:
-				if (e.button == 0) {
-					if (rect.Contains(e.mousePosition)) {
-						// prevent overlapping lower-ordered nodes from being selected
-						e.Use();
-						
-						Select();
-					} else {
-						Deselect();
-						ConnectionManager.ClearConnectionSelection();
-					}
+		case EventType.MouseDown:
+			if (e.button == 0) {
+				if (rect.Contains(e.mousePosition)) {
+					// prevent overlapping lower-ordered nodes from being selected
+					e.Use();
+					
+					Select();
+				} else {
+					Deselect();
+					ConnectionManager.ClearConnectionSelection();
 				}
-				break;
+			}
+			break;
 		}
 	}
 	

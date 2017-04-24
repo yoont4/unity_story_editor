@@ -52,36 +52,38 @@ public class Node {
 		outPoint.ProcessEvent(e);
 		
 		switch(e.type) {
-			case EventType.MouseDown:
-				if (e.button == 0) {
-					if (rect.Contains(e.mousePosition) && !NodeManager.nodeSelected) {
-						// prevent overlapping lower-ordered nodes from being selected
-						NodeManager.nodeSelected = true;
-						
-						isDragged = true;
-						Select();
-					} else {
-						Deselect();
-					}
+		case EventType.MouseDown:
+			// handle selection
+			if (e.button == 0) {
+				if (rect.Contains(e.mousePosition) && !NodeManager.nodeSelected) {
+					// prevent overlapping lower-ordered nodes from being selected
+					NodeManager.nodeSelected = true;
+					
+					isDragged = true;
+					Select();
+				} else {
+					Deselect();
 				}
-				
-				if (e.button == 1 && isSelected && rect.Contains(e.mousePosition)) {
-					ProcessContextMenu();
-					e.Use();
-				}
-				break;
+			}
 			
-			case EventType.MouseUp:
-				isDragged = false;
-				break;
-			
-			case EventType.MouseDrag:
-				if (e.button == 0 && isDragged) {
-					Drag(e.delta);
-					e.Use();
-					return true;
-				}
-				break;
+			// handle contect menu
+			if (e.button == 1 && isSelected && rect.Contains(e.mousePosition)) {
+				ProcessContextMenu();
+				e.Use();
+			}
+			break;
+		
+		case EventType.MouseUp:
+			isDragged = false;
+			break;
+		
+		case EventType.MouseDrag:
+			if (e.button == 0 && isDragged) {
+				Drag(e.delta);
+				e.Use();
+				return true;
+			}
+			break;
 		}
 		
 		return false;
