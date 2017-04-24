@@ -21,6 +21,11 @@ public static class NodeManager {
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 100;
 	
+	// this is used in conjunction with the Node ProcessEvents
+	// stack, to prevent overlapping lower-order Nodes from being 
+	// selected at the same time.
+	public static bool nodeSelected;
+	
 	public static void DrawNodes() {
 		if (nodes != null) {
 			for (int i = 0; i < nodes.Count; i++) {
@@ -31,6 +36,9 @@ public static class NodeManager {
 	
 	public static void ProcessEvents(Event e) {
 		if (nodes != null) {
+			// reset for every click processing
+			nodeSelected = false;
+			
 			// processed backwards because nodes on the top are rendered on top
 			for (int i = nodes.Count - 1; i >= 0; i--) {
 				bool guiChanged = nodes[i].ProcessEvent(e);

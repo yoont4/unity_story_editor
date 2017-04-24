@@ -54,18 +54,14 @@ public class Node {
 		switch(e.type) {
 			case EventType.MouseDown:
 				if (e.button == 0) {
-					if (rect.Contains(e.mousePosition)) {
+					if (rect.Contains(e.mousePosition) && !NodeManager.nodeSelected) {
 						// prevent overlapping lower-ordered nodes from being selected
-						e.Use();
+						NodeManager.nodeSelected = true;
 						
 						isDragged = true;
-						isSelected = true;
-						style = selectedNodeStyle;
-						GUI.changed = true;
+						Select();
 					} else {
-						isSelected = false;
-						style = defaultNodeStyle;
-						GUI.changed = true;
+						Deselect();
 					}
 				}
 				
@@ -96,6 +92,20 @@ public class Node {
 		genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
 		genericMenu.ShowAsContext();
 	}
+	
+	public void Select() {
+		isSelected = true;
+		style = selectedNodeStyle;
+		GUI.changed = true;
+	}
+	
+	public void Deselect() {
+		isSelected = false;
+		style = defaultNodeStyle;
+		GUI.changed = true;
+	}
+	
+	
 	
 	private void OnClickRemoveNode() {
 		if (OnRemoveNode != null) {
