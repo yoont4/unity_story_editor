@@ -62,27 +62,25 @@ public class ConnectionPoint {
 		switch(e.type) {
 		case EventType.MouseDown:
 			if (e.button == 0) {
-				if (rect.Contains(e.mousePosition)) {
-					// prevent overlapping lower-ordered nodes from being selected
-					e.Use();
-					
-					Select();
-				} else {
-					Deselect();
+				// only check for when outside, because the 
+				// GUI button uses the event, so selection
+				// won't get processed here.
+				if (!rect.Contains(e.mousePosition)) {
+					StyleDeselect();
 					ConnectionManager.ClearConnectionSelection();
-				}
+				} 
 			}
 			break;
 		}
 	}
 	
-	public void Deselect() {
+	public void StyleDeselect() {
 		isSelected = false;
 		style = defaultControlPointStyle;
 		GUI.changed = true;
 	}
 	
-	public void Select() {
+	public void StyleSelect() {
 		isSelected = true;
 		style = selectedControlPointStyle;
 		GUI.changed = true;

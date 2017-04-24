@@ -55,14 +55,14 @@ public class Node {
 		case EventType.MouseDown:
 			// handle selection
 			if (e.button == 0) {
-				if (rect.Contains(e.mousePosition) && !NodeManager.nodeSelected) {
+				if (rect.Contains(e.mousePosition) && NodeManager.selectedNode == null) {
 					// prevent overlapping lower-ordered nodes from being selected
-					NodeManager.nodeSelected = true;
+					NodeManager.selectedNode = this;
 					
 					isDragged = true;
-					Select();
+					StyleSelect();
 				} else {
-					Deselect();
+					StyleDeselect();
 				}
 			}
 			
@@ -95,19 +95,27 @@ public class Node {
 		genericMenu.ShowAsContext();
 	}
 	
-	public void Select() {
+	// TODO: figure out how to manage StyleSelect() vs a logical Select() in
+	// this class (Node) and the ConnectionPoint class. It will bubble into 
+	// other classes eventually.
+	
+	// maybe use a SelectionManager class? or have all selections be parsed
+	// through it's own EventProcessing stack? I dunno, gotta keep it performant
+	// but it needs to be legible. Don't ignore this for too long!
+	
+	// Changes Node style to selection.
+	// NOTE: this does NOT change the NodeManager's selectedNode field
+	public void StyleSelect() {
 		isSelected = true;
 		style = selectedNodeStyle;
 		GUI.changed = true;
 	}
 	
-	public void Deselect() {
+	public void StyleDeselect() {
 		isSelected = false;
 		style = defaultNodeStyle;
 		GUI.changed = true;
 	}
-	
-	
 	
 	private void OnClickRemoveNode() {
 		if (OnRemoveNode != null) {

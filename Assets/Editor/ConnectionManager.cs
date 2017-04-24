@@ -10,6 +10,7 @@ public static class ConnectionManager {
 	
 	public static GUIStyle defaultControlPointStyle;
 	public static GUIStyle selectedControlPointStyle;
+	
 	public static ConnectionPoint selectedInPoint;
 	public static ConnectionPoint selectedOutPoint;
 	
@@ -29,7 +30,7 @@ public static class ConnectionManager {
 	
 	// helper function for OnClick[In/Out]Point
 	public static void OnClickPoint(ConnectionPoint point) {
-		point.Select();
+		point.StyleSelect();
 		
 		if (selectedOutPoint != null && selectedInPoint != null) {
 			if (selectedOutPoint.node != selectedInPoint.node) {
@@ -41,12 +42,12 @@ public static class ConnectionManager {
 	
 	public static void ClearConnectionSelection() {
 		if (selectedInPoint != null) {
-			selectedInPoint.Deselect();
+			selectedInPoint.StyleDeselect();
 			selectedInPoint = null;
 		}
 		
 		if (selectedOutPoint != null) {
-			selectedOutPoint.Deselect();
+			selectedOutPoint.StyleDeselect();
 			selectedOutPoint = null;
 		}
 	}

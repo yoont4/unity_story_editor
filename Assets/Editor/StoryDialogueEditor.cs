@@ -37,8 +37,8 @@ public class StoryDialogueEditor : EditorWindow {
 		GUI.color = Color.white;
 		
 		// draw grid over
-		DrawGrid(20, 0.2f, Color.gray);
-		DrawGrid(100, 0.4f, Color.gray);
+		DrawGrid(50, 0.2f, Color.gray);
+		DrawGrid(200, 0.4f, Color.gray);
 		
 		// draw nodes on top of background
 		NodeManager.DrawNodes();

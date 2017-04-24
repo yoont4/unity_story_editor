@@ -24,7 +24,7 @@ public static class NodeManager {
 	// this is used in conjunction with the Node ProcessEvents
 	// stack, to prevent overlapping lower-order Nodes from being 
 	// selected at the same time.
-	public static bool nodeSelected;
+	public static Node selectedNode;
 	
 	public static void DrawNodes() {
 		if (nodes != null) {
@@ -37,7 +37,7 @@ public static class NodeManager {
 	public static void ProcessEvents(Event e) {
 		if (nodes != null) {
 			// reset for every click processing
-			nodeSelected = false;
+			selectedNode = null;
 			
 			// processed backwards because nodes on the top are rendered on top
 			for (int i = nodes.Count - 1; i >= 0; i--) {
