@@ -107,6 +107,7 @@ public class Node {
 		textStyle.border = new RectOffset(5, 5, 5, 5);
 		textStyle.wordWrap = true;
 		textStyle.alignment = TextAnchor.MiddleCenter;
+		textStyle.normal.textColor = Color.white;
 		testString = GUI.TextArea(textRect, testString, textStyle);
 	}
 	
