@@ -87,6 +87,7 @@ public class StoryDialogueEditor : EditorWindow {
 		drag = Vector2.zero;
 		
 		switch (e.type) {
+		// check for selection or context menu
 		case EventType.MouseDown:
 			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
 				NodeManager.OnClickAddNode(e.mousePosition);
@@ -94,7 +95,8 @@ public class StoryDialogueEditor : EditorWindow {
 				ProcessContextMenu(e.mousePosition);
 			}
 			break;
-		
+			
+		// check for window dragging
 		case EventType.MouseDrag:
 			if (e.button == 0) {
 				OnDrag(e.delta);
