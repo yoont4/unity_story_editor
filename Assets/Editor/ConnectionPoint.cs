@@ -8,7 +8,10 @@ public enum ConnectionPointType { In, Out }
 public class ConnectionPoint {
 	
 	public Rect rect;
+	
+	// parent Node reference
 	public Node node;
+	
 	public GUIStyle style;
 	public GUIStyle defaultControlPointStyle;
 	public GUIStyle selectedControlPointStyle;
@@ -43,11 +46,11 @@ public class ConnectionPoint {
 		
 		switch (type) {
 			case ConnectionPointType.In:
-				rect.x = node.rect.x - rect.width + 7f;
+				rect.x = node.rect.x - rect.width + 3f;
 				break;
 			
 			case ConnectionPointType.Out:
-				rect.x = node.rect.x + node.rect.width - 7f;
+				rect.x = node.rect.x + node.rect.width - 3f;
 				break;
 		}
 		

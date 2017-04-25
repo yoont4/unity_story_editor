@@ -20,13 +20,19 @@ public class StoryDialogueEditor : EditorWindow {
 		NodeManager.mainEditor = this;
 		ConnectionManager.mainEditor = this;
 		
+		// TODO: rename all style variables to be format: <component><state>
+		// i.e. defaultNodeStyle -> nodeDefault
 		
-		// instantiate GUI styles
+		// load GUI styles
 		NodeManager.defaultNodeStyle = StyleManager.LoadStyle(Style.NodeDefault);
 		NodeManager.selectedNodeStyle = StyleManager.LoadStyle(Style.NodeSelected);
 		
 		ConnectionManager.defaultControlPointStyle = StyleManager.LoadStyle(Style.ControlPointDefault);
 		ConnectionManager.selectedControlPointStyle = StyleManager.LoadStyle(Style.ControlPointSelected);
+		
+		TextAreaManager.textAreaStyle = StyleManager.LoadStyle(Style.TextAreaDefault);
+		TextAreaManager.defaultTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxDefault);
+		TextAreaManager.selectedTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxSelected);
 	}
 	
 	private void OnGUI() {
@@ -40,18 +46,21 @@ public class StoryDialogueEditor : EditorWindow {
 		DrawGrid(50, 0.2f, Color.gray);
 		DrawGrid(200, 0.4f, Color.gray);
 		
-		// draw nodes on top of background
-		NodeManager.DrawNodes();
-		
-		// draw the connections between nodes
-		ConnectionManager.DrawConnections();
-		
-		// draw the current connection as it's being selected
-		ConnectionManager.DrawConnectionHandle(Event.current);
+		// TODO: this used to be draw -> process events
+		// need to implement SelectionManager and update event handling
+		// so that things don't overrun each other.
 		
 		// process events on nodes, than over the entire editor
 		NodeManager.ProcessEvents(Event.current);
 		ProcessEvents(Event.current);
+		
+		// draw nodes on top of background
+		NodeManager.DrawNodes();
+		// draw the connections between nodes
+		ConnectionManager.DrawConnections();
+		// draw the current connection as it's being selected
+		ConnectionManager.DrawConnectionHandle(Event.current);
+		
 		
 		if (GUI.changed) Repaint();
 	}

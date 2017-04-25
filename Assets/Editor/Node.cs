@@ -15,6 +15,8 @@ public class Node {
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
 	
+	public TextArea dialogArea;
+	
 	public GUIStyle style;
 	public GUIStyle defaultNodeStyle;
 	public GUIStyle selectedNodeStyle;
@@ -26,13 +28,14 @@ public class Node {
 		GUIStyle defaultStyle, GUIStyle selectedStyle,
 		Action<Node> OnClickRemoveNode)
 	{
-		rect = new Rect(position.x, position.y, width, height);
-		style = defaultStyle;
-		defaultNodeStyle = defaultStyle;
-		selectedNodeStyle = selectedStyle;
-		inPoint = new ConnectionPoint(this, ConnectionPointType.In);
-		outPoint = new ConnectionPoint(this, ConnectionPointType.Out);
-		OnRemoveNode = OnClickRemoveNode;
+		this.rect = new Rect(position.x, position.y, width, height);
+		this.style = defaultStyle;
+		this.defaultNodeStyle = defaultStyle;
+		this.selectedNodeStyle = selectedStyle;
+		this.inPoint = new ConnectionPoint(this, ConnectionPointType.In);
+		this.outPoint = new ConnectionPoint(this, ConnectionPointType.Out);
+		this.dialogArea = new TextArea(this, "");
+		this.OnRemoveNode = OnClickRemoveNode;
 			
 	}
 	
@@ -43,14 +46,15 @@ public class Node {
 	public void Draw() {
 		inPoint.Draw();
 		outPoint.Draw();
+		dialogArea.Draw();
 		GUI.Box(rect, title, style);
-		TestDrawTextBox();
 	}
 	
 	public bool ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
 		outPoint.ProcessEvent(e);
+		dialogArea.ProcessEvent(e);
 		
 		switch(e.type) {
 		case EventType.MouseDown:
@@ -64,15 +68,10 @@ public class Node {
 					StyleSelect();
 				} else {
 					StyleDeselect();
-					
-					// ------- TEXT BOX TEST CODE ------ //
-					if (!textRect.Contains(e.mousePosition)) {
-						GUIUtility.keyboardControl = 0;
-					}
 				}
 			}
 			
-			// handle contect menu
+			// handle context menu
 			if (e.button == 1 && isSelected && rect.Contains(e.mousePosition)) {
 				ProcessContextMenu();
 				e.Use();
@@ -93,22 +92,6 @@ public class Node {
 		}
 		
 		return false;
-	}
-	
-	// -------------- TEXT BOX TEST CODE ------------- //
-	private string testString = "hello";
-	private Rect textRect;
-	private GUIStyle textStyle;
-	
-	private void TestDrawTextBox() {
-		textRect = new Rect(rect.position.x, rect.position.y-40, 200, 40);
-		textStyle = new GUIStyle();
-		textStyle.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
-		textStyle.border = new RectOffset(5, 5, 5, 5);
-		textStyle.wordWrap = true;
-		textStyle.alignment = TextAnchor.MiddleCenter;
-		textStyle.normal.textColor = Color.white;
-		testString = GUI.TextArea(textRect, testString, textStyle);
 	}
 	
 	private void ProcessContextMenu() {
