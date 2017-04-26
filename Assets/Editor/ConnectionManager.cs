@@ -30,10 +30,10 @@ public static class ConnectionManager {
 	
 	// helper function for OnClick[In/Out]Point
 	public static void OnClickPoint(ConnectionPoint point) {
-		point.StyleSelect();
+		point.IsSelected = true;
 		
 		if (selectedOutPoint != null && selectedInPoint != null) {
-			if (selectedOutPoint.node != selectedInPoint.node) {
+			if (selectedOutPoint.parent != selectedInPoint.parent) {
 				CreateConnection();
 			} 
 			ClearConnectionSelection();
@@ -42,12 +42,12 @@ public static class ConnectionManager {
 	
 	public static void ClearConnectionSelection() {
 		if (selectedInPoint != null) {
-			selectedInPoint.StyleDeselect();
+			selectedInPoint.IsSelected = false;
 			selectedInPoint = null;
 		}
 		
 		if (selectedOutPoint != null) {
-			selectedOutPoint.StyleDeselect();
+			selectedOutPoint.IsSelected = false;
 			selectedOutPoint = null;
 		}
 	}

@@ -5,88 +5,62 @@ using UnityEngine;
 
 public enum ConnectionPointType { In, Out }
 
-public class ConnectionPoint {
+public class ConnectionPoint : SDEComponent {
 	
-	public Rect rect;
-	
-	// parent Node reference
-	public Node node;
-	
-	public GUIStyle style;
-	public GUIStyle defaultControlPointStyle;
-	public GUIStyle selectedControlPointStyle;
-	public ConnectionPointType type;
+	public ConnectionPointType connectionType;
 	public Action<ConnectionPoint> OnClickConnectionPoint;
 	
-	public bool isSelected;
-	
-	public ConnectionPoint(Node node, ConnectionPointType type) {
-		this.node = node;
-		this.type = type;
-		this.style = ConnectionManager.defaultControlPointStyle;
-		this.defaultControlPointStyle = ConnectionManager.defaultControlPointStyle;
-		this.selectedControlPointStyle = ConnectionManager.selectedControlPointStyle;
+	public ConnectionPoint(Node node, ConnectionPointType connectionType) :
+	base (
+	SDEComponentType.ConnectionPoint, node, 
+	new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
+	ConnectionManager.defaultControlPointStyle, 
+	ConnectionManager.defaultControlPointStyle, 
+	ConnectionManager.selectedControlPointStyle) 
+	{
+		this.connectionType = connectionType;
 		
-		if (this.type == ConnectionPointType.In) {
+		if (this.connectionType == ConnectionPointType.In) {
 			this.OnClickConnectionPoint = ConnectionManager.OnClickInPoint;
 		} else {
 			this.OnClickConnectionPoint = ConnectionManager.OnClickOutPoint;
 		}
-		
-		rect = new Rect(
-			0, 0, 
-			ConnectionManager.CONNECTIONPOINT_WIDTH,
-			ConnectionManager.CONNECTIONPOINT_HEIGHT
-		);
 	}
 	
 	public void Draw() {
-		// draw the connection point midway on the node
-		rect.y = node.rect.y + (node.rect.height * 0.5f) - rect.height * 0.5f;
+		// draw the connection point midway on the parent
+		rect.y = parent.rect.y + (parent.rect.height * 0.5f) - rect.height * 0.5f;
 		
-		switch (type) {
+		switch (connectionType) {
 			case ConnectionPointType.In:
-				rect.x = node.rect.x - rect.width + 3f;
+				rect.x = parent.rect.x - rect.width + 3f;
 				break;
 			
 			case ConnectionPointType.Out:
-				rect.x = node.rect.x + node.rect.width - 3f;
+				rect.x = parent.rect.x + parent.rect.width - 3f;
 				break;
 		}
 		
-		if (GUI.Button(rect, "", style)) {
-			if (OnClickConnectionPoint != null) {
-				OnClickConnectionPoint(this);
-			}
-		}
+		GUI.Box(rect, "", style);
 	}
 	
-	public void ProcessEvent(Event e) {
+	public override void ProcessEvent(Event e) {
+		base.ProcessEvent(e);
+		
 		switch(e.type) {
 		case EventType.MouseDown:
 			if (e.button == 0) {
-				// only check for when outside, because the 
-				// GUI button uses the event, so selection
-				// won't get processed here.
-				if (!rect.Contains(e.mousePosition)) {
-					StyleDeselect();
+				if (rect.Contains(e.mousePosition)) {
+					if (OnClickConnectionPoint != null) {
+						OnClickConnectionPoint(this);
+					} else {
+						throw new UnityException("Tried to call OnClickConnectionPoint when null!");
+					}
+				} else {
 					ConnectionManager.ClearConnectionSelection();
-				} 
+				}
 			}
 			break;
 		}
 	}
-	
-	public void StyleDeselect() {
-		isSelected = false;
-		style = defaultControlPointStyle;
-		GUI.changed = true;
-	}
-	
-	public void StyleSelect() {
-		isSelected = true;
-		style = selectedControlPointStyle;
-		GUI.changed = true;
-	}
-	
 }

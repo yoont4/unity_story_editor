@@ -47,7 +47,7 @@ public static class StyleManager {
 			returnStyle = ControlPointDefaultStyle();
 			break;
 		case Style.ControlPointSelected:
-			returnStyle = ControlPointDefaultStyle();
+			returnStyle = ControlPointSelectedStyle();
 			break;
 		case Style.TextAreaDefault:
 			returnStyle = TextAreaDefaultStyle();
@@ -77,7 +77,7 @@ public static class StyleManager {
 	private static GUIStyle NodeDefaultStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeOnBG.png") as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeHoverBG.png") as Texture2D;
 		style.border = nodeBorder;
 		return style;
 	}
@@ -92,7 +92,7 @@ public static class StyleManager {
 	private static GUIStyle ControlPointDefaultStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointBG.png") as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointOnBG.png") as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointHoverBG.png") as Texture2D;
 		style.border = controlPointBorder;
 		return style;
 	}
@@ -115,6 +115,7 @@ public static class StyleManager {
 	private static GUIStyle TextBoxDefaultStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeHoverBG.png") as Texture2D;
 		style.border = textAreaBorder;
 		return style;
 	}

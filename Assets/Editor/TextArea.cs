@@ -2,35 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TextArea {
-	
-	// parent Node reference
-	public Node node;
+public class TextArea : SDEComponent {
 	
 	public string text;
-	public Rect textRect;
-	public Rect boxRect;
-	
-	public GUIStyle textAreaStyle;
-	public GUIStyle defaultTextBoxStyle;
-	public GUIStyle selectedTextBoxStyle;
 	
 	private GUIContent textContent;
 	private float contentHeight;
 	
-	public TextArea(Node node, string text) {
-		this.node = node;
-		
-		// fields are 0, because they will get recalculated on Draw()
-		this.boxRect = new Rect(0, 0, node.rect.width, 0);
-		this.textRect = new Rect(0, 0, node.rect.width-8f, 0);
-		this.text = text;
-		
-		// TODO: implement TextAreaManager to manage all the styles
-		// copy ConnectionPoint structure
+	public GUIStyle textAreaStyle;
+	
+	public TextArea(Node node, string text) : 
+	base (
+	SDEComponentType.TextArea, node, 
+	new Rect(0, 0, node.rect.width-8f, 0), 
+	TextAreaManager.defaultTextBoxStyle, 
+	TextAreaManager.defaultTextBoxStyle, 
+	TextAreaManager.selectedTextBoxStyle) 
+	{
+		// make the clickRect 4 pixels bigger on each side.
+		// clickRect is used to define the TextArea's BG Box
+		this.ExtendClickBound(new Vector2(4f, 4f));
 		this.textAreaStyle = TextAreaManager.textAreaStyle;
-		this.defaultTextBoxStyle = TextAreaManager.defaultTextBoxStyle;
-		this.selectedTextBoxStyle = TextAreaManager.selectedTextBoxStyle;
+		this.text = text;
 	}
 	
 	/*
@@ -44,30 +37,30 @@ public class TextArea {
 		// the formatting while editing.
 		
 		textContent = new GUIContent(text);
-		contentHeight = textAreaStyle.CalcHeight(textContent, textRect.width);
-		textRect.height = contentHeight;
-		boxRect.height = contentHeight + 8f;
+		contentHeight = textAreaStyle.CalcHeight(textContent, rect.width);
+		rect.height = contentHeight;
+		clickRect.height = contentHeight + 8f;
 		
 		// calculate position based off of parent Node
-		boxRect.x = node.rect.x;
-		boxRect.y = node.rect.y+NodeManager.NODE_HEIGHT;
-		textRect.x = boxRect.x + 4f;
-		textRect.y = boxRect.y + 4f;
+		clickRect.x = parent.rect.x;
+		clickRect.y = parent.rect.y + NodeManager.NODE_HEIGHT;
+		rect.x = clickRect.x + widthPad;
+		rect.y = clickRect.y + heightPad;
 		
 		// TODO: implement box style state
-		GUI.Box(boxRect, "", defaultTextBoxStyle);
-		text = GUI.TextArea(textRect, text, textAreaStyle);
+		GUI.Box(clickRect, "", style);
+		text = GUI.TextArea(rect, text, textAreaStyle);
 	}
 	
-	public void ProcessEvent(Event e) {
+	public override void ProcessEvent(Event e) {
+		base.ProcessEvent(e);
+		
 		switch(e.type) {
 		case EventType.MouseDown:
 			if (e.button == 0) {
-				if (boxRect.Contains(e.mousePosition)) {
-					
-				} else {
+				if (!clickRect.Contains(e.mousePosition)) {
 					GUIUtility.keyboardControl = 0;
-				}
+				} 
 			}
 			break;
 		}

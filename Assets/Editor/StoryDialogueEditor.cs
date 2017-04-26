@@ -9,6 +9,8 @@ public class StoryDialogueEditor : EditorWindow {
 	private Vector2 drag;
 	private Rect windowRect;
 	
+	private bool lostFocus;
+	
 	[MenuItem("Window/Story & Dialogue Editor")]
 	public static void OpenWindow() {
 		StoryDialogueEditor window = GetWindow<StoryDialogueEditor>();
@@ -40,30 +42,47 @@ public class StoryDialogueEditor : EditorWindow {
 		GUI.color = new Color(0.3f, 0.3f, 0.3f, 1);
 		windowRect.Set(0, 0, position.width, position.height);
 		GUI.DrawTexture(windowRect, EditorGUIUtility.whiteTexture);
+		
+		// reset base color
 		GUI.color = Color.white;
+		
+		// choose cursor color
+		if (lostFocus) {
+			GUI.skin.settings.cursorColor = Color.black;
+		} else {
+			GUI.skin.settings.cursorColor = Color.white;
+		}
 		
 		// draw grid over
 		DrawGrid(50, 0.2f, Color.gray);
 		DrawGrid(200, 0.4f, Color.gray);
 		
-		// TODO: this used to be draw -> process events
-		// need to implement SelectionManager and update event handling
-		// so that things don't overrun each other.
-		
 		// process events on nodes, than over the entire editor
+		SelectionManager.StartSelectionEventProcessing(Event.current);
 		NodeManager.ProcessEvents(Event.current);
 		ProcessEvents(Event.current);
+		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
+		// draw the current connection as it's being selected
+		ConnectionManager.DrawConnectionHandle(Event.current);
 		// draw nodes on top of background
 		NodeManager.DrawNodes();
 		// draw the connections between nodes
 		ConnectionManager.DrawConnections();
-		// draw the current connection as it's being selected
-		ConnectionManager.DrawConnectionHandle(Event.current);
-		
 		
 		if (GUI.changed) Repaint();
 	}
+	
+	// change the cursor color to white within the editor
+	private void OnFocus() {
+		lostFocus = false;
+	}
+	
+	// reset the cursor color when outside the editor
+	private void OnLostFocus() {
+		lostFocus = true;
+	}
+	
 	
 	private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor) {
 		int widthDivs = Mathf.CeilToInt(position.width / gridSpacing);
@@ -100,7 +119,9 @@ public class StoryDialogueEditor : EditorWindow {
 		case EventType.MouseDown:
 			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
 				NodeManager.OnClickAddNode(e.mousePosition);
-			} else if(e.button == 1) {
+			} 
+			
+			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
 				ProcessContextMenu(e.mousePosition);
 			}
 			break;
@@ -114,33 +135,40 @@ public class StoryDialogueEditor : EditorWindow {
 		
 		// listen for key commands
 		case EventType.KeyDown:
-			// 'C' center on node positions
-			if (e.keyCode == KeyCode.C) {
-				// calculate current average
-				Vector2 avgPosition = new Vector2();
-				for (int i = 0; i < NodeManager.nodes.Count; i++) {
-					avgPosition += NodeManager.nodes[i].rect.center;
-				}
-				avgPosition /= NodeManager.nodes.Count;
-				
-				// reshift everything by this new average, including window size
-				OnDrag(-avgPosition + (position.size/2));
-			}
-			
-			// 'D' delete everything in the editor window
-			if (e.keyCode == KeyCode.D) {
-				Debug.Log("delete");
-				if (ConnectionManager.connections != null) {
-					ConnectionManager.connections.Clear();
-					ConnectionManager.connections = null;
-				}
-				
-				if (NodeManager.nodes != null) {
-					NodeManager.nodes.Clear();
-					NodeManager.nodes = null;
-				}
+			if (SelectionManager.SelectedComponentType() != SDEComponentType.TextArea) {
+				ProcessKeyboardInput(e.keyCode);
 			}
 			break;
+		}
+	}
+	
+	private void ProcessKeyboardInput(KeyCode key) {
+		// 'C' center on node positions
+		if (key == KeyCode.C) {
+			Debug.Log("centering on nodes...");
+				// calculate current average
+			Vector2 avgPosition = new Vector2();
+			for (int i = 0; i < NodeManager.nodes.Count; i++) {
+				avgPosition += NodeManager.nodes[i].rect.center;
+			}
+			avgPosition /= NodeManager.nodes.Count;
+			
+				// reshift everything by this new average, including window size
+			OnDrag(-avgPosition + (position.size/2));
+		}
+		
+			// 'D' delete everything in the editor window
+		if (key == KeyCode.D) {
+			Debug.Log("deleting nodes...");
+			if (ConnectionManager.connections != null) {
+				ConnectionManager.connections.Clear();
+				ConnectionManager.connections = null;
+			}
+			
+			if (NodeManager.nodes != null) {
+				NodeManager.nodes.Clear();
+				NodeManager.nodes = null;
+			}
 		}
 	}
 	
