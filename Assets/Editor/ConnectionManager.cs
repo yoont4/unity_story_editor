@@ -53,11 +53,8 @@ public static class ConnectionManager {
 	}
 	
 	public static void DrawConnectionHandle(Event e) {
-		// don't draw the current connection if the user cancels connection creation
-		if (e.type == EventType.mouseDown && e.button == 1 && (selectedInPoint != null || selectedOutPoint != null)) {
+		if (SelectionManager.SelectedComponentType() != SDEComponentType.ConnectionPoint) {
 			ClearConnectionSelection();
-			e.Use();
-			return;
 		}
 		
 		if (selectedInPoint != null && selectedOutPoint == null) {

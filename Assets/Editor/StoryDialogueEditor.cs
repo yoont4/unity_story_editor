@@ -17,7 +17,18 @@ public class StoryDialogueEditor : EditorWindow {
 		window.titleContent = new GUIContent("Story & Dialogue Editor");
 	}
 	
+	// TEST CODE: CLEARS THE CONSOLE
+	static void ClearConsole () {
+         // This simply does "LogEntries.Clear()" the long way:
+		var logEntries = System.Type.GetType("UnityEditorInternal.LogEntries,UnityEditor.dll");
+		var clearMethod = logEntries.GetMethod("Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+		clearMethod.Invoke(null,null);
+	}
+	
 	private void OnEnable() {
+		// TEST CODE: clear console on enable so compilation is reset
+		ClearConsole();
+		
 		// initialize component managers
 		NodeManager.mainEditor = this;
 		ConnectionManager.mainEditor = this;
@@ -36,6 +47,8 @@ public class StoryDialogueEditor : EditorWindow {
 		TextAreaManager.defaultTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxDefault);
 		TextAreaManager.selectedTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxSelected);
 	}
+	
+
 	
 	private void OnGUI() {
 		// draw bg color first
@@ -63,13 +76,13 @@ public class StoryDialogueEditor : EditorWindow {
 		ProcessEvents(Event.current);
 		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
-		// draw the current connection as it's being selected
-		ConnectionManager.DrawConnectionHandle(Event.current);
 		// draw nodes on top of background
 		NodeManager.DrawNodes();
 		// draw the connections between nodes
 		ConnectionManager.DrawConnections();
-		
+		// draw the current connection as it's being selected
+		ConnectionManager.DrawConnectionHandle(Event.current);
+	
 		if (GUI.changed) Repaint();
 	}
 	
@@ -122,6 +135,7 @@ public class StoryDialogueEditor : EditorWindow {
 			} 
 			
 			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
+				Debug.Log("dsasda");
 				ProcessContextMenu(e.mousePosition);
 			}
 			break;
@@ -132,7 +146,7 @@ public class StoryDialogueEditor : EditorWindow {
 				OnDrag(e.delta);
 			}
 			break;
-		
+			
 		// listen for key commands
 		case EventType.KeyDown:
 			if (SelectionManager.SelectedComponentType() != SDEComponentType.TextArea) {
@@ -179,14 +193,16 @@ public class StoryDialogueEditor : EditorWindow {
 	}
 	
 	private void OnDrag(Vector2 delta) {
-		drag = delta;
-		
-		if (NodeManager.nodes != null) {
-			for (int i = 0; i < NodeManager.nodes.Count; i++) {
-				NodeManager.nodes[i].Drag(delta);
+		if (FeatureManager.dragEnabled) {
+			drag = delta;
+			
+			if (NodeManager.nodes != null) {
+				for (int i = 0; i < NodeManager.nodes.Count; i++) {
+					NodeManager.nodes[i].Drag(delta);
+				}
 			}
+			
+			GUI.changed = true;
 		}
-		
-		GUI.changed = true;
 	}
 }

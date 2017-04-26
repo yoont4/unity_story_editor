@@ -19,7 +19,7 @@ public static class NodeManager {
 	public static GUIStyle selectedNodeStyle;
 	
 	public const int NODE_WIDTH = 200;
-	public const int NODE_HEIGHT = 100;
+	public const int NODE_HEIGHT = 40;
 	
 	// this is used in conjunction with the Node ProcessEvents
 	// stack, to prevent overlapping lower-order Nodes from being 

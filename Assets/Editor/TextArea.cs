@@ -14,14 +14,14 @@ public class TextArea : SDEComponent {
 	public TextArea(Node node, string text) : 
 	base (
 	SDEComponentType.TextArea, node, 
-	new Rect(0, 0, node.rect.width-8f, 0), 
+	new Rect(0, 0, node.rect.width-2*TextAreaManager.X_PAD, 0), 
 	TextAreaManager.defaultTextBoxStyle, 
 	TextAreaManager.defaultTextBoxStyle, 
 	TextAreaManager.selectedTextBoxStyle) 
 	{
 		// make the clickRect 4 pixels bigger on each side.
 		// clickRect is used to define the TextArea's BG Box
-		this.ExtendClickBound(new Vector2(4f, 4f));
+		this.ExtendClickBound(new Vector2(TextAreaManager.X_PAD, TextAreaManager.Y_PAD));
 		this.textAreaStyle = TextAreaManager.textAreaStyle;
 		this.text = text;
 	}
@@ -39,7 +39,7 @@ public class TextArea : SDEComponent {
 		textContent = new GUIContent(text);
 		contentHeight = textAreaStyle.CalcHeight(textContent, rect.width);
 		rect.height = contentHeight;
-		clickRect.height = contentHeight + 8f;
+		clickRect.height = contentHeight + 2*TextAreaManager.Y_PAD;
 		
 		// calculate position based off of parent Node
 		clickRect.x = parent.rect.x;
@@ -58,9 +58,17 @@ public class TextArea : SDEComponent {
 		switch(e.type) {
 		case EventType.MouseDown:
 			if (e.button == 0) {
-				if (!clickRect.Contains(e.mousePosition)) {
+				if (clickRect.Contains(e.mousePosition)) {
+					FeatureManager.dragEnabled = false;
+				} else {
 					GUIUtility.keyboardControl = 0;
-				} 
+				}
+			}
+			break;
+			
+		case EventType.MouseUp:
+			if (e.button == 0) {
+				FeatureManager.dragEnabled = true;
 			}
 			break;
 		}

@@ -56,8 +56,6 @@ public class ConnectionPoint : SDEComponent {
 					} else {
 						throw new UnityException("Tried to call OnClickConnectionPoint when null!");
 					}
-				} else {
-					ConnectionManager.ClearConnectionSelection();
 				}
 			}
 			break;
