@@ -9,7 +9,6 @@ public class Node : SDEComponent {
 	public string title;
 	
 	public bool isDragged;
-	public bool isSelected;
 	
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
@@ -63,7 +62,7 @@ public class Node : SDEComponent {
 			}
 			
 			// handle context menu
-			if (e.button == 1 && isSelected && rect.Contains(e.mousePosition)) {
+			if (e.button == 1 && Selected && rect.Contains(e.mousePosition)) {
 				ProcessContextMenu();
 				e.Use();
 			}
@@ -78,12 +77,9 @@ public class Node : SDEComponent {
 				Drag(e.delta);
 				e.Use();
 				GUI.changed = true;
-				//return true;
 			}
 			break;
 		}
-		
-		//return false;
 	}
 	
 	private void ProcessContextMenu() {
@@ -95,9 +91,11 @@ public class Node : SDEComponent {
 	private void OnClickRemoveNode() {
 		if (OnRemoveNode != null) {
 			OnRemoveNode(this);
+			
+			// if a Node is selected, it is this one, so we need to Deselect it in the SelectionManager
+			if (SelectionManager.SelectedComponentType() == SDEComponentType.Node) {
+				SelectionManager.Deselect();
+			}
 		}
 	}
-	
-	
-	
 }

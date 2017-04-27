@@ -56,17 +56,17 @@ public class SDEComponent {
 					SelectionManager.SelectComponent(componentType);
 					
 					// select the component.
-					IsSelected = true;
+					Selected = true;
 				} else {
 					// deselect the component.
-					IsSelected = false;
+					Selected = false;
 				}
 			}
 			break;
 		}
 	}
 	
-	public bool IsSelected {
+	public bool Selected {
 		get { return _isSelected; }
 		set {
 			if (value) {

@@ -26,7 +26,6 @@ public class StoryDialogueEditor : EditorWindow {
 	}
 	
 	private void OnEnable() {
-		// TEST CODE: clear console on enable so compilation is reset
 		ClearConsole();
 		
 		// initialize component managers
@@ -159,16 +158,20 @@ public class StoryDialogueEditor : EditorWindow {
 	private void ProcessKeyboardInput(KeyCode key) {
 		// 'C' center on node positions
 		if (key == KeyCode.C) {
-			Debug.Log("centering on nodes...");
+			if (NodeManager.nodes != null) {
+				Debug.Log("centering on nodes...");
 				// calculate current average
-			Vector2 avgPosition = new Vector2();
-			for (int i = 0; i < NodeManager.nodes.Count; i++) {
-				avgPosition += NodeManager.nodes[i].rect.center;
-			}
-			avgPosition /= NodeManager.nodes.Count;
-			
+				Vector2 avgPosition = new Vector2();
+				for (int i = 0; i < NodeManager.nodes.Count; i++) {
+					avgPosition += NodeManager.nodes[i].rect.center;
+				}
+				avgPosition /= NodeManager.nodes.Count;
+				
 				// reshift everything by this new average, including window size
-			OnDrag(-avgPosition + (position.size/2));
+				OnDrag(-avgPosition + (position.size/2));
+			} else {
+				Debug.Log("no nodes to center on");
+			}
 		}
 		
 			// 'D' delete everything in the editor window

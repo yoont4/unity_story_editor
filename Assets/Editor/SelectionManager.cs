@@ -13,6 +13,10 @@ public static class SelectionManager {
 		return _selectedComponentType;
 	}
 	
+	public static void Deselect() {
+		_selectedComponentType = SDEComponentType.Nothing;
+	}
+	
 	public static void SelectComponent(SDEComponentType type) {
 		_selectedComponentType = type;
 		componentSelectedOnEvent = true;
@@ -27,7 +31,7 @@ public static class SelectionManager {
 	}
 	
 	public static void StartSelectionEventProcessing(Event e) {
-		if (e.type == EventType.MouseDown && e.button == 0) { 
+		if (e.type == EventType.MouseDown) { 
 			eventSelectionStarted = true;
 			
 			componentSelectedOnEvent = false;
@@ -36,7 +40,7 @@ public static class SelectionManager {
 	}
 	
 	public static void EndSelectionEventProcessing(Event e) {
-		if (e.type == EventType.MouseDown && e.button == 0) {
+		if (e.type == EventType.MouseDown) {
 			Debug.Log(_selectedComponentType);
 			eventSelectionStarted = false;
 			
