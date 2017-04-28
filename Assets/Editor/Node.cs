@@ -94,7 +94,7 @@ public class Node : SDEComponent {
 			
 			// if a Node is selected, it is this one, so we need to Deselect it in the SelectionManager
 			if (SelectionManager.SelectedComponentType() == SDEComponentType.Node) {
-				SelectionManager.Deselect();
+				SelectionManager.ClearSelection();
 			}
 		}
 	}

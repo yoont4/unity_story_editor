@@ -53,7 +53,7 @@ public class SDEComponent {
 				if (!SelectionManager.IsComponentSelectedOnEvent() && 
 				(clickRect.Contains(e.mousePosition) || rect.Contains(e.mousePosition))) {
 					// stop the event from propogating further.
-					SelectionManager.SelectComponent(componentType);
+					SelectionManager.SelectComponent(this);
 					
 					// select the component.
 					Selected = true;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class Connection{
+public class Connection {
 	
 	public const float TANGENT_DIST = 50f;
 	public const float WIDTH = 2f;

@@ -29,7 +29,7 @@ public static class ConnectionManager {
 	}
 	
 	// helper function for OnClick[In/Out]Point
-	public static void OnClickPoint(ConnectionPoint point) {
+	private static void OnClickPoint(ConnectionPoint point) {
 		point.Selected = true;
 		
 		if (selectedOutPoint != null && selectedInPoint != null) {
