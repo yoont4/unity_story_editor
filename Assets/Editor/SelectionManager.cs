@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+/*
+  SelectionManager keeps track of the selected component in the editor, and 
+  per-event selections.
+*/
 public static class SelectionManager {
 	
 	// persistent vars that are changed on input
@@ -17,6 +21,25 @@ public static class SelectionManager {
 		}
 	}
 	
+	/*
+	  Deselect() removes the given component from the current selection.
+	
+	  If the component is not part of the selection, or if there is
+	  currently nothing selected, then nothing happens.
+	*/
+	public static void Deselect(SDEComponent component) {
+		if (_selectedComponent == null) {
+			return;
+		}
+		
+		if (_selectedComponent.Equals(component)){
+			_selectedComponent = null;
+		}
+	}
+	
+	/*
+	  ClearSelection() resets the selection
+	*/
 	public static void ClearSelection() {
 		_selectedComponent = null;
 	}

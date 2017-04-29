@@ -74,6 +74,10 @@ public static class StyleManager {
 		initialized = true;
 	}
 	
+	// ------------------------------------------------------------------------------------------ //
+	// ------------------------------------ COMPONENT STYLES ------------------------------------ //
+	// ------------------------------------------------------------------------------------------ //
+	
 	private static GUIStyle NodeDefaultStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;

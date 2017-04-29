@@ -1,6 +1,13 @@
 ﻿using UnityEngine;
 
 public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea}
+
+/*
+  SDEComponent is the parent class of all components spawned in the StoryDialogueEditor.
+  
+  This handles all of the selection, positioning, and click frame definitions of a specific
+  component.
+*/
 public class SDEComponent {
 	
 	// determines what component type it is (Node, ConnectionPoint, etc.)
@@ -52,7 +59,7 @@ public class SDEComponent {
 			if (e.button == 0) {
 				if (!SelectionManager.IsComponentSelectedOnEvent() && 
 				(clickRect.Contains(e.mousePosition) || rect.Contains(e.mousePosition))) {
-					// stop the event from propogating further.
+					// stop the selection event from propogating further.
 					SelectionManager.SelectComponent(this);
 					
 					// select the component.
@@ -66,6 +73,10 @@ public class SDEComponent {
 		}
 	}
 	
+	/*
+	  Selected getter/setter allows the selection status
+	  of an SDEComponent from being directly mutable.
+	*/
 	public bool Selected {
 		get { return _isSelected; }
 		set {
@@ -77,12 +88,20 @@ public class SDEComponent {
 		}
 	}
 	
+	/*
+	  Select() marks the SDEComponent as selected, and loads the
+	  selected GUIStyle before marking the GUI changed.
+	*/
 	private void Select() {
 		_isSelected = true;
 		style = selectedStyle;
 		GUI.changed = true;
 	}
 	
+	/*
+	  Select() deselects the SDEComponent, and loads the
+	  default GUIStyle before marking the GUI changed.
+	*/
 	private void Deselect() {
 		_isSelected = false;
 		style = defaultStyle;

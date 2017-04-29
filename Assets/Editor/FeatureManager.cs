@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /*
-  manages all available feature state at the editor level.
+  FeatureManager manages all available feature state at the editor level.
+  
+  This is used to organize what features are available during a given state
+  of the StoryDialogueEditor running.
 */
 public static class FeatureManager {
 	public static bool dragEnabled = true;

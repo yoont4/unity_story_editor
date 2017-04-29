@@ -39,8 +39,8 @@ public class StoryDialogueEditor : EditorWindow {
 		NodeManager.defaultNodeStyle = StyleManager.LoadStyle(Style.NodeDefault);
 		NodeManager.selectedNodeStyle = StyleManager.LoadStyle(Style.NodeSelected);
 		
-		ConnectionManager.defaultControlPointStyle = StyleManager.LoadStyle(Style.ControlPointDefault);
-		ConnectionManager.selectedControlPointStyle = StyleManager.LoadStyle(Style.ControlPointSelected);
+		ConnectionManager.defaultConnectionPointStyle = StyleManager.LoadStyle(Style.ControlPointDefault);
+		ConnectionManager.selectedConnectionPointStyle = StyleManager.LoadStyle(Style.ControlPointSelected);
 		
 		TextAreaManager.textAreaStyle = StyleManager.LoadStyle(Style.TextAreaDefault);
 		TextAreaManager.defaultTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxDefault);
@@ -130,7 +130,7 @@ public class StoryDialogueEditor : EditorWindow {
 		// check for selection or context menu
 		case EventType.MouseDown:
 			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
-				NodeManager.OnClickAddNode(e.mousePosition);
+				NodeManager.AddNodeAt(e.mousePosition);
 			} 
 			
 			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
@@ -191,7 +191,7 @@ public class StoryDialogueEditor : EditorWindow {
 	
 	private void ProcessContextMenu(Vector2 mousePosition) {
 		GenericMenu genericMenu = new GenericMenu();
-		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>NodeManager.OnClickAddNode(mousePosition));
+		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>NodeManager.AddNodeAt(mousePosition));
 		genericMenu.ShowAsContext();
 	}
 	

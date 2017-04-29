@@ -47,7 +47,6 @@ public class TextArea : SDEComponent {
 		rect.x = clickRect.x + widthPad;
 		rect.y = clickRect.y + heightPad;
 		
-		// TODO: implement box style state
 		GUI.Box(clickRect, "", style);
 		text = GUI.TextArea(rect, text, textAreaStyle);
 	}

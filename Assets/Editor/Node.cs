@@ -4,10 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+public enum NodeType {Dialog, Decision, LocalFlag, GlobalFlag}
+
+/*
+  Nodes are the master SDEComponent type in the StoryDialogueEditor, and serve
+  as the anchor/parent of all subcomponents.
+*/
 public class Node : SDEComponent {
 	
 	// the display title of the node
 	public string title;
+	
+	// the specific type of the node
+	public NodeType nodeType;
 	
 	public bool isDragged;
 	
@@ -19,7 +28,7 @@ public class Node : SDEComponent {
 	public TextArea dialogArea;
 	
 	// the delegate for handling node removal
-	public Action<Node> OnRemoveNode;
+	private Action<Node> OnRemoveNode;
 	
 	public Node(
 		Vector2 position, float width, float height, 
@@ -36,7 +45,6 @@ public class Node : SDEComponent {
 		this.outPoint = new ConnectionPoint(this, ConnectionPointType.Out);
 		this.dialogArea = new TextArea(this, "");
 		this.OnRemoveNode = OnRemoveNode;
-			
 	}
 	
 	/*
@@ -71,7 +79,7 @@ public class Node : SDEComponent {
 		
 		switch(e.type) {
 		case EventType.MouseDown:
-			// handle dragging
+			// handle the start of a drag
 			if (e.button == 0 && rect.Contains(e.mousePosition)) {
 				isDragged = true;
 			}
@@ -88,6 +96,7 @@ public class Node : SDEComponent {
 			break;
 		
 		case EventType.MouseDrag:
+			// handle dragging
 			if (e.button == 0 && isDragged) {
 				Drag(e.delta);
 				e.Use();
@@ -97,27 +106,23 @@ public class Node : SDEComponent {
 		}
 	}
 	
-	
 	/*
 	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
 	*/
 	private void ProcessContextMenu() {
 		GenericMenu genericMenu = new GenericMenu();
-		genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
+		genericMenu.AddItem(new GUIContent("Remove Node"), false, CallOnRemoveNode);
 		genericMenu.ShowAsContext();
 	}
 	
 	/*
-	  OnClickRemoveNode() activates the OnRemoveNode actions for this Node
+	  CallOnRemoveNode() activates the OnRemoveNode actions for this Node
 	*/
-	private void OnClickRemoveNode() {
+	private void CallOnRemoveNode() {
 		if (OnRemoveNode != null) {
 			OnRemoveNode(this);
-			
-			// if a Node is selected, it is this one, so we need to Deselect it in the SelectionManager
-			if (SelectionManager.SelectedComponentType() == SDEComponentType.Node) {
-				SelectionManager.ClearSelection();
-			}
+		} else {
+			throw new UnityException("Tried to call OnRemoveNode when null!");
 		}
 	}
 }
