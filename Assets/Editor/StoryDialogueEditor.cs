@@ -41,19 +41,17 @@ public class StoryDialogueEditor : EditorWindow {
 		NodeManager.mainEditor = this;
 		ConnectionManager.mainEditor = this;
 		
-		// TODO: rename all style variables to be format: <component><state>
-		// i.e. defaultNodeStyle -> nodeDefault
-		
 		// load GUI styles
-		NodeManager.defaultNodeStyle = StyleManager.LoadStyle(Style.NodeDefault);
-		NodeManager.selectedNodeStyle = StyleManager.LoadStyle(Style.NodeSelected);
+		StyleManager.Initialize();
+		NodeManager.nodeDefault = StyleManager.LoadStyle(Style.NodeDefault);
+		NodeManager.nodeSelected = StyleManager.LoadStyle(Style.NodeSelected);
 		
-		ConnectionManager.defaultConnectionPointStyle = StyleManager.LoadStyle(Style.ControlPointDefault);
-		ConnectionManager.selectedConnectionPointStyle = StyleManager.LoadStyle(Style.ControlPointSelected);
+		ConnectionManager.connectionPointDefault = StyleManager.LoadStyle(Style.ControlPointDefault);
+		ConnectionManager.connectionPointSelected = StyleManager.LoadStyle(Style.ControlPointSelected);
 		
 		TextAreaManager.textAreaStyle = StyleManager.LoadStyle(Style.TextAreaDefault);
-		TextAreaManager.defaultTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxDefault);
-		TextAreaManager.selectedTextBoxStyle = StyleManager.LoadStyle(Style.TextBoxSelected);
+		TextAreaManager.textBoxDefault = StyleManager.LoadStyle(Style.TextBoxDefault);
+		TextAreaManager.textBoxSelected = StyleManager.LoadStyle(Style.TextBoxSelected);
 	}
 	
 

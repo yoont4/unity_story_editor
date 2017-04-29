@@ -19,8 +19,8 @@ public static class ConnectionManager {
 	public static List<Connection> connections;
 	
 	// all ConnectionPoints use these styles
-	public static GUIStyle defaultConnectionPointStyle;
-	public static GUIStyle selectedConnectionPointStyle;
+	public static GUIStyle connectionPointDefault;
+	public static GUIStyle connectionPointSelected;
 	
 	// keeps track of the selected in/out points
 	public static ConnectionPoint selectedInPoint;

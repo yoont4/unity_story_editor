@@ -21,9 +21,9 @@ public class ConnectionPoint : SDEComponent {
 	base (
 	SDEComponentType.ConnectionPoint, node, 
 	new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
-	ConnectionManager.defaultConnectionPointStyle, 
-	ConnectionManager.defaultConnectionPointStyle, 
-	ConnectionManager.selectedConnectionPointStyle) 
+	ConnectionManager.connectionPointDefault, 
+	ConnectionManager.connectionPointDefault, 
+	ConnectionManager.connectionPointSelected) 
 	{ 
 		this.connectionType = connectionType;
 		

@@ -18,8 +18,8 @@ public static class NodeManager {
 	public static List<Node> nodes;
 	
 	// all Nodes use these styles
-	public static GUIStyle defaultNodeStyle;
-	public static GUIStyle selectedNodeStyle;
+	public static GUIStyle nodeDefault;
+	public static GUIStyle nodeSelected;
 	
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
@@ -89,7 +89,7 @@ public static class NodeManager {
 		
 		nodes.Add(new Node(
 			nodePosition, NODE_WIDTH, NODE_HEIGHT, 
-			defaultNodeStyle, selectedNodeStyle, 
+			nodeDefault, nodeSelected, 
 			RemoveNode)
 		);
 	}
