@@ -26,7 +26,6 @@ public static class SelectionManager {
 		componentSelectedOnEvent = true;
 	}
 	
-	
 	/*
 	  Checks if a component was selected during an event processing queue.
 	

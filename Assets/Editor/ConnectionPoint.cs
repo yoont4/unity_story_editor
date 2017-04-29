@@ -21,9 +21,9 @@ public class ConnectionPoint : SDEComponent {
 		this.connectionType = connectionType;
 		
 		if (this.connectionType == ConnectionPointType.In) {
-			this.OnClickConnectionPoint = ConnectionManager.OnClickInPoint;
+			this.OnClickConnectionPoint = ConnectionManager.ClickInPoint;
 		} else {
-			this.OnClickConnectionPoint = ConnectionManager.OnClickOutPoint;
+			this.OnClickConnectionPoint = ConnectionManager.ClickOutPoint;
 		}
 	}
 	

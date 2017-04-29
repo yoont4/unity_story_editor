@@ -5,22 +5,26 @@ using UnityEngine;
 using UnityEditor;
 
 public class Node : SDEComponent {
-
+	
+	// the display title of the node
 	public string title;
 	
 	public bool isDragged;
 	
+	// the in/out connection points
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
 	
+	// the dialog associated with the node
 	public TextArea dialogArea;
 	
+	// the delegate for handling node removal
 	public Action<Node> OnRemoveNode;
 	
 	public Node(
 		Vector2 position, float width, float height, 
 		GUIStyle defaultStyle, GUIStyle selectedStyle,
-		Action<Node> OnClickRemoveNode) :
+		Action<Node> OnRemoveNode) :
 	base (
 	SDEComponentType.Node, null, 
 	new Rect(position.x, position.y, width, height), 
@@ -31,14 +35,20 @@ public class Node : SDEComponent {
 		this.inPoint = new ConnectionPoint(this, ConnectionPointType.In);
 		this.outPoint = new ConnectionPoint(this, ConnectionPointType.Out);
 		this.dialogArea = new TextArea(this, "");
-		this.OnRemoveNode = OnClickRemoveNode;
+		this.OnRemoveNode = OnRemoveNode;
 			
 	}
 	
+	/*
+	  Drag() shifts the position of the node.
+	*/
 	public void Drag(Vector2 delta) {
 		rect.position += delta;
 	}
 	
+	/*
+	  Draw() draws the Node in the window, and all child components.
+	*/
 	public void Draw() {
 		inPoint.Draw();
 		outPoint.Draw();
@@ -46,6 +56,11 @@ public class Node : SDEComponent {
 		GUI.Box(rect, title, style);
 	}
 	
+	/*
+	  Processes Events running through the component.
+	
+	  note: Processes child events first.
+	*/
 	public override void ProcessEvent(Event e) {
 		base.ProcessEvent(e);
 		
@@ -82,12 +97,19 @@ public class Node : SDEComponent {
 		}
 	}
 	
+	
+	/*
+	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
+	*/
 	private void ProcessContextMenu() {
 		GenericMenu genericMenu = new GenericMenu();
 		genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
 		genericMenu.ShowAsContext();
 	}
 	
+	/*
+	  OnClickRemoveNode() activates the OnRemoveNode actions for this Node
+	*/
 	private void OnClickRemoveNode() {
 		if (OnRemoveNode != null) {
 			OnRemoveNode(this);

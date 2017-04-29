@@ -18,12 +18,15 @@ public static class ConnectionManager {
 	public const float CONNECTIONPOINT_HEIGHT = 16F;
 	
 	
-	public static void OnClickInPoint(ConnectionPoint inPoint) {
+	/*
+	  ClickInPoint() sets the Action for the 
+	*/
+	public static void ClickInPoint(ConnectionPoint inPoint) {
 		selectedInPoint = inPoint;
 		OnClickPoint(inPoint);
 	}
 	
-	public static void OnClickOutPoint(ConnectionPoint outPoint) {
+	public static void ClickOutPoint(ConnectionPoint outPoint) {
 		selectedOutPoint = outPoint;
 		OnClickPoint(outPoint);
 	}

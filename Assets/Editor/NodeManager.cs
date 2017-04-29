@@ -42,10 +42,6 @@ public static class NodeManager {
 			// processed backwards because nodes on the top are rendered on top
 			for (int i = nodes.Count - 1; i >= 0; i--) {
 				nodes[i].ProcessEvent(e);
-				//bool guiChanged = nodes[i].ProcessEvent(e);
-				//if (guiChanged) {
-				//	GUI.changed = true;
-				//}
 			}
 		}
 	}
