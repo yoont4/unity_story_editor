@@ -11,5 +11,4 @@ public static class TextAreaManager{
 	
 	public const float X_PAD = 5f;
 	public const float Y_PAD = 5f;
-
 }

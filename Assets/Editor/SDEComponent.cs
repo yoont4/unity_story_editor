@@ -8,7 +8,7 @@ public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea}
   This handles all of the selection, positioning, and click frame definitions of a specific
   component.
 */
-public class SDEComponent {
+public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKING UNDO
 	
 	// determines what component type it is (Node, ConnectionPoint, etc.)
 	public SDEComponentType componentType;

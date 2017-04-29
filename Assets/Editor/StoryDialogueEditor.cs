@@ -10,6 +10,15 @@ public class StoryDialogueEditor : EditorWindow {
 	private Rect windowRect;
 	
 	private bool lostFocus;
+	private bool drawHelp;
+	
+	// Help menu constants
+	private const float HELP_WIDTH = 200f;
+	private const float HELP_HEIGHT = 80f;
+	private const string HELP_TEXT = 
+	"H: Hide/Show Help Menu\n" +
+	"C: Center on all Nodes\n" +
+	"D: Delete the selected Node\n";
 	
 	[MenuItem("Window/Story & Dialogue Editor")]
 	public static void OpenWindow() {
@@ -81,7 +90,12 @@ public class StoryDialogueEditor : EditorWindow {
 		ConnectionManager.DrawConnections();
 		// draw the current connection as it's being selected
 		ConnectionManager.DrawConnectionHandle(Event.current);
-	
+		
+		// draw the help menu
+		if (drawHelp) {
+			DrawHelp();
+		}
+		
 		if (GUI.changed) Repaint();
 	}
 	
@@ -121,6 +135,16 @@ public class StoryDialogueEditor : EditorWindow {
 		
 		Handles.color = Color.white;
 		Handles.EndGUI();
+	}
+	
+	/*
+	  DrawHelp() displays the hotkeys and basic use of the StoryDialogueEditor.
+	*/
+	private void DrawHelp() {
+		Rect helpRect = new Rect(position.xMax, position.yMax, HELP_WIDTH, HELP_HEIGHT);
+		helpRect.x = position.width - HELP_WIDTH - 5f;
+		helpRect.y = position.height - HELP_HEIGHT - 5f;
+		GUI.TextArea(helpRect, HELP_TEXT, TextAreaManager.textAreaStyle);
 	}
 
 	private void ProcessEvents(Event e) {
@@ -176,15 +200,33 @@ public class StoryDialogueEditor : EditorWindow {
 		
 			// 'D' delete everything in the editor window
 		if (key == KeyCode.D) {
-			Debug.Log("deleting nodes...");
-			if (ConnectionManager.connections != null) {
-				ConnectionManager.connections.Clear();
-				ConnectionManager.connections = null;
+			if (NodeManager.nodes != null && SelectionManager.SelectedComponent() != null) {
+				Debug.Log("deleting selected node...");
+				SDEComponent component = SelectionManager.SelectedComponent();
+				while (component != null) {
+					if (component.componentType == SDEComponentType.Node) {
+						// if a match is found, remove the Node and return
+						NodeManager.RemoveNode((Node)component);
+						return;
+					}
+					component = component.parent;
+				}
+				
+				// if no match was found, that means the component had no Node parent!
+				throw new UnityException("tried to delete SDEComponent with no parent Node!");
+			} else {
+				Debug.Log("Ignoring 'D'elete, no Node selected!");
 			}
-			
-			if (NodeManager.nodes != null) {
-				NodeManager.nodes.Clear();
-				NodeManager.nodes = null;
+		}
+		
+		// 'H' show/hide the help box
+		if (key == KeyCode.H) {
+			if (drawHelp) {
+				Debug.Log("Hiding Help menu");
+				drawHelp = false;
+			} else {
+				Debug.Log("Displaying Help menu");
+				drawHelp = true;
 			}
 		}
 	}

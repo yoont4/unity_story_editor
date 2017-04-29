@@ -13,6 +13,14 @@ public static class SelectionManager {
 	private static bool componentSelectedOnEvent;
 	private static bool eventSelectionStarted;
 	
+	public static SDEComponent SelectedComponent() {
+		return _selectedComponent;
+	}
+	
+	/*
+	  SelectedComponentType() returns the type of the selected component, or
+	  SDEComponentType.Nothing if nothing is selected
+	*/
 	public static SDEComponentType SelectedComponentType() {
 		if (_selectedComponent != null) {
 			return _selectedComponent.componentType;
