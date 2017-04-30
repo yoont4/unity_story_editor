@@ -73,7 +73,7 @@ public class StoryDialogueEditor : EditorWindow {
 		}
 		
 		// draw grid over
-		DrawGrid(50, 0.2f, Color.gray);
+		DrawGrid(10, 0.2f, Color.gray);
 		DrawGrid(200, 0.4f, Color.gray);
 		
 		// process events on nodes, than over the entire editor
