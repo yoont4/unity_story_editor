@@ -23,7 +23,7 @@ public static class NodeManager {
 	
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
-	public const int NODE_HEIGHT = 40;
+	public const int NODE_HEIGHT = 37;
 	
 	/*
 	  DrawNodes() draws all the nodes in the StoryDialogueEditor window.
@@ -79,19 +79,18 @@ public static class NodeManager {
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
-	public static void AddNodeAt(Vector2 mousePosition) {
+	public static void AddNodeAt(Vector2 nodePosition) {
 		if (nodes == null) {
 			nodes = new List<Node>();
 		}
 		
-		// spawn the node so it is centered on the mouse
-		Vector2 nodePosition = new Vector2(mousePosition.x - NODE_WIDTH/2, mousePosition.y - NODE_HEIGHT/2);
-		
+		// add node as close to center as possible while staying on grid
+		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogueEditor.GRID_SIZE;
+		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogueEditor.GRID_SIZE;
 		nodes.Add(new Node(
 			nodePosition, NODE_WIDTH, NODE_HEIGHT, 
 			nodeDefault, nodeSelected, 
 			RemoveNode)
 		);
 	}
-
 }

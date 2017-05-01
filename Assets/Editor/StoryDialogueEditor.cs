@@ -5,6 +5,8 @@ using UnityEditor;
 
 public class StoryDialogueEditor : EditorWindow {
 	
+	public const int GRID_SIZE = 10;
+	
 	private Vector2 offset;
 	private Vector2 drag;
 	private Rect windowRect;
@@ -115,7 +117,6 @@ public class StoryDialogueEditor : EditorWindow {
 		Handles.BeginGUI();
 		Handles.color = new Color(gridColor.r, gridColor.g, gridColor.b, gridOpacity);
 		
-		// parallax effect
 		offset += drag * 0.5f;
 		Vector3 newOffset = new Vector3(offset.x % gridSpacing, offset.y % gridSpacing, 0);
 		
@@ -152,11 +153,13 @@ public class StoryDialogueEditor : EditorWindow {
 		// check for selection or context menu
 		case EventType.MouseDown:
 			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup)) {
-				NodeManager.AddNodeAt(e.mousePosition);
+				Vector2 creationOffset = new Vector2(
+					e.mousePosition.x % GRID_SIZE - offset.x % GRID_SIZE,
+					e.mousePosition.y % GRID_SIZE - offset.y % GRID_SIZE);
+				NodeManager.AddNodeAt(e.mousePosition - creationOffset);
 			} 
 			
 			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
-				Debug.Log("dsasda");
 				ProcessContextMenu(e.mousePosition);
 			}
 			break;
@@ -180,7 +183,7 @@ public class StoryDialogueEditor : EditorWindow {
 	private void ProcessKeyboardInput(KeyCode key) {
 		// 'C' center on node positions
 		if (key == KeyCode.C) {
-			if (NodeManager.nodes != null) {
+			if (NodeManager.nodes != null && NodeManager.nodes.Count > 0) { 
 				Debug.Log("centering on nodes...");
 				// calculate current average
 				Vector2 avgPosition = new Vector2();

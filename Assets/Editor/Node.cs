@@ -30,6 +30,10 @@ public class Node : SDEComponent {
 	// the delegate for handling node removal
 	private Action<Node> OnRemoveNode;
 	
+	// variables to maintain mouse offset and grid positioning on Move() 
+	private Vector2 offset;
+	private Vector2 gridOffset;
+	
 	public Node(
 		Vector2 position, float width, float height, 
 		GUIStyle defaultStyle, GUIStyle selectedStyle,
@@ -48,10 +52,25 @@ public class Node : SDEComponent {
 	}
 	
 	/*
-	  Drag() shifts the position of the node.
+	  Drag() shifts the position of the node by a delta.
+	
+	  Used to handle pans and view transforms. Use Move() to handle
+	  individual Node transforms to keep it on the grid.
 	*/
 	public void Drag(Vector2 delta) {
 		rect.position += delta;
+	}
+	
+	/*
+	  Move() moves a Node to the destination on a gridlock.
+	
+	  Always use this for Node specific movements to maintain snapped positions.
+	*/
+	public void Move(Vector2 destination) {
+		destination -= offset;
+		destination -= new Vector2(destination.x % StoryDialogueEditor.GRID_SIZE, destination.y % StoryDialogueEditor.GRID_SIZE);
+		destination += gridOffset;
+		rect.position = destination;
 	}
 	
 	/*
@@ -82,6 +101,8 @@ public class Node : SDEComponent {
 			// handle the start of a drag
 			if (e.button == 0 && rect.Contains(e.mousePosition)) {
 				isDragged = true;
+				offset = e.mousePosition - rect.position;
+				gridOffset = new Vector2(rect.position.x % StoryDialogueEditor.GRID_SIZE, rect.position.y % StoryDialogueEditor.GRID_SIZE);
 			}
 			
 			// handle context menu
@@ -96,9 +117,9 @@ public class Node : SDEComponent {
 			break;
 		
 		case EventType.MouseDrag:
-			// handle dragging
+			// handle Node moving
 			if (e.button == 0 && isDragged) {
-				Drag(e.delta);
+				Move(e.mousePosition);
 				e.Use();
 				GUI.changed = true;
 			}
