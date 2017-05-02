@@ -140,13 +140,13 @@ public class StoryDialogueEditor : EditorWindow {
 		offset += drag * 0.5f;
 		Vector3 newOffset = new Vector3(offset.x % gridSpacing, offset.y % gridSpacing, 0);
 		
-		for (int i = 0; i < widthDivs; i++) {
+		for (int i = 0; i <= widthDivs; i++) {
 			Handles.DrawLine(
 				new Vector3(gridSpacing * i + newOffset.x, 0, 0),
 				new Vector3(gridSpacing * i + newOffset.x, position.height, 0));
 		}
 		
-		for (int i = 0; i < heightDivs; i++) {
+		for (int i = 0; i <= heightDivs; i++) {
 			Handles.DrawLine(
 				new Vector3(0, gridSpacing * i + newOffset.y, 0),
 				new Vector3(position.width, gridSpacing * i + newOffset.y, 0));
