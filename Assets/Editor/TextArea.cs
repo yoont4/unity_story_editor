@@ -11,14 +11,15 @@ public class TextArea : SDEComponent {
 	
 	public GUIStyle textAreaStyle;
 	
-	public TextArea(Node node, string text) : 
-	base (
-	SDEComponentType.TextArea, node, 
-	new Rect(0, 0, node.rect.width-2*TextAreaManager.X_PAD, 0), 
-	TextAreaManager.textBoxDefault, 
-	TextAreaManager.textBoxDefault, 
-	TextAreaManager.textBoxSelected) 
-	{
+	public TextArea() {}
+	
+	public void Init(Node node, string text) {
+		Init(SDEComponentType.TextArea, node, 
+			new Rect(0, 0, node.rect.width-2*TextAreaManager.X_PAD, 0), 
+			TextAreaManager.textBoxDefault, 
+			TextAreaManager.textBoxDefault, 
+			TextAreaManager.textBoxSelected);
+		
 		// make the clickRect 4 pixels bigger on each side.
 		// clickRect is used to define the TextArea's BG Box
 		this.ExtendClickBound(new Vector2(TextAreaManager.X_PAD, TextAreaManager.Y_PAD));

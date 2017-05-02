@@ -17,21 +17,22 @@ public class ConnectionPoint : SDEComponent {
 	// the Action that defines what happens when clicked
 	private Action<ConnectionPoint> OnClickConnectionPoint;
 	
-	public ConnectionPoint(Node node, ConnectionPointType connectionType) :
-	base (
-	SDEComponentType.ConnectionPoint, node, 
-	new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
-	ConnectionManager.connectionPointDefault, 
-	ConnectionManager.connectionPointDefault, 
-	ConnectionManager.connectionPointSelected) 
-	{ 
+	public ConnectionPoint() {}
+	
+	public void Init(Node node, ConnectionPointType connectionType) {
+		base.Init(SDEComponentType.ConnectionPoint, node, 
+			new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
+			ConnectionManager.connectionPointDefault, 
+			ConnectionManager.connectionPointDefault, 
+			ConnectionManager.connectionPointSelected);
+		
 		this.connectionType = connectionType;
 		
 		// determine what method to be called when clicked
 		if (this.connectionType == ConnectionPointType.In) {
-			this.OnClickConnectionPoint = ConnectionManager.ClickInPoint;
+			this.OnClickConnectionPoint = ConnectionManager.OnClickInPoint;
 		} else {
-			this.OnClickConnectionPoint = ConnectionManager.ClickOutPoint;
+			this.OnClickConnectionPoint = ConnectionManager.OnClickOutPoint;
 		}
 	}
 	

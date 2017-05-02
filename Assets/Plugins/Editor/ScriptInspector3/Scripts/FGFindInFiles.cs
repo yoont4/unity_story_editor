@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -29,6 +29,8 @@ public static class FGFindInFiles
 	
 	public static List<SymbolDeclaration> FindDeclarations(SymbolDefinition symbol)
 	{
+		symbol = symbol.GetGenericSymbol();
+		
 		var candidates = FindDefinitionCandidates(symbol);
 		foreach (var c in candidates)
 		{
@@ -343,7 +345,8 @@ public static class FGFindInFiles
 					var referencedType = referencedProperty.parentSymbol as TypeDefinitionBase
 						?? referencedProperty.parentSymbol.parentSymbol as TypeDefinitionBase;
 					
-					var isInterface = resolvedType.kind == SymbolKind.Interface || referencedType.kind == SymbolKind.Interface;
+					var isInterface = resolvedType != null && resolvedType.kind == SymbolKind.Interface ||
+						referencedType != null && referencedType.kind == SymbolKind.Interface;
 					
 					var resolvedIsVirtual = isInterface || resolvedProperty.IsOverride || resolvedProperty.IsVirtual || resolvedProperty.IsAbstract;
 					var referencedIsVirtual = isInterface || referencedProperty.IsOverride || referencedProperty.IsVirtual || referencedProperty.IsAbstract;
@@ -354,9 +357,9 @@ public static class FGFindInFiles
 							System.Linq.Enumerable.Select(resolvedProperty.GetParameters(), x => x.TypeOf()),
 							System.Linq.Enumerable.Select(referencedProperty.GetParameters(), x => x.TypeOf()) ))
 						{
-							if (resolvedType.DerivesFrom(referencedType))
+							if (resolvedType != null && resolvedType.DerivesFrom(referencedType))
 								return FindResultsWindow.ResultType.OverridingMethod;
-							if (referencedType.DerivesFrom(resolvedType))
+							if (referencedType != null && referencedType.DerivesFrom(resolvedType))
 								return FindResultsWindow.ResultType.OverriddenMethod;
 						}
 					}
@@ -377,7 +380,7 @@ public static class FGFindInFiles
 					var referencedType = referencedMethod.parentSymbol as TypeDefinitionBase
 						?? referencedMethod.parentSymbol.parentSymbol as TypeDefinitionBase;
 					
-					var isInterface = resolvedType.kind == SymbolKind.Interface || referencedType.kind == SymbolKind.Interface;
+					var isInterface = resolvedType != null && resolvedType.kind == SymbolKind.Interface || referencedType != null && referencedType.kind == SymbolKind.Interface;
 					
 					var resolvedIsVirtual = isInterface || resolvedMethod.IsOverride || resolvedMethod.IsVirtual || resolvedMethod.IsAbstract;
 					var referencedIsVirtual = isInterface || referencedMethod.IsOverride || referencedMethod.IsVirtual || referencedMethod.IsAbstract;
@@ -387,9 +390,9 @@ public static class FGFindInFiles
 							System.Linq.Enumerable.Select(resolvedMethod.GetParameters(), x => x.TypeOf()),
 							System.Linq.Enumerable.Select(referencedMethod.GetParameters(), x => x.TypeOf()) ))
 						{
-							if (resolvedType.DerivesFrom(referencedType))
+							if (resolvedType != null && resolvedType.DerivesFrom(referencedType))
 								return FindResultsWindow.ResultType.OverridingMethod;
-							if (referencedType.DerivesFrom(resolvedType))
+							if (referencedType != null && referencedType.DerivesFrom(resolvedType))
 								return FindResultsWindow.ResultType.OverriddenMethod;
 						}
 					}

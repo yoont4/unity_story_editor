@@ -15,9 +15,6 @@ public static class ConnectionManager {
 	
 	public static StoryDialogueEditor mainEditor;
 	
-	// the global list of connections
-	public static List<Connection> connections;
-	
 	// all ConnectionPoints use these styles
 	public static GUIStyle connectionPointDefault;
 	public static GUIStyle connectionPointSelected;
@@ -35,12 +32,12 @@ public static class ConnectionManager {
 	  ClickIn/OutPoint() is used to manage the selection status of
 	  ConnectionPoints and whether a Connection should be spawned or not.
 	*/
-	public static void ClickInPoint(ConnectionPoint inPoint) {
+	public static void OnClickInPoint(ConnectionPoint inPoint) {
 		selectedInPoint = inPoint;
 		OnClickPoint(inPoint);
 	}
 	
-	public static void ClickOutPoint(ConnectionPoint outPoint) {
+	public static void OnClickOutPoint(ConnectionPoint outPoint) {
 		selectedOutPoint = outPoint;
 		OnClickPoint(outPoint);
 	}
@@ -113,9 +110,9 @@ public static class ConnectionManager {
 	  DrawConnections() draws all the currently defined Connections
 	*/
 	public static void DrawConnections() {
-		if (connections != null) {
-			for (int i = 0; i < connections.Count; i++) {
-				connections[i].Draw();
+		if (mainEditor.connections != null) {
+			for (int i = 0; i < mainEditor.connections.Count; i++) {
+				mainEditor.connections[i].Draw();
 			}
 		}
 	}
@@ -125,18 +122,28 @@ public static class ConnectionManager {
 	  selected in/out ConnectionPoints.
 	*/
 	public static void CreateConnection() {
-		if (connections  == null) {
-			connections = new List<Connection>();
+		Undo.RecordObject(mainEditor, "creating connection between 2 nodes");
+		
+		if (mainEditor.connections  == null) {
+			mainEditor.connections = new List<Connection>();
 		}
 		
-		connections.Add(new Connection(selectedInPoint, selectedOutPoint, RemoveConnection));
+		Connection newConnection = ScriptableObject.CreateInstance<Connection>();
+		newConnection.Init(selectedInPoint, selectedOutPoint, RemoveConnection);
+		mainEditor.connections.Add(newConnection);
+		
+		Undo.FlushUndoRecordObjects();
 	}
 	
 	/*
 	  RemoveConnection() removes the given Connection from the global
-	  connections list.
+	  mainEditor.connections list.
 	*/
 	public static void RemoveConnection(Connection connection) {
-		connections.Remove(connection);
+		Undo.RecordObject(mainEditor, "removing connection...");
+		
+		mainEditor.connections.Remove(connection);
+		
+		Undo.FlushUndoRecordObjects();
 	}
 }

@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -26,1071 +26,14 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using Themes;
 
 
 [Serializable, StructLayout(LayoutKind.Sequential)]
 public class FGTextEditor
 {
-	internal static readonly string[] availableThemes =
-	{
-		"Visual Studio",
-		"Xcode",
-		"Tango Dark (Oblivion)",
-		"Tango Light",
-		"MD Brown",
-		"MD Brown - Dark",
-		"Monokai",
-		"Son of Obsidian",
-		"Darcula",
-		"Visual Studio Dark",
-		"VS Light with VA X",
-		"VS Dark with VA X",
-		"Solarized Dark",
-		"Solarized Light",
-		"VS Dark with ReSharper"
-	};
-
-	public class Theme
-	{
-		public Color background = Color.gray;
-		public Color text = Color.red;
-		public Color hyperlinks = Color.red;
-		
-		public Color keywords = Color.red;
-		public Color constants = Color.red;
-		public Color strings = Color.red;
-		public Color builtInLiterals = Color.red;
-		public Color operators = Color.red;
-		public Color punctuators = Color.clear;
-		
-		public Color referenceTypes = Color.red;
-		public Color valueTypes = Color.red;
-		public Color interfaceTypes = Color.red;
-		public Color enumTypes = Color.red;
-		public Color delegateTypes = Color.red;
-		public Color builtInTypes = Color.red;
-		
-		public Color namespaces = Color.red;
-		public Color methods = Color.red;
-		public Color fields = Color.red;
-		public Color properties = Color.red;
-		public Color events = Color.red;
-		
-		public Color parameters = Color.red;
-		public Color variables = Color.red;
-		public Color typeParameters = Color.red;
-		public Color enumMembers = Color.red;
-		
-		public Color preprocessor = Color.red;
-		public Color defineSymbols = Color.red;
-		public Color inactiveCode = Color.gray;
-		public Color comments = Color.red;
-		public Color xmlDocs = Color.red;
-		public Color xmlDocsTags = Color.red;
-		
-		public Color lineNumbers = Color.red;
-		public Color lineNumbersHighlight = Color.red;
-		public Color lineNumbersBackground = Color.gray;
-		public Color fold = Color.red;
-		
-		public Color activeSelection = new Color32(51, 153, 255, 102);
-		public Color passiveSelection = new Color32(191, 205, 219, 102);
-		public Color searchResults = Color.yellow;
-		
-		public Color trackSaved = new Color32(108, 226, 108, 255);
-		public Color trackChanged = new Color32(255, 238, 98, 255);
-		public Color trackReverted = new Color32(246, 201, 60, 255);
-
-		public Color currentLine = Color.green;
-		public Color currentLineInactive = Color.magenta;
-		
-		public Color referenceHighlight = new Color32(0xe0, 0xff, 0xff, 0xff);
-		public Color referenceModifyHighlight = new Color32(0xff, 0xdd, 0xdd, 0xff);
-		
-		public Color tooltipBackground = new Color32(253, 255, 153, 255);
-		public Color tooltipFrame = new Color32(128, 128, 128, 255);
-		public Color tooltipText = new Color32(22, 22, 22, 255);
-		
-		public Color listPopupFrame = Color.clear;
-		public Color listPopupBackground = Color.gray;
-			
-		public FontStyle commentsStyle = FontStyle.Normal;
-		public FontStyle stringsStyle = FontStyle.Normal;
-		public FontStyle keywordsStyle = FontStyle.Normal;
-		public FontStyle constantsStyle = FontStyle.Normal;
-		public FontStyle typesStyle = FontStyle.Normal;
-		public FontStyle namespacesStyle = FontStyle.Normal;
-		public FontStyle methodsStyle = FontStyle.Normal;
-		public FontStyle fieldsStyle = FontStyle.Normal;
-		public FontStyle propertiesStyle = FontStyle.Normal;
-		public FontStyle eventsStyle = FontStyle.Normal;
-		public FontStyle hyperlinksStyle = FontStyle.Normal;
-		public FontStyle preprocessorStyle = FontStyle.Normal;
-		public FontStyle defineSymbolsStyle = FontStyle.Normal;
-		public FontStyle inactiveCodeStyle = FontStyle.Normal;
-		public FontStyle parametersStyle = FontStyle.Normal;
-		public FontStyle variablesStyle = FontStyle.Normal;
-		public FontStyle typeParametersStyle = FontStyle.Normal;
-		public FontStyle enumMembersStyle = FontStyle.Normal;
-	}
-	
-	private static Theme[] themes = {
-		// Visual Studio
-		new Theme {
-			background				= Color.white,
-			text					= Color.black,
-			hyperlinks				= Color.blue,
-			
-			keywords				= Color.blue,
-			constants               = Color.black,
-			strings					= new Color32(0x80, 0x00, 0x00, 0xff),
-			builtInLiterals         = Color.blue,
-			operators               = Color.black,
-		
-			referenceTypes          = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			valueTypes              = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			interfaceTypes          = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			enumTypes               = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			delegateTypes           = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			builtInTypes            = Color.blue,
-		
-			namespaces              = Color.black,
-			methods                 = Color.black,
-			fields                  = Color.black,
-			properties              = Color.black,
-			events                  = Color.black,
-		
-			parameters              = Color.gray,
-			variables               = Color.black,
-			typeParameters          = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			enumMembers             = new Color32(111, 0, 138, 255),
-		
-			preprocessor            = Color.blue,
-			defineSymbols           = new Color32(111, 0, 138, 255),
-			inactiveCode            = Color.gray,
-			comments				= new Color32(0x00, 0x80, 0x00, 0xff),
-			xmlDocs                 = new Color32(0x00, 0x80, 0x00, 0xff),
-			xmlDocsTags             = new Color32(0x80, 0x80, 0x80, 0xff),
-		
-			lineNumbers				= new Color32(0x2b, 0x91, 0xaf, 0xff),
-			lineNumbersHighlight	= Color.blue,
-			lineNumbersBackground	= Color.white,
-			fold					= new Color32(165, 165, 165, 255),
-		
-			activeSelection			= new Color32(51, 153, 255, 102),
-			passiveSelection		= new Color32(191, 205, 219, 102),
-			searchResults			= new Color32(244, 167, 33, 255),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color32(213, 213, 241, 255),
-			currentLineInactive     = new Color32(228, 228, 228, 255),
-		
-			referenceHighlight      = new Color32(0xe0, 0xff, 0xff, 0xff),
-			referenceModifyHighlight = new Color32(0xff, 0xdd, 0xdd, 0xff),
-		
-			tooltipBackground       = new Color32(253, 255, 153, 255),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color32(22, 22, 22, 255),
-			
-			listPopupBackground				= Color.white,
-		},
-		
-		// Xcode (updated to Xcode 5 by inventor2010)
-		new Theme {
-			background				= Xcode5Theme.Background,
-			text					= Xcode5Theme.PlainText,
-			hyperlinks				= Xcode5Theme.URLs,
-		
-			keywords				= Xcode5Theme.Keywords,
-			constants               = Xcode5Theme.Numbers,
-			strings					= Xcode5Theme.Strings,
-			builtInLiterals         = Xcode5Theme.Keywords,
-			operators               = Color.black,
-		
-			referenceTypes			= Xcode5Theme.ProjectTypeNames,
-			valueTypes				= Xcode5Theme.OtherTypeNames,
-			interfaceTypes			= Xcode5Theme.OtherTypeNames,
-			enumTypes				= Xcode5Theme.OtherTypeNames,
-			delegateTypes			= Xcode5Theme.OtherTypeNames,
-			builtInTypes			= Xcode5Theme.Keywords,
-		
-			namespaces              = Xcode5Theme.Keywords,
-			methods                 = Xcode5Theme.ProjectFunctionandMethodNames,
-			fields                  = Color.black,
-			properties              = Xcode5Theme.OtherInstanceVariablesandGlobals,
-			events                  = Xcode5Theme.ProjectFunctionandMethodNames,
-		
-			parameters              = Color.black,
-			variables               = Color.black,
-			typeParameters          = new Color32(0x80, 0x46, 0xb0, 0xff),
-			enumMembers             = Xcode5Theme.OtherConstants,
-		
-			preprocessor            = Xcode5Theme.ProjectPreprocessorMacros,
-			defineSymbols           = Xcode5Theme.ProjectPreprocessorMacros,
-			inactiveCode			= TangoColors.aluminium4,
-			comments				= Xcode5Theme.Comments,
-			xmlDocs					= new Color32(0x23, 0x97, 0x2d, 0xff),
-			xmlDocsTags				= new Color32(0x23, 0x97, 0x2d, 0xff),
-		
-			lineNumbers				= Xcode5Theme.lineNumbers,
-			lineNumbersHighlight	= Xcode5Theme.lineNumbers,
-			lineNumbersBackground	= Xcode5Theme.lineNumberBackground,
-			fold					= Xcode5Theme.lineNumberBoarder,
-		
-			activeSelection			= new Color32(164, 205, 255, 0xff),
-			passiveSelection		= new Color32(212, 212, 212, 0x7f),
-			searchResults			= new Color32(250, 241, 190, 255),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color32(213, 213, 241, 255),
-			currentLineInactive     = new Color32(228, 228, 228, 255),
-		
-			referenceHighlight      = new Color32(0xe0, 0xff, 0xff, 0xff),
-			referenceModifyHighlight = new Color32(0xff, 0xdd, 0xdd, 0xff),
-		
-			tooltipBackground       = new Color32(255, 254, 205, 255),
-			tooltipFrame            = new Color32(210, 210, 210, 255),
-			tooltipText             = new Color32(20, 15, 0, 255),
-		
-			listPopupBackground		= Xcode5Theme.Background,
-		},
-		
-		// Tango Dark (Oblivion)
-		new Theme {
-			background				= TangoColors.aluminium6,
-			text					= TangoColors.aluminium2,
-			hyperlinks				= TangoColors.butter2,
-		
-			keywords				= TangoColors.plum1,
-			constants               = TangoColors.butter2,
-			strings					= TangoColors.butter2,
-			builtInLiterals			= TangoColors.orange3,
-			operators				= TangoColors.aluminium2,
-		
-			referenceTypes			= TangoColors.chameleon1,
-			valueTypes				= TangoColors.chameleon1,
-			interfaceTypes			= TangoColors.chameleon1,
-			enumTypes				= TangoColors.chameleon1,
-			delegateTypes			= TangoColors.chameleon1,
-			builtInTypes			= TangoColors.plum1,
-		
-			namespaces				= TangoColors.aluminium2,
-			methods					= TangoColors.aluminium2,
-			fields					= TangoColors.aluminium2,
-			properties				= TangoColors.aluminium2,
-			events					= TangoColors.aluminium2,
-		
-			parameters              = TangoColors.aluminium2,
-			variables               = TangoColors.aluminium2,
-			typeParameters          = TangoColors.chameleon1,
-			enumMembers             = TangoColors.aluminium2,
-		
-			preprocessor            = TangoColors.skyblue1,
-			defineSymbols           = TangoColors.skyblue1,
-			inactiveCode			= TangoColors.aluminium4,
-			comments				= TangoColors.aluminium4,
-			xmlDocs					= TangoColors.aluminium4,
-			xmlDocsTags				= TangoColors.aluminium4,
-		
-			lineNumbers				= TangoColors.aluminium5,
-			lineNumbersHighlight	= TangoColors.aluminium3,
-			lineNumbersBackground	= TangoColors.aluminium7,
-			fold					= TangoColors.aluminium3,
-		
-			activeSelection			= TangoColors.aluminium5,
-			passiveSelection		= TangoColors.aluminium5,
-			searchResults			= new Color32(0x00, 0x60, 0x60, 0xff),
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = TangoColors.aluminium7,
-			currentLineInactive     = new Color32(0x11, 0x11, 0x11, 0x80),
-		
-			referenceHighlight      = new Color32(48, 65, 87, 255),
-			referenceModifyHighlight = new Color32(105, 48, 49, 192),
-			
-			tooltipBackground       = (Color)TangoColors.aluminium7 * 0.5f + (Color)TangoColors.aluminium6 * 0.5f,
-			tooltipFrame            = TangoColors.aluminium4,
-			tooltipText             = TangoColors.aluminium2,
-		
-			listPopupBackground		= (Color)TangoColors.aluminium7 * 0.5f + (Color)TangoColors.aluminium6 * 0.5f,
-		
-			preprocessorStyle       = FontStyle.Italic,
-		},
-		
-		// Tango Light
-		new Theme {
-			background				= Color.white,
-			text					= TangoColors.aluminium7,
-			hyperlinks				= Color.blue,
-		
-			keywords				= TangoColors.skyblue3,
-			constants               = TangoColors.skyblue3,
-			strings					= TangoColors.plum2,
-			builtInLiterals			= TangoColors.plum1,
-			operators				= TangoColors.aluminium7,
-		
-			referenceTypes			= TangoColors.skyblue2,
-			valueTypes				= TangoColors.chameleon3,
-			interfaceTypes			= TangoColors.chameleon3,
-			enumTypes				= TangoColors.chameleon3,
-			delegateTypes			= TangoColors.skyblue2,
-			builtInTypes			= Color.clear,
-		
-			namespaces				= TangoColors.aluminium7,
-			methods					= TangoColors.plum3,
-			fields					= TangoColors.plum3,
-			properties				= TangoColors.plum3,
-			events					= TangoColors.plum3,
-		
-			parameters              = TangoColors.aluminium7,
-			variables               = TangoColors.aluminium7,
-			typeParameters          = TangoColors.chameleon3,
-			enumMembers             = TangoColors.aluminium7,
-		
-			preprocessor            = TangoColors.orange3,
-			defineSymbols           = TangoColors.orange2,
-			inactiveCode			= TangoColors.aluminium3,
-			comments				= TangoColors.chameleon3,
-			xmlDocs					= TangoColors.chameleon3,
-			xmlDocsTags				= TangoColors.chameleon3,
-		
-			lineNumbers				= TangoColors.aluminium4,
-			lineNumbersHighlight	= TangoColors.aluminium5,
-			lineNumbersBackground	= Color.white,
-			fold					= TangoColors.aluminium3,
-		
-			tooltipBackground       = new Color32(253, 255, 153, 255),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color32(22, 22, 22, 255),
-		
-			listPopupBackground		= Color.white,
-		
-			activeSelection			= new Color32(51, 153, 255, 102),
-			passiveSelection		= new Color32(191, 205, 219, 102),
-			searchResults			= new Color32(0xff, 0xe2, 0xb9, 0xff),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = TangoColors.aluminium1,
-			currentLineInactive     = TangoColors.aluminium1,
-
-			preprocessorStyle       = FontStyle.Italic
-		},
-
-		// MD Brown (courtesy of Little Angel)
-		new Theme {
-            background              = Color.white,
-            text                    = Color.black,
-			hyperlinks              = Color.blue,                           // Didn't change
-		
-            keywords                = new Color (0.98f, 0.23f, 0.01f),		// Red
-            constants               = new Color (1.0f, 0.14f, 1.0f),
-            strings                 = new Color (1.0f, 0.14f, 1.0f),		// Pink
-			builtInLiterals         = new Color (0.98f, 0.23f, 0.01f),		// Red
-			operators               = Color.black,
-		
-			referenceTypes          = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			valueTypes              = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			interfaceTypes          = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			enumTypes               = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			delegateTypes           = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			builtInTypes            = new Color (0.98f, 0.23f, 0.01f),		// Red
-		
-			namespaces              = Color.black,
-			methods                 = Color.black,
-			fields                  = Color.black,
-			properties              = Color.black,
-			events                  = Color.black,
-		
-			parameters              = Color.black,
-			variables               = Color.black,
-			typeParameters          = new Color (0.58f, 0.04f, 0.0f),		// Dark Red
-			enumMembers             = Color.black,
-		
-			preprocessor            = new Color32(0x33, 0x66, 0x99, 0xff),
-			defineSymbols           = new Color32(0x33, 0x66, 0x99, 0xff),
-			inactiveCode            = new Color (0.20f, 0.60f, 0.0f),		// Green
-            comments                = new Color (0.20f, 0.60f, 0.0f),		// Green
-			xmlDocs                 = new Color (0.20f, 0.60f, 0.0f),		// Green
-			xmlDocsTags             = new Color (0.20f, 0.60f, 0.0f),		// Green
-		
-			lineNumbers             = new Color (0.50f, 0.40f, 0.28f),		// Tan, Dark
-            lineNumbersHighlight    = new Color (0.25f, 0.20f, 0.14f),		// Tan, Very Dark
-            lineNumbersBackground   = new Color (1.0f, 0.80f, 0.56f),		// Tan, Light
-            fold                    = new Color (0.20f, 0.60f, 0.0f),		// Green
-		
-			activeSelection			= new Color32(51, 153, 255, 102),
-			passiveSelection		= new Color32(191, 205, 219, 102),
-			searchResults           = new Color32(0xff, 0xe2, 0xb9, 0xff),  // Didn't change
-		
-			trackSaved              = new Color32(98, 201, 98, 255),
-			trackChanged            = new Color32(255, 243, 158, 255),
-			trackReverted           = new Color32(236, 175, 50, 255),
-		
-			currentLine             = new Color32(253, 255, 153, 255),
-			currentLineInactive     = new Color32(253, 255, 153, 192),
-		
-			tooltipBackground       = new Color32(253, 255, 153, 255),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color32(22, 22, 22, 255),
-		
-			listPopupBackground		= Color.white,
-		},
-
-		// MD Brown - Dark
-		new Theme {
-			background              = new Color (0.22f, 0.22f, 0.22f),  // Dark Grey (Pro)
-			text                    = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			hyperlinks              = new Color (0.0f, 0.75f, 0.75f),   // Light Blue
-		
-			keywords                = new Color (1.0f, 0.33f, 0.01f),   // Red for Pro
-			constants               = new Color (1.0f, 0.33f, 0.01f),
-			strings                 = new Color (0.85f, 0.15f, 0.85f),  // Pink for Pro
-			builtInLiterals         = new Color (1.0f, 0.33f, 0.01f),   // Red for Pro
-			operators               = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-		
-			referenceTypes          = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			valueTypes              = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			interfaceTypes          = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			enumTypes               = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			delegateTypes           = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			builtInTypes            = new Color (1.0f, 0.33f, 0.01f),   // Red for Pro
-		
-			namespaces              = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			methods                 = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			fields                  = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			properties              = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			events                  = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-		
-			parameters              = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			variables               = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-			typeParameters          = new Color (0.9f, 0.15f, 0.05f),    // Dark Red for Pro
-			enumMembers             = new Color (0.85f, 0.85f, 0.85f),  // Light Grey
-		
-			preprocessor            = new Color (1.0f, 0.33f, 0.01f),
-			defineSymbols           = new Color (1.0f, 0.33f, 0.01f),
-			inactiveCode            = new Color (0.20f, 0.60f, 0.0f),   // Green
-			comments                = new Color (0.20f, 0.60f, 0.0f),   // Green
-			xmlDocs                 = new Color (0.20f, 0.60f, 0.0f),   // Green
-			xmlDocsTags             = new Color (0.20f, 0.60f, 0.0f),   // Green
-		
-			lineNumbers             = new Color (0.25f, 0.20f, 0.14f),  // Tan, Very Dark
-			lineNumbersHighlight    = new Color (1.0f, 0.80f, 0.56f),   // Tan, Light
-			lineNumbersBackground   = new Color (0.50f, 0.40f, 0.28f),  // Tan, Dark
-			fold                    = new Color (0.20f, 0.60f, 0.0f),   // Green
-		
-			activeSelection			= new Color (0.30f, 0.40f, 0.48f, 0.7f),
-			passiveSelection		= new Color (0.30f, 0.40f, 0.48f, 0.4f),
-			searchResults           = new Color (0.50f, 0.45f, 0.14f, 0.5f),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color(0.20f, 0.18f, 0.14f),
-			currentLineInactive     = new Color(0.25f, 0.20f, 0.14f),
-		
-			referenceHighlight      = (Color)TangoColors.skyblue2 * 0.3f + (Color)TangoColors.aluminium6 * 0.7f,
-			referenceModifyHighlight = (Color)TangoColors.scarletred1 * 0.3f + (Color)TangoColors.aluminium6 * 0.7f,
-			
-			tooltipBackground       = new Color(0.25f, 0.20f, 0.14f),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color(1.0f, 0.80f, 0.56f),
-		
-			listPopupBackground     = new Color(0.20f, 0.18f, 0.14f),
-		},
-
-		// Monokai
-		new Theme {
-			background              = new Color32(39, 40, 34, 255),
-			text                    = new Color32(248, 248, 242, 255),
-			hyperlinks              = new Color32(127, 74, 129, 255),
-		
-			keywords                = new Color32(249, 38, 114, 255),
-			constants               = new Color32(174, 129, 255, 255),
-			strings                 = new Color32(230, 219, 106, 255),
-			builtInLiterals         = new Color32(174, 129, 255, 255),
-			operators               = new Color32(248, 248, 242, 255),
-		
-			referenceTypes          = new Color32(102, 218, 236, 255),
-			valueTypes              = new Color32(102, 218, 236, 255),
-			interfaceTypes          = new Color32(102, 218, 236, 255),
-			enumTypes               = new Color32(102, 218, 236, 255),
-			delegateTypes           = new Color32(102, 218, 236, 255),
-			builtInTypes            = Color.clear,
-		
-			namespaces              = new Color32(230, 219, 106, 255),
-			methods                 = new Color32(166, 226, 46, 255),
-			fields                  = new Color32(248, 248, 242, 255),
-			properties              = new Color32(248, 248, 242, 255),
-			events                  = new Color32(248, 248, 242, 255),
-		
-			parameters              = new Color32(0xFD, 0x97, 0x1F, 0xFF),
-			variables               = new Color32(248, 248, 242, 255),
-			typeParameters          = new Color32(0xFD, 0x97, 0x1F, 0xFF),
-			enumMembers             = new Color32(174, 129, 255, 255),
-		
-			preprocessor            = new Color32(166, 226, 46, 255),
-			defineSymbols           = new Color32(166, 226, 46, 255),
-			inactiveCode            = new Color32(117, 113, 94, 255),
-			comments                = new Color32(117, 113, 94, 255),
-			xmlDocs                 = new Color32(117, 113, 94, 255),
-			xmlDocsTags             = new Color32(117, 113, 94, 255),
-		
-			lineNumbers             = new Color32(188, 188, 188, 255),
-			lineNumbersHighlight    = new Color32(248, 248, 242, 255),
-			lineNumbersBackground   = new Color32(39, 40, 34, 255),
-			fold                    = new Color32(59, 58, 50, 255),
-		
-			activeSelection			= new Color32(73, 72, 62, 255),
-			passiveSelection		= new Color32(56, 56, 48, 255),
-			searchResults           = new Color32(0, 96, 96, 128),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color32(62, 61, 49, 255),
-			currentLineInactive     = new Color32(50, 50, 41, 255),
-			
-			referenceHighlight      = new Color32(48, 65, 87, 144),
-			referenceModifyHighlight = new Color32(105, 48, 49, 144),
-		
-			tooltipBackground       = new Color32(62, 61, 49, 255),
-			tooltipFrame            = new Color32(188, 188, 188, 255),
-			tooltipText             = new Color32(208, 208, 208, 255),
-		
-			listPopupFrame          = new Color32(188, 188, 188, 255),
-			listPopupBackground     = new Color32(62, 61, 49, 255),
-		
-			typesStyle              = FontStyle.Italic,
-			typeParametersStyle     = FontStyle.Italic,
-			parametersStyle         = FontStyle.Italic,
-		},
-
-		// Son of Obsidian
-		new Theme {
-			background              = new Color32(0x22, 0x28, 0x2A, 0xFF),
-			text                    = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			hyperlinks              = new Color32(0x99, 0xDA, 0xF9, 0xFF),
-		
-			keywords                = new Color32(0x93, 0xC7, 0x63, 0xFF),
-			constants               = new Color32(0xFF, 0xCD, 0x22, 0xFF),
-			strings                 = new Color32(0xEC, 0x76, 0x00, 0xFF),
-			builtInLiterals         = new Color32(0x93, 0xC7, 0x63, 0xFF),
-			operators               = new Color32(0xE8, 0xE2, 0xB7, 0xFF),
-		
-			referenceTypes          = new Color32(0x8C, 0x8C, 0xB4, 0xFF),
-			valueTypes              = new Color32(0x8C, 0x8C, 0xB4, 0xFF),
-			interfaceTypes          = new Color32(0x67, 0x8C, 0xB1, 0xFF),
-			enumTypes               = new Color32(0x67, 0x8C, 0xB1, 0xFF),
-			delegateTypes           = new Color32(0x67, 0x8C, 0xB1, 0xFF),
-			builtInTypes            = new Color32(0x93, 0xC7, 0x63, 0xFF),
-		
-			namespaces              = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			methods                 = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			fields                  = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			properties              = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			events                  = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-		
-			parameters              = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			variables               = new Color32(0xF1, 0xF2, 0xF3, 0xFF),
-			typeParameters          = new Color32(0x67, 0x8C, 0xB1, 0xFF),
-			enumMembers             = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-		
-			preprocessor            = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-			defineSymbols           = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-			inactiveCode            = new Color32(0x61, 0x61, 0x61, 0xFF),
-			comments                = new Color32(0x66, 0x74, 0x7B, 0xFF),
-			xmlDocs                 = new Color32(0x99, 0xA3, 0x8A, 0xFF),
-			xmlDocsTags             = new Color32(0x80, 0x80, 0x80, 0xFF),
-		
-			lineNumbers             = new Color32(0x3F, 0x4E, 0x49, 0xFF),
-			lineNumbersHighlight    = new Color32(0x7E, 0x9D, 0x92, 0xFF),
-			lineNumbersBackground   = new Color32(0x29, 0x31, 0x34, 0xFF),
-			fold                    = new Color32(0x29, 0x31, 0x34, 0xFF),
-		
-			activeSelection			= new Color32(0x96, 0xAD, 0xB2, 0x44),
-			passiveSelection		= new Color32(0x17, 0x1B, 0x1C, 0xFF),
-			searchResults           = new Color32(0x57, 0x4E, 0x40, 0xFF),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color32(0x31, 0x3A, 0x3E, 0xFF),
-			currentLineInactive     = new Color32(0x29, 0x31, 0x36, 0xFF),
-			
-			referenceHighlight      = new Color32(48, 65, 87, 144),
-			referenceModifyHighlight = new Color32(105, 48, 49, 144),
-
-			tooltipBackground       = new Color32(0x29, 0x31, 0x34, 0xFF),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = TangoColors.aluminium2,
-		
-			listPopupBackground		= new Color32(0x17, 0x1B, 0x1C, 0xFF),
-		
-			//typesStyle              = FontStyle.Italic
-		},
-		
-		// Darcula
-		new Theme {
-			background				= new Color32( 56,  56,  56, 255),
-			text					= new Color32(183, 196, 208, 255),
-			hyperlinks				= new Color32(0x99, 0xDA, 0xF9, 0xFF),
-		
-			keywords				= new Color32(215, 139,  54, 255),
-			constants               = new Color32(0x68, 0x97, 0xBB, 0xFF),
-			strings					= new Color32(0xA5, 0xC2, 0x5C, 255),
-			builtInLiterals			= new Color32(215, 139,  54, 255),
-			operators				= new Color32(0xE8, 0xE2, 0xB7, 255),
-		
-			referenceTypes			= new Color32(212, 106, 0, 0xFF),
-			valueTypes				= new Color32(212, 106, 0, 0xFF),
-			interfaceTypes			= new Color32(0x21, 0x95, 0x98, 0xFF),
-			enumTypes				= new Color32(0x76, 0x9A, 0xA5, 0xFF),
-			delegateTypes			= new Color32(212, 106, 0, 0xFF),
-			builtInTypes			= new Color32(215, 139,  54, 255),
-		
-			namespaces				= new Color32(183, 196, 208, 255),
-			methods					= new Color32(0xC4, 0xB3, 0xA3, 255),
-			fields					= new Color32(183, 196, 208, 255),
-			properties				= new Color32(183, 196, 208, 255),
-			events					= new Color32(183, 196, 208, 255),
-		
-			parameters              = new Color32(0xC4, 0xB3, 0xA3, 0xFF),
-			variables				= new Color32(183, 196, 208, 255),
-			typeParameters          = new Color32(0x76, 0x9A, 0xA5, 0xFF),
-			enumMembers             = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-		
-			preprocessor            = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-			defineSymbols           = new Color32(0xA0, 0x82, 0xBD, 0xFF),
-			inactiveCode			= new Color32(122, 118, 138, 255),
-			comments				= new Color32(114, 162, 102, 255),
-			xmlDocs					= new Color32(114, 162, 102, 255),
-			xmlDocsTags				= new Color32(122, 118, 138, 255),
-		
-			lineNumbers				= new Color32(0x2B, 0x91, 0xAF, 0xFF),
-			lineNumbersHighlight	= new Color32(183, 196, 208, 255),
-			lineNumbersBackground	= new Color32( 41,  41,  41, 255),
-			fold					= new Color32(0x2B, 0x91, 0xAF, 0xFF),
-		
-			activeSelection			= new Color32( 68, 134, 244, 80),
-			passiveSelection		= new Color32( 72,  72,  72, 255),
-			searchResults			= new Color32(0x67, 0x47, 0x07, 0xFF),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238,  98, 255),
-			trackReverted           = new Color32(246, 201,  60, 255),
-		
-			currentLine             = new Color32( 73,  73,  73, 255),
-			currentLineInactive     = new Color32( 73,  73,  73, 255),
-		
-			referenceHighlight      = (Color)TangoColors.skyblue2 * 0.3f + (Color)TangoColors.aluminium6 * 0.7f,
-			referenceModifyHighlight = (Color)TangoColors.scarletred1 * 0.3f + (Color)TangoColors.aluminium6 * 0.7f,
-			
-			tooltipBackground       = new Color32( 64,  64,  64, 255),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color32(183, 196, 208, 255),
-			
-			listPopupBackground       = new Color32( 48,  48,  48, 255),
-
-			preprocessorStyle       = FontStyle.Italic,
-			commentsStyle           = FontStyle.Italic,
-		},
-		
-		// Visual Studio Dark (courtesy of Killcycle)
-		new Theme {
-			background = new Color32(30, 30, 30, 255),
-			text = new Color32(218, 218, 218, 255),
-			hyperlinks = new Color32(86, 156, 214, 255),
-		
-			keywords = new Color32(86, 156, 214, 255),
-			constants = new Color32(181, 206, 168, 255),
-			strings = new Color32(214, 157, 133, 255),
-			builtInLiterals = new Color32(86, 156, 214, 255),
-			operators = new Color32(180, 180, 180, 255),
-		
-			referenceTypes = new Color32(78, 201, 176, 255),
-			valueTypes = new Color32(78, 201, 176, 255),
-			interfaceTypes = new Color32(184, 215, 163, 255),
-			enumTypes = new Color32(184, 215, 163, 255),
-			delegateTypes = new Color32(78, 201, 176, 255),
-			builtInTypes = new Color32(86, 156, 214, 255),
-		
-			namespaces = new Color32(200, 200, 200, 255),
-			methods = new Color32(200, 200, 200, 255),
-			fields = new Color32(218, 218, 218, 255),
-			properties = new Color32(200, 200, 200, 255),
-			events = new Color32(200, 200, 200, 255),
-		
-			parameters = new Color32(127, 127, 127, 255),
-			variables = new Color32(200, 200, 200, 255),
-			typeParameters = new Color32(184, 215, 163, 255),
-			enumMembers = new Color32(189, 99, 197, 255),
-		
-			preprocessor = new Color32(155, 155, 155, 255),
-			defineSymbols = new Color32(189, 99, 197, 255),
-			inactiveCode = new Color32(155, 155, 155, 255),
-			comments = new Color32(87, 166, 74, 255),
-			xmlDocs = new Color32(87, 166, 74, 255),
-			xmlDocsTags = new Color32(87, 166, 74, 255),
-			
-			lineNumbers = new Color32(43, 145, 175, 255),
-			lineNumbersHighlight = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			lineNumbersBackground = new Color32(30, 30, 30, 255),
-			fold = new Color32(165, 165, 165, 255),
-		
-			activeSelection = new Color32(51, 153, 255, 102),
-			passiveSelection = new Color32(86, 86, 86, 102),
-			searchResults = new Color32(119, 56, 0, 255),
-		
-			trackSaved = new Color32(87, 116, 48, 255),
-			trackChanged = new Color32(239, 242, 132, 255),
-			trackReverted = new Color32(95, 149, 250, 255),
-		
-			currentLine = new Color32(0, 0, 0, 255),
-			currentLineInactive = new Color32(42, 42, 42, 255),
-			
-			referenceHighlight = new Color32(14, 69, 131, 162),
-			referenceModifyHighlight = new Color32(131, 14, 69, 162),
-			
-			tooltipBackground = new Color32(66, 66, 69, 255),
-			tooltipText = new Color32(241, 241, 241, 255),
-			tooltipFrame = new Color32(102, 102, 102, 255),
-			
-			listPopupBackground = new Color32(37, 37, 38, 255),
-		},
-		
-		// Visual Studio with Visual Assist X
-		new Theme {
-			background				= Color.white,
-			text					= Color.black,
-			hyperlinks				= Color.blue,
-		
-			keywords				= Color.blue,
-			constants               = Color.black,
-			strings					= new Color32(0x80, 0x00, 0x00, 0xff),
-			builtInLiterals         = Color.blue,
-			operators				= Color.black,
-		
-			referenceTypes          = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			valueTypes              = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			interfaceTypes          = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			enumTypes               = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			delegateTypes           = new Color32(0x2b, 0x91, 0xaf, 0xff),
-			builtInTypes			= Color.blue,
-		
-			namespaces              = new Color32(33, 111, 133, 255),
-			methods                 = new Color32(136, 0, 0, 255),
-			fields                  = new Color32(0, 0, 128, 255),
-			properties              = new Color32(0, 0, 128, 255),
-			events                  = new Color32(0, 0, 128, 255),
-		
-			parameters              = new Color32(0, 0, 128, 255),
-			variables               = new Color32(0, 0, 128, 255),
-			typeParameters          = new Color32(0x21, 0x6f, 0x85, 0xff),
-			enumMembers             = new Color32(111, 0, 138, 255),
-		
-			preprocessor            = Color.blue,
-			defineSymbols           = new Color32(111, 0, 138, 255),
-			inactiveCode            = Color.gray,
-			comments				= new Color32(0x00, 0x80, 0x00, 0xff),
-			xmlDocs					= new Color32(0x80, 0x80, 0x80, 0xff),
-			xmlDocsTags				= new Color32(0x80, 0x80, 0x80, 0xff),
-			
-			lineNumbers				= new Color32(0x2b, 0x91, 0xaf, 0xff),
-			lineNumbersHighlight	= Color.blue,
-			lineNumbersBackground	= Color.white,
-			fold					= new Color32(165, 165, 165, 255),
-		
-			activeSelection			= new Color32(51, 153, 255, 102),
-			passiveSelection		= new Color32(191, 205, 219, 102),
-			searchResults			= new Color32(255, 255, 183, 255),
-		
-			trackSaved              = new Color32(108, 226, 108, 255),
-			trackChanged            = new Color32(255, 238, 98, 255),
-			trackReverted           = new Color32(246, 201, 60, 255),
-		
-			currentLine             = new Color32(213, 213, 241, 255),
-			currentLineInactive     = new Color32(228, 228, 228, 255),
-			
-			referenceHighlight      = new Color32(0xe0, 0xff, 0xff, 0xff),
-			referenceModifyHighlight = new Color32(0xff, 0xdd, 0xdd, 0xff),
-		
-			tooltipBackground       = new Color32(253, 255, 153, 255),
-			tooltipFrame            = new Color32(128, 128, 128, 255),
-			tooltipText             = new Color32(22, 22, 22, 255),
-		
-			listPopupBackground = Color.white,
-		
-			//variablesStyle = FontStyle.Bold,
-			//parametersStyle = FontStyle.Bold,
-			//keywordsStyle = FontStyle.Bold,
-		},
-		
-		// Visual Studio Dark with Visual Assist X
-		new Theme {
-			background = new Color32(30, 30, 30, 255),
-			text = new Color32(218, 218, 218, 255),
-			hyperlinks = new Color32(86, 156, 214, 255),
-		
-			keywords = new Color32(86, 156, 214, 255),
-			constants = new Color32(181, 206, 168, 255),
-			strings = new Color32(214, 157, 133, 255),
-			builtInLiterals = new Color32(86, 156, 214, 255),
-			operators = new Color32(180, 180, 180, 255),
-		
-			referenceTypes = new Color32(78, 201, 176, 255),
-			valueTypes = new Color32(78, 201, 176, 255),
-			interfaceTypes = new Color32(184, 215, 163, 255),
-			enumTypes = new Color32(184, 215, 163, 255),
-			delegateTypes = new Color32(78, 201, 176, 255),
-			builtInTypes = new Color32(86, 156, 214, 255),
-		
-			namespaces = new Color32(255, 215, 0, 255),
-			methods = new Color32(255, 128, 0, 255),
-			fields = new Color32(189, 183, 107, 255),
-			properties = new Color32(189, 183, 107, 255),
-			events = new Color32(189, 183, 107, 255),
-		
-			parameters = new Color32(189, 183, 107, 255),
-			variables = new Color32(189, 183, 107, 255),
-			typeParameters = new Color32(184, 215, 163, 255),
-			enumMembers = new Color32(189, 99, 197, 255),
-		
-			preprocessor = new Color32(155, 155, 155, 255),
-			defineSymbols = new Color32(189, 99, 197, 255),
-			inactiveCode = new Color32(155, 155, 155, 255),
-			comments = new Color32(87, 166, 74, 255),
-			xmlDocs = new Color32(87, 166, 74, 255),
-			xmlDocsTags = new Color32(87, 166, 74, 255),
-		
-			lineNumbers = new Color32(43, 145, 175, 255),
-			lineNumbersHighlight = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			lineNumbersBackground = new Color32(30, 30, 30, 255),
-			fold = new Color32(165, 165, 165, 255),
-		
-			activeSelection = new Color32(51, 153, 255, 102),
-			passiveSelection = new Color32(86, 86, 86, 102),
-			searchResults = new Color32(119, 56, 0, 255),
-		
-			trackSaved = new Color32(87, 116, 48, 255),
-			trackChanged = new Color32(239, 242, 132, 255),
-			trackReverted = new Color32(95, 149, 250, 255),
-		
-			currentLine = new Color32(0, 0, 0, 255),
-			currentLineInactive = new Color32(42, 42, 42, 255),
-			
-			referenceHighlight = new Color32(14, 69, 131, 144),
-			referenceModifyHighlight = new Color32(111, 14, 69, 162),
-			
-			tooltipBackground = new Color32(66, 66, 69, 255),
-			tooltipText = new Color32(241, 241, 241, 255),
-			tooltipFrame = new Color32(102, 102, 102, 255),
-		
-			listPopupBackground = new Color32(37, 37, 38, 255),
-		},
-		
-		// Solarized Dark
-		new Theme {
-			background = new Color32(0x00, 0x2B, 0x36, 0xFF),
-			text = new Color32(0x83, 0x94, 0x96, 0XFF),
-			hyperlinks = new Color32(0x26, 0x8B, 0xD2, 0xFF),
-			
-			keywords = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			constants = new Color32(0x2A, 0xA1, 0x98, 0xFF),
-			strings = new Color32(0x2A, 0xA1, 0x98, 0xFF),
-			builtInLiterals = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			operators = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			
-			referenceTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			valueTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			interfaceTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			enumTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			delegateTypes = new Color32(0x6C, 0x71, 0xC4, 0xFF),
-			builtInTypes = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			
-			namespaces = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			methods = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			fields = new Color32(0x83, 0x94, 0x96, 0xFF),
-			properties = new Color32(0x83, 0x94, 0x96, 0xFF),
-			events = new Color32(0x6C, 0x71, 0xC4, 0xFF),
-			
-			parameters = new Color32(0x83, 0x94, 0x96, 0xFF),
-			variables = new Color32(0x83, 0x94, 0x96, 0xFF),
-			typeParameters = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			enumMembers = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			
-			preprocessor = new Color32(0xCB, 0x4B, 0x16, 0xFF),
-			defineSymbols = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			inactiveCode = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			comments = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			xmlDocs = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			xmlDocsTags = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			
-			lineNumbers = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			lineNumbersHighlight = new Color32(0x83, 0x94, 0x96, 0xFF),
-			lineNumbersBackground = new Color32(0x07, 0x36, 0x42, 0xFF),
-			fold = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			
-			activeSelection = new Color32(0x58, 0x6E, 0x75, 102),
-			passiveSelection = new Color32(0x58, 0x6E, 0x75, 102),
-			searchResults = new Color32(0x07, 0x36, 0x42, 0xFF),
-			
-			trackSaved = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			trackChanged = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			trackReverted = new Color32(95, 149, 250, 255),
-			
-			currentLine = new Color32(0x07, 0x36, 0x42, 0xFF),
-			currentLineInactive = new Color32(0x07, 0x36, 0x42, 0xFF),
-			
-			referenceHighlight = new Color32(0x00, 0x49, 0x3E, 204),
-			referenceModifyHighlight = new Color32(0x79, 0x22, 0x05, 144),
-			
-			tooltipBackground = new Color32(0x07, 0x36, 0x42, 0xFF),
-			tooltipText = new Color32(0x83, 0x94, 0x96, 0XFF),
-			tooltipFrame = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			
-			listPopupBackground = new Color32(0x07, 0x36, 0x42, 0xFF),
-		},
-		
-		// Solarized Light
-		new Theme {
-			background = new Color32(0xFD, 0xF6, 0xE3, 0xFF),
-			text = new Color32(0x65, 0x7B, 0x83, 0XFF),
-			hyperlinks = new Color32(0x26, 0x8B, 0xD2, 0xFF),
-			
-			keywords = new Color32(0xCB, 0x4B, 0x16, 0xFF),
-			constants = new Color32(0x2A, 0xA1, 0x98, 0xFF),
-			strings = new Color32(0x2A, 0xA1, 0x98, 0xFF),
-			builtInLiterals = new Color32(0xCB, 0x4B, 0x16, 0xFF),
-			operators = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			
-			referenceTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			valueTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			interfaceTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			enumTypes = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			delegateTypes = new Color32(0x6C, 0x71, 0xC4, 0xFF),
-			builtInTypes = new Color32(0xCB, 0x4B, 0x16, 0xFF),
-			
-			namespaces = new Color32(0x83, 0x94, 0x96, 0xFF),
-			methods = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			fields = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			properties = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			events = new Color32(0x6C, 0x71, 0xC4, 0xFF),
-			
-			parameters = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			variables = new Color32(0x65, 0x7B, 0x83, 0xFF),
-			typeParameters = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			enumMembers = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			
-			preprocessor = new Color32(0xCB, 0x4B, 0x16, 0xFF),
-			defineSymbols = new Color32(0xD3, 0x36, 0x82, 0xFF),
-			inactiveCode = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			comments = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			xmlDocs = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			xmlDocsTags = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			
-			lineNumbers = new Color32(0x83, 0x94, 0x96, 0xFF),
-			lineNumbersHighlight = new Color32(0x58, 0x6E, 0x75, 0xFF),
-			lineNumbersBackground = new Color32(0xEE, 0xE8, 0xD5, 0xFF),
-			fold = new Color32(0x83, 0x94, 0x96, 0xFF),
-			
-			activeSelection = new Color32(0x93, 0xA1, 0xA1, 102),
-			passiveSelection = new Color32(0x93, 0xA1, 0xA1, 102),
-			searchResults = new Color32(0xEE, 0xE8, 0xD5, 0xFF),
-			
-			trackSaved = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			trackChanged = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			trackReverted = new Color32(95, 149, 250, 255),
-			
-			currentLine = new Color32(0xFF, 0xFF, 0xE0, 0xFF),
-			currentLineInactive = new Color32(0xFF, 0xFF, 0xE0, 0xFF),
-			
-			referenceHighlight = new Color32(0x87, 0xCE, 0xFA, 102),
-			referenceModifyHighlight = new Color32(0xFF, 0xB6, 0xC1, 102),
-			
-			tooltipBackground = new Color32(0xEE, 0xE8, 0xD5, 0xFF),
-			tooltipText = new Color32(0x58, 0x6E, 0x75, 0XFF),
-			tooltipFrame = new Color32(0x83, 0x94, 0x96, 0xFF),
-			
-			listPopupBackground = new Color32(0xFD, 0xF6, 0xE3, 0xFF),
-		},
-		
-		// Visual Studio Dark with Resharper 9.1 (courtesy of Sarper Soher)
-		new Theme {
-			background = new Color32(0x1E, 0x1E, 0x1E, 0xFF),
-			text = new Color32(0xDC, 0xDC, 0xDC, 0XFF),
-			hyperlinks = new Color32(0x00, 0x00, 0xFF, 0xFF),
-			
-			keywords = new Color32(0x56, 0x9C, 0xD6, 0xFF),
-			constants = new Color32(0xB5, 0xCE, 0xA8, 0xFF),
-			strings = new Color32(0xD6, 0x9D, 0x85, 0xFF),
-			builtInLiterals = new Color32(0xDA, 0xDA, 0xDA, 0xFF),
-			operators = new Color32(0xB4, 0xB4, 0xB4, 0xFF),
-			
-			referenceTypes = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			valueTypes = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			interfaceTypes = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			enumTypes = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			delegateTypes = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			builtInTypes = new Color32(0x56, 0x9C, 0xD6, 0xFF),
-			
-			namespaces = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			methods = new Color32(0x00, 0xFF, 0xFF, 0xFF),
-			fields = new Color32(0xEE, 0x82, 0xEE, 0xFF),
-			properties = new Color32(0xEE, 0x82, 0xEE, 0xFF),
-			events = new Color32(0xDD, 0xA0, 0xDD, 0xFF),
-			
-			parameters = new Color32(0xDC, 0xDC, 0xDC, 0xFF),
-			variables = new Color32(0xDC, 0xDC, 0xDC, 0xFF),
-			typeParameters = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			enumMembers = new Color32(0xEE, 0x82, 0xEE, 0xFF),
-			
-			preprocessor = new Color32(0xDC, 0xDC, 0xDC, 0xFF),
-			defineSymbols = new Color32(0xDA, 0xDA, 0xDA, 0xFF),
-			inactiveCode = new Color32(0x93, 0xA1, 0xA1, 0xFF),
-			comments = new Color32(0x57, 0xA6, 0x4A, 0xFF),
-			xmlDocs = new Color32(0x00, 0x64, 0x00, 0xFF),
-			xmlDocsTags = new Color32(0x00, 0x64, 0x00, 0xFF),
-			
-			lineNumbers = new Color32(43, 145, 175, 255),
-			lineNumbersHighlight = new Color32(0xAD, 0xD8, 0xE6, 0xFF),
-			lineNumbersBackground = new Color32(30, 30, 30, 255),
-			fold = new Color32(165, 165, 165, 255),
-		
-			activeSelection = new Color32(51, 153, 255, 102),
-			passiveSelection = new Color32(86, 86, 86, 102),
-			searchResults = new Color32(119, 56, 0, 255),
-		
-			trackSaved = new Color32(0x71, 0x9A, 0x07, 0xFF),
-			trackChanged = new Color32(0xB5, 0x89, 0x00, 0xFF),
-			trackReverted = new Color32(95, 149, 250, 255),
-			
-			currentLine = new Color32(0x0F, 0x0F, 0x0F, 0xFF),
-			currentLineInactive = new Color32(0x24, 0x24, 0x24, 0xFF),
-			
-			referenceHighlight = new Color32(72, 61, 139, 144),
-			referenceModifyHighlight = new Color32(128, 0, 0, 144),
-			
-			tooltipBackground = new Color32(66, 66, 69, 255),
-			tooltipText = new Color32(241, 241, 241, 255),
-			tooltipFrame = new Color32(102, 102, 102, 255),
-			
-			listPopupBackground = new Color32(37, 37, 38, 255),
-		},
-	};
+    internal static List<string> availableThemes = new List<string>() { "Darcula", "Xcode" }; // Load Defaults
+	internal static List<Theme> themes = new List<Theme>() { Darcula._colourTheme, Xcode._colourTheme }; // Load Defaults
 	private static Theme currentThemeCode = themes[0];
 	private static Theme currentThemeText = themes[0];
 	
@@ -1100,46 +43,13 @@ public class FGTextEditor
 		}
 	}
 
-	//Xcode 5 theme (courtesy of inventor2010)
-	//Xcode 5's actual colors and names for its default theme:
-	private static class Xcode5Theme
+	public static void AddTheme(Theme t, string name)
 	{
-		//Changable Colors in Xcode:
-		public static Color32 PlainText								= new Color32(0,0,0,255);
-		public static Color32 Comments								= new Color32(0,116,0,255);
-		public static Color32 DocumentationComments					= new Color32(0,116,0,255);
-		public static Color32 DocumentationCommentKeywords			= new Color32(2,61,16,255);
-		public static Color32 Strings								= new Color32(196,26,22,255);
-		public static Color32 Characters							= new Color32(28,0,207,255);
-		public static Color32 Numbers								= new Color32(28,0,207,255);
-		public static Color32 Keywords								= new Color32(170,13,145,255);
-		public static Color32 PreprocessorStatements				= new Color32(100,56,32,255);
-		public static Color32 URLs									= new Color32(14,14,255,255);
-		public static Color32 Attributes							= new Color32(131,108,40,255);
-		public static Color32 ProjectClassNames						= new Color32(63,110,116,255);
-		public static Color32 ProjectFunctionandMethodNames			= new Color32(38,71,75,255);
-		public static Color32 ProjectConstants						= new Color32(38,71,75,255);
-		public static Color32 ProjectTypeNames						= new Color32(63,110,116,255);
-		public static Color32 ProjectInstanceVariablesandGlobals	= new Color32(63,110,116,255);
-		public static Color32 ProjectPreprocessorMacros				= new Color32(100,56,32,255);
-		public static Color32 OtherClassNames						= new Color32(92,38,153,255);
-		public static Color32 OtherFunctionandMethodNames			= new Color32(46,13,110,255);
-		public static Color32 OtherConstants						= new Color32(46,13,110,255);
-		public static Color32 OtherTypeNames						= new Color32(92,38,153,255);
-		public static Color32 OtherInstanceVariablesandGlobals		= new Color32(92,38,153,255);
-		public static Color32 OtherPreprocessorMacros				= new Color32(100,56,32,255);
-		
-		public static Color32 Background							= new Color32(255,255,255,255);
-		public static Color32 Selection								= new Color32(167,202,255,255);
-		public static Color32 Cursor								= new Color32(0,0,0,255);
-		public static Color32 Invisibles							= new Color32(127,127,127,255);
-		
-		//Found with "DigitalColor Meter"
-		public static Color32 inactiveSelection						= new Color32(212,212,212,255);
-		public static Color32 lineNumberBackground					= new Color32(247,247,247,255);
-		public static Color32 lineNumbers							= new Color32(146,146,146,255);
-		public static Color32 lineNumberBoarder						= new Color32(231,231,231,255);
-		public static Color32 searchResults							= new Color32(250, 241, 190,255);
+        if (availableThemes.Contains(name))
+            return;
+
+		themes.Add(t);
+		availableThemes.Add(name);
 	}
 	
 	internal static readonly string[] availableFonts = {
@@ -1234,8 +144,8 @@ public class FGTextEditor
 		public GUIStyle upArrowStyle;
 		public GUIStyle downArrowStyle;
 	}
-	public static Styles stylesCode = new Styles();
-	public static Styles stylesText = new Styles();
+	static Styles stylesCode = new Styles();
+	static Styles stylesText = new Styles();
 	[NonSerialized]
 	public Styles styles = stylesCode;
 	
@@ -1253,7 +163,7 @@ public class FGTextEditor
 	[NonSerialized]
 	private Vector2 currentScrollVelocity;
 	[NonSerialized]
-	private float lastSmoothScrollTime;
+	private System.DateTime lastSmoothScrollTime;
 	[NonSerialized]
 	private bool scrollPositionInitialized;
 	
@@ -1275,7 +185,8 @@ public class FGTextEditor
 	public Vector2 charSize { get; private set; }
 	private Dictionary<string, float> tokenWidths = new Dictionary<string, float>();
 	
-	private bool wordWrapping {
+	private bool wordWrapping;
+	private bool WordWrapping {
 		get {
 			if (textBuffer == null)
 				return false;
@@ -1332,7 +243,7 @@ public class FGTextEditor
 	[NonSerialized]
 	private float pingTimer = 0f;
 	[NonSerialized]
-	private float pingStartTime = 0f;
+	private System.DateTime pingStartTime;
 	[NonSerialized]
 	private GUIContent pingContent = new GUIContent();
 	[NonSerialized]
@@ -1348,7 +259,7 @@ public class FGTextEditor
 	[NonSerialized]
 	private string highlightedPPSymbol = null;
 	[NonSerialized]
-	private float highightReferencesTime = 0f;
+	private System.DateTime highightReferencesTime;
 	[NonSerialized]
 	private TextPosition matchingBraceLeft;
 	[NonSerialized]
@@ -1367,7 +278,7 @@ public class FGTextEditor
 	[NonSerialized]
 	private bool isCaretOn = true;
 	[NonSerialized]
-	public float caretMoveTime = 0f;
+	public System.DateTime caretMoveTime;
 	[SerializeField, HideInInspector]
 	public FGTextBuffer.CaretPos caretPosition = new FGTextBuffer.CaretPos();
 	[SerializeField, HideInInspector]
@@ -1404,7 +315,7 @@ public class FGTextEditor
 	[NonSerialized]
 	private Vector2 autoScrollDelta = Vector2.zero;
 	[NonSerialized]
-	private float lastAutoScrollTime = 0f;
+	private System.DateTime lastAutoScrollTime;
 
 	[NonSerialized]
 	private bool autoScrollLeft = false;
@@ -1574,16 +485,13 @@ public class FGTextEditor
 	
 	public void FocusCodeView()
 	{
-		caretMoveTime = 0f;
+		caretMoveTime = default(System.DateTime);
 		focusCodeView = true;
 		Repaint();
 	}
-
-	public void OnEnable(UnityEngine.Object targetFile)
+	
+	private static void InitializeFont(bool forText)
 	{
-		if (selectionStartPosition != null && selectionStartPosition.line == -1)
-			selectionStartPosition = null;
-
 		if (string.IsNullOrEmpty(currentFont))
 		{
 			currentFont = SISettings.editorFont;
@@ -1594,6 +502,12 @@ public class FGTextEditor
 			if (currentFont == "VeraMono")
 				currentFont = availableFonts[0];
 		}
+	}
+
+	public void OnEnable(UnityEngine.Object targetFile)
+	{
+		if (selectionStartPosition != null && selectionStartPosition.line == -1)
+			selectionStartPosition = null;
 
 		isTextAsset = !(targetFile is MonoScript) && !(targetFile is Shader);
 		var targetAsTextBuffer = targetFile as FGTextBuffer;
@@ -1604,23 +518,6 @@ public class FGTextEditor
 				textBuffer = targetAsTextBuffer;
 		}
 		
-		int themeIndex = Array.IndexOf(availableThemes, SISettings.themeNameCode);
-		if (isTextAsset && !string.IsNullOrEmpty(SISettings.themeNameText))
-			themeIndex = Array.IndexOf(availableThemes, SISettings.themeNameText);
-		if (themeIndex == -1)
-		{
-			if (EditorGUIUtility.isProSkin)
-				themeIndex = Array.IndexOf(availableThemes, "Darcula");
-			else
-				themeIndex = Array.IndexOf(availableThemes, "Xcode");
-		}
-		if (isTextAsset)
-			currentThemeText = themes[themeIndex];
-		else
-			currentThemeCode = themes[themeIndex];
-
-		styles = isTextAsset ? stylesText : stylesCode;
-
 		if (textBuffer == null)
 		{
 			try
@@ -1633,14 +530,15 @@ public class FGTextEditor
 				return;
 			}
 		}
+		
+		InitializeFont(isTextAsset);
+
+		styles = isTextAsset ? stylesText : stylesCode;
 		textBuffer.styles = styles;
 		Initialize();
 		textBuffer.Initialize();
 
-		//caretMoveTime = Time.realtimeSinceStartup;
-
-		EditorApplication.update -= OnUpdate;
-		EditorApplication.update += OnUpdate;
+		//caretMoveTime = frameTime;
 
 		textBuffer.onChange -= Repaint;
 		textBuffer.onChange += Repaint;
@@ -1656,10 +554,13 @@ public class FGTextEditor
 
 		textBuffer.AddEditor(this);
 		
+		EditorApplication.update -= OnUpdate;
+		EditorApplication.update += OnUpdate;
+		
 		EditorApplication.update -= SearchOnLoaded;
 		EditorApplication.update += SearchOnLoaded;
 
-		Repaint();
+		//Repaint();
 	}
 	
 	private void SearchOnLoaded()
@@ -2016,14 +917,24 @@ public class FGTextEditor
 	//    if (onChange != null)
 	//        onChange();
 	//}
+	
+	public static System.DateTime frameTime = System.DateTime.Now;
+	
+	static FGTextEditor()
+	{
+		EditorApplication.update += UpdateTime;
+	}
+	
+	static void UpdateTime()
+	{
+		frameTime = System.DateTime.Now;
+	}
 
 	public void OnUpdate()
 	{
-		float time = Time.realtimeSinceStartup;
-
 		if (autoScrolling != Vector2.zero || autoScrollLeft || autoScrollRight || autoScrollUp || autoScrollDown)
 		{
-			float deltaTime = time - lastAutoScrollTime;
+			var deltaTime = (float) (frameTime - lastAutoScrollTime).TotalSeconds;
 
 			if (!autoScrollLeft && !autoScrollRight)
 			{
@@ -2051,16 +962,16 @@ public class FGTextEditor
 			{
 				simulateLastMouseEvent = codeViewDragging && !mouseDownOnSelection;
 			}
-			lastAutoScrollTime = time;
+			lastAutoScrollTime = frameTime;
 			if (EditorWindow.focusedWindow == OwnerWindow)
 				EditorWindow.focusedWindow.wantsMouseMove = true;
 			Repaint();
 		}
 		else if (hasCodeViewFocus)
 		{
-			lastAutoScrollTime = time;
+			lastAutoScrollTime = frameTime;
 
-			float caretTime = (time - caretMoveTime) % 1f;
+			float caretTime = ((float) (frameTime - caretMoveTime).TotalSeconds) % 1f;
 
 			if (!hasSelection && highightReferencesTime != caretMoveTime)
 			{
@@ -2080,7 +991,7 @@ public class FGTextEditor
 					}
 				}
 
-				if (time - caretMoveTime >= 0.35f)
+				if (((float) (frameTime - caretMoveTime).TotalSeconds) >= 0.35f)
 				{
 					if (token != null)
 					{
@@ -2174,7 +1085,8 @@ public class FGTextEditor
 		}
 		else if (tokenTooltip == null && (hasCodeViewFocus || hasSearchBoxFocus))
 		{
-			if (mouseHoverToken != null && mouseHoverTime != 0.0f && time - mouseHoverTime > 0.25f)
+			if (mouseHoverToken != null && mouseHoverTime != default(System.DateTime) &&
+				((float) (frameTime - mouseHoverTime).TotalSeconds) > 0.25f)
 			{
 				if (mouseHoverToken.parent != null && EditorWindow.mouseOverWindow == OwnerWindow)
 				{
@@ -2201,7 +1113,7 @@ public class FGTextEditor
 				}
 			}
 		}
-		else if (mouseHoverTime == 0f && tokenTooltip != null)
+		else if (mouseHoverTime == default(System.DateTime) && tokenTooltip != null)
 		{
 			tokenTooltip.Hide();
 		}
@@ -2261,231 +1173,273 @@ public class FGTextEditor
 				resetTextFont = false;
 			else
 				resetCodeFont = false;
-
-			styles.scrollViewStyle = styles.scrollViewStyle ?? new GUIStyle(GUIStyle.none);
-			styles.searchResultStyle = styles.searchResultStyle ?? new GUIStyle(GUIStyle.none);
-
-			styles.normalStyle = styles.normalStyle ?? new GUIStyle(GUIStyle.none);
-#if !UNITY_3_5
-			styles.normalStyle.richText = false;
-#endif
-			var fontPath = SISettings.fontHinting ? currentFont : "Smooth " + currentFont;
-			styles.normalStyle.font = LoadEditorResource<Font>(fontPath);
-			for (int i = 0; styles.normalStyle.font == null && i < availableFonts.Length; ++i)
-			{
-				currentFont = availableFonts[i];
-				fontPath = SISettings.fontHinting ? currentFont : "Smooth " + currentFont;
-				styles.normalStyle.font = LoadEditorResource<Font>(fontPath);
-			}
-
-			int currentFontSize = GetDynamicFontSize(styles.normalStyle.font);
-			bool isDynamicFont = currentFontSize != 0;
-			if (SISettings.fontSizeDelta != 0)
-				styles.normalStyle.fontSize = currentFontSize + SISettings.fontSizeDelta;
-			else
-				styles.normalStyle.fontSize = 0;
 			
-			cs = styles.normalStyle.font != null ? styles.normalStyle.CalcSize(cachedContentW) : charSize;
-			charSize = cs;
-
-			styles.hyperlinkStyle = styles.hyperlinkStyle ?? new GUIStyle(styles.normalStyle);
-			styles.mailtoStyle = styles.mailtoStyle ?? new GUIStyle(styles.hyperlinkStyle);
-			styles.keywordStyle = styles.keywordStyle ?? new GUIStyle(styles.normalStyle);
-			styles.constantStyle = styles.constantStyle ?? new GUIStyle(styles.normalStyle);
-			styles.stringStyle = styles.stringStyle ?? new GUIStyle(styles.normalStyle);
-			styles.builtInLiteralsStyle = styles.builtInLiteralsStyle ?? new GUIStyle(styles.keywordStyle);
-			styles.operatorStyle = styles.operatorStyle ?? new GUIStyle(styles.normalStyle);
-			styles.punctuatorStyle = styles.punctuatorStyle ?? new GUIStyle(styles.normalStyle);
-			styles.referenceTypeStyle = styles.referenceTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.valueTypeStyle = styles.valueTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.interfaceTypeStyle = styles.interfaceTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.enumTypeStyle = styles.enumTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.delegateTypeStyle = styles.delegateTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.builtInRefTypeStyle = styles.builtInRefTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.builtInValueTypeStyle = styles.builtInValueTypeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.namespaceStyle = styles.namespaceStyle ?? new GUIStyle(styles.normalStyle);
-			styles.methodStyle = styles.methodStyle ?? new GUIStyle(styles.normalStyle);
-			styles.fieldStyle = styles.fieldStyle ?? new GUIStyle(styles.normalStyle);
-			styles.propertyStyle = styles.propertyStyle ?? new GUIStyle(styles.normalStyle);
-			styles.eventStyle = styles.eventStyle ?? new GUIStyle(styles.normalStyle);
-			styles.parameterStyle = styles.parameterStyle ?? new GUIStyle(styles.normalStyle);
-			styles.variableStyle = styles.variableStyle?? new GUIStyle(styles.normalStyle);
-			styles.typeParameterStyle = styles.typeParameterStyle ?? new GUIStyle(styles.normalStyle);
-			styles.enumMemberStyle = styles.enumMemberStyle ?? new GUIStyle(styles.normalStyle);
-			styles.preprocessorStyle = styles.preprocessorStyle ?? new GUIStyle(styles.normalStyle);
-			styles.defineSymbols = styles.defineSymbols ?? new GUIStyle(styles.normalStyle);
-			styles.inactiveCodeStyle = styles.inactiveCodeStyle ?? new GUIStyle(styles.normalStyle);
-			styles.commentStyle = styles.commentStyle ?? new GUIStyle(styles.normalStyle);
-			styles.xmlDocsStyle = styles.xmlDocsStyle ?? new GUIStyle(styles.normalStyle);
-			styles.xmlDocsTagsStyle = styles.xmlDocsTagsStyle ?? new GUIStyle(styles.normalStyle);
-			styles.lineNumbersStyle = styles.lineNumbersStyle ?? new GUIStyle(styles.normalStyle);
-			styles.tooltipTextStyle = styles.tooltipTextStyle ?? new GUIStyle(styles.normalStyle);
-
-			styles.hyperlinkStyle.font = styles.normalStyle.font;
-			styles.mailtoStyle.font = styles.normalStyle.font;
-			styles.keywordStyle.font = styles.normalStyle.font;
-			styles.constantStyle.font = styles.normalStyle.font;
-			styles.stringStyle.font = styles.normalStyle.font;
-			styles.builtInLiteralsStyle.font = styles.normalStyle.font;
-			styles.operatorStyle.font = styles.normalStyle.font;
-			styles.punctuatorStyle.font = styles.normalStyle.font;
-			styles.referenceTypeStyle.font = styles.normalStyle.font;
-			styles.valueTypeStyle.font = styles.normalStyle.font;
-			styles.interfaceTypeStyle.font = styles.normalStyle.font;
-			styles.enumTypeStyle.font = styles.normalStyle.font;
-			styles.delegateTypeStyle.font = styles.normalStyle.font;
-			styles.builtInRefTypeStyle.font = styles.normalStyle.font;
-			styles.builtInValueTypeStyle.font = styles.normalStyle.font;
-			styles.namespaceStyle.font = styles.normalStyle.font;
-			styles.methodStyle.font = styles.normalStyle.font;
-			styles.fieldStyle.font = styles.normalStyle.font;
-			styles.propertyStyle.font = styles.normalStyle.font;
-			styles.eventStyle.font = styles.normalStyle.font;
-			styles.parameterStyle.font = styles.normalStyle.font;
-			styles.variableStyle.font = styles.normalStyle.font;
-			styles.typeParameterStyle.font = styles.normalStyle.font;
-			styles.enumMemberStyle.font = styles.normalStyle.font;
-			styles.preprocessorStyle.font = styles.normalStyle.font;
-			styles.defineSymbols.font = styles.normalStyle.font;
-			styles.inactiveCodeStyle.font = styles.normalStyle.font;
-			styles.commentStyle.font = styles.normalStyle.font;
-			styles.xmlDocsStyle.font = styles.normalStyle.font;
-			styles.xmlDocsTagsStyle.font = styles.normalStyle.font;
-			styles.lineNumbersStyle.font = styles.normalStyle.font;
-			styles.tooltipTextStyle.font = styles.normalStyle.font;
-			styles.tooltipTextStyle.wordWrap = true;
-
-			if (isDynamicFont)
-			{
-				styles.hyperlinkStyle.fontSize = styles.normalStyle.fontSize;
-				styles.mailtoStyle.fontSize = styles.normalStyle.fontSize;
-				styles.keywordStyle.fontSize = styles.normalStyle.fontSize;
-				styles.constantStyle.fontSize = styles.normalStyle.fontSize;
-				styles.stringStyle.fontSize = styles.normalStyle.fontSize;
-				styles.builtInLiteralsStyle.fontSize = styles.normalStyle.fontSize;
-				styles.operatorStyle.fontSize = styles.normalStyle.fontSize;
-				styles.punctuatorStyle.fontSize = styles.normalStyle.fontSize;
-				styles.referenceTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.valueTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.interfaceTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.enumTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.delegateTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.builtInRefTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.builtInValueTypeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.namespaceStyle.fontSize = styles.normalStyle.fontSize;
-				styles.methodStyle.fontSize = styles.normalStyle.fontSize;
-				styles.fieldStyle.fontSize = styles.normalStyle.fontSize;
-				styles.propertyStyle.fontSize = styles.normalStyle.fontSize;
-				styles.eventStyle.fontSize = styles.normalStyle.fontSize;
-				styles.parameterStyle.fontSize = styles.normalStyle.fontSize;
-				styles.variableStyle.fontSize = styles.normalStyle.fontSize;
-				styles.typeParameterStyle.fontSize = styles.normalStyle.fontSize;
-				styles.enumMemberStyle.fontSize = styles.normalStyle.fontSize;
-				styles.preprocessorStyle.fontSize = styles.normalStyle.fontSize;
-				styles.defineSymbols.fontSize = styles.normalStyle.fontSize;
-				styles.inactiveCodeStyle.fontSize = styles.normalStyle.fontSize;
-				styles.commentStyle.fontSize = styles.normalStyle.fontSize;
-				styles.xmlDocsStyle.fontSize = styles.normalStyle.fontSize;
-				styles.xmlDocsTagsStyle.fontSize = styles.normalStyle.fontSize;
-				styles.lineNumbersStyle.fontSize = styles.normalStyle.fontSize;
-				styles.tooltipTextStyle.fontSize = styles.normalStyle.fontSize;
-			}
-			else
-			{
-				styles.normalStyle.fontSize = 0;
-				styles.hyperlinkStyle.fontSize = 0;
-				styles.mailtoStyle.fontSize = 0;
-				styles.keywordStyle.fontSize = 0;
-				styles.constantStyle.fontSize = 0;
-				styles.stringStyle.fontSize = 0;
-				styles.builtInLiteralsStyle.fontSize = 0;
-				styles.operatorStyle.fontSize = 0;
-				styles.punctuatorStyle.fontSize = 0;
-				styles.referenceTypeStyle.fontSize = 0;
-				styles.valueTypeStyle.fontSize = 0;
-				styles.interfaceTypeStyle.fontSize = 0;
-				styles.enumTypeStyle.fontSize = 0;
-				styles.delegateTypeStyle.fontSize = 0;
-				styles.builtInRefTypeStyle.fontSize = 0;
-				styles.builtInValueTypeStyle.fontSize = 0;
-				styles.namespaceStyle.fontSize = 0;
-				styles.methodStyle.fontSize = 0;
-				styles.fieldStyle.fontSize = 0;
-				styles.propertyStyle.fontSize = 0;
-				styles.eventStyle.fontSize = 0;
-				styles.parameterStyle.fontSize = 0;
-				styles.variableStyle.fontSize = 0;
-				styles.typeParameterStyle.fontSize = 0;
-				styles.enumMemberStyle.fontSize = 0;
-				styles.preprocessorStyle.fontSize = 0;
-				styles.defineSymbols.fontSize = 0;
-				styles.inactiveCodeStyle.fontSize = 0;
-				styles.commentStyle.fontSize = 0;
-				styles.xmlDocsStyle.fontSize = 0;
-				styles.xmlDocsTagsStyle.fontSize = 0;
-				styles.lineNumbersStyle.fontSize = 0;
-				styles.tooltipTextStyle.fontSize = 0;
-			}
-
-			styles.lineNumbersBackground = styles.lineNumbersBackground ?? new GUIStyle();
-			styles.lineNumbersSeparator = styles.lineNumbersSeparator ?? new GUIStyle();
-			styles.caretStyle = styles.caretStyle ?? new GUIStyle();
-			styles.activeSelectionStyle = styles.activeSelectionStyle ?? new GUIStyle();
-			styles.passiveSelectionStyle = styles.passiveSelectionStyle ?? new GUIStyle();
-			styles.trackChangesAfterSaveStyle = styles.trackChangesAfterSaveStyle ?? new GUIStyle();
-			styles.trackChangesBeforeSaveStyle = styles.trackChangesBeforeSaveStyle ?? new GUIStyle();
-			styles.trackChangesRevertedStyle = styles.trackChangesRevertedStyle ?? new GUIStyle();
-			styles.currentLineStyle = styles.currentLineStyle ?? new GUIStyle();
-			styles.currentLineInactiveStyle = styles.currentLineInactiveStyle ?? new GUIStyle();
-			styles.referenceHighlightStyle = styles.referenceHighlightStyle ?? new GUIStyle();
-			styles.referenceModifyHighlightStyle = styles.referenceModifyHighlightStyle ?? new GUIStyle();
-			styles.tooltipBgStyle = styles.tooltipBgStyle ?? new GUIStyle();
-			styles.tooltipFrameStyle = styles.tooltipFrameStyle ?? new GUIStyle();
+			LoadStyles(styles, isText);
 			
-			styles.listFrameStyle = styles.listFrameStyle ?? new GUIStyle();
-			styles.listBgStyle = styles.listBgStyle ?? new GUIStyle();
-			
-			styles.upArrowStyle = styles.upArrowStyle ?? new GUIStyle();
-			styles.downArrowStyle = styles.downArrowStyle ?? new GUIStyle();
-			styles.upArrowStyle.normal.background = LoadEditorResource<Texture2D>("upArrowOff.png", "d_upArrowOff.png");
-			styles.upArrowStyle.hover.background = styles.upArrowStyle.active.background
-				= LoadEditorResource<Texture2D>("upArrow.png", "d_upArrow.png");
-			styles.downArrowStyle.normal.background = LoadEditorResource<Texture2D>("downArrowOff.png", "d_downArrowOff.png");
-			styles.downArrowStyle.hover.background = styles.downArrowStyle.active.background
-				= LoadEditorResource<Texture2D>("downArrow.png", "d_downArrow.png");
-
-			wavyUnderline = LoadEditorResource<Texture2D>("wavyUnderline.png");
-
-			wrenchIcon = LoadEditorResource<Texture2D>("l_wrench.png", "d_wrench.png");
-
-			saveIcon = LoadEditorResource<Texture2D>("saveIconBW.png");
-			buildIcon = LoadEditorResource<Texture2D>("buildIconBW.png");
-			undoIcon = LoadEditorResource<Texture2D>("editUndoIconBW.png");
-			redoIcon = LoadEditorResource<Texture2D>("editRedoIconBW.png");
-#if !UNITY_4_0 && !UNITY_4_1
-			versionControlIcon = LoadEditorResource<Texture2D>("versionControl.png");
-#endif
-			//hyperlinksIcon = LoadEditorResource<Texture2D>("hyperlinksIconBW.png");
-			popOutIcon = LoadEditorResource<Texture2D>("popOutIconBW.png");
-
-			styles.ping = styles.ping ?? new GUIStyle();
-#if !UNITY_3_5
-			styles.ping.richText = false;
-#endif
-			styles.ping.normal.background = LoadEditorResource<Texture2D>("yellowPing.png");
-			styles.ping.normal.textColor = Color.black;
-			styles.ping.font = styles.normalStyle.font;
-			if (isDynamicFont)
-				styles.ping.fontSize = styles.normalStyle.fontSize;
-			else
-				styles.ping.fontSize = 0;
-			styles.ping.border = new RectOffset(10, 10, 10, 10);
-			styles.ping.overflow = new RectOffset(7, 7, 6, 6);
-			styles.ping.stretchWidth = false;
-			styles.ping.stretchHeight = false;
-
-			ApplyTheme(styles, isText ? currentThemeText : currentThemeCode);
+			charSize = styles.normalStyle.font != null ? styles.normalStyle.CalcSize(cachedContentW) : charSize;
 		}
+	}
+	
+	public static Styles StylesCode {
+		get {
+			if (stylesCode.normalStyle == null)
+			{
+				InitializeFont(false);
+				LoadStyles(stylesCode, false);
+			}
+			return stylesCode;
+		}
+	}
+	
+	public static Styles StylesText {
+		get {
+			if (stylesText.normalStyle == null)
+			{
+				InitializeFont(true);
+				LoadStyles(stylesText, true);
+			}
+			return stylesText;
+		}
+	}
+	
+	public static Styles GetStyles(bool forText)
+	{
+		var styles = forText ? stylesText : stylesCode;
+		if (styles.normalStyle == null)
+		{
+			InitializeFont(forText);
+			LoadStyles(styles, forText);
+		}
+		return styles;
+	}
+	
+	private static void LoadStyles(Styles styles, bool forText)
+	{
+		var themeIndex = availableThemes.IndexOf(forText ? SISettings.themeNameText : SISettings.themeNameCode);
+		themeIndex = themeIndex < 0 ? 0 : themeIndex;
+		if (forText)
+			currentThemeText = themes[themeIndex];
+		else
+			currentThemeCode = themes[themeIndex];
+		
+		styles.scrollViewStyle = styles.scrollViewStyle ?? new GUIStyle(GUIStyle.none);
+		styles.searchResultStyle = styles.searchResultStyle ?? new GUIStyle(GUIStyle.none);
+		
+		styles.normalStyle = styles.normalStyle ?? new GUIStyle(GUIStyle.none);
+		styles.normalStyle.richText = false;
+		var fontPath = SISettings.fontHinting ? currentFont : "Smooth " + currentFont;
+		styles.normalStyle.font = LoadEditorResource<Font>(fontPath);
+		for (int i = 0; styles.normalStyle.font == null && i < availableFonts.Length; ++i)
+		{
+			currentFont = availableFonts[i];
+			fontPath = SISettings.fontHinting ? currentFont : "Smooth " + currentFont;
+			styles.normalStyle.font = LoadEditorResource<Font>(fontPath);
+		}
+
+		int currentFontSize = GetDynamicFontSize(styles.normalStyle.font);
+		bool isDynamicFont = currentFontSize != 0;
+		if (SISettings.fontSizeDelta != 0)
+			styles.normalStyle.fontSize = currentFontSize + SISettings.fontSizeDelta;
+		else
+			styles.normalStyle.fontSize = 0;
+		
+		styles.hyperlinkStyle = styles.hyperlinkStyle ?? new GUIStyle(styles.normalStyle);
+		styles.mailtoStyle = styles.mailtoStyle ?? new GUIStyle(styles.hyperlinkStyle);
+		styles.keywordStyle = styles.keywordStyle ?? new GUIStyle(styles.normalStyle);
+		styles.constantStyle = styles.constantStyle ?? new GUIStyle(styles.normalStyle);
+		styles.stringStyle = styles.stringStyle ?? new GUIStyle(styles.normalStyle);
+		styles.builtInLiteralsStyle = styles.builtInLiteralsStyle ?? new GUIStyle(styles.keywordStyle);
+		styles.operatorStyle = styles.operatorStyle ?? new GUIStyle(styles.normalStyle);
+		styles.punctuatorStyle = styles.punctuatorStyle ?? new GUIStyle(styles.normalStyle);
+		styles.referenceTypeStyle = styles.referenceTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.valueTypeStyle = styles.valueTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.interfaceTypeStyle = styles.interfaceTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.enumTypeStyle = styles.enumTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.delegateTypeStyle = styles.delegateTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.builtInRefTypeStyle = styles.builtInRefTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.builtInValueTypeStyle = styles.builtInValueTypeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.namespaceStyle = styles.namespaceStyle ?? new GUIStyle(styles.normalStyle);
+		styles.methodStyle = styles.methodStyle ?? new GUIStyle(styles.normalStyle);
+		styles.fieldStyle = styles.fieldStyle ?? new GUIStyle(styles.normalStyle);
+		styles.propertyStyle = styles.propertyStyle ?? new GUIStyle(styles.normalStyle);
+		styles.eventStyle = styles.eventStyle ?? new GUIStyle(styles.normalStyle);
+		styles.parameterStyle = styles.parameterStyle ?? new GUIStyle(styles.normalStyle);
+		styles.variableStyle = styles.variableStyle?? new GUIStyle(styles.normalStyle);
+		styles.typeParameterStyle = styles.typeParameterStyle ?? new GUIStyle(styles.normalStyle);
+		styles.enumMemberStyle = styles.enumMemberStyle ?? new GUIStyle(styles.normalStyle);
+		styles.preprocessorStyle = styles.preprocessorStyle ?? new GUIStyle(styles.normalStyle);
+		styles.defineSymbols = styles.defineSymbols ?? new GUIStyle(styles.normalStyle);
+		styles.inactiveCodeStyle = styles.inactiveCodeStyle ?? new GUIStyle(styles.normalStyle);
+		styles.commentStyle = styles.commentStyle ?? new GUIStyle(styles.normalStyle);
+		styles.xmlDocsStyle = styles.xmlDocsStyle ?? new GUIStyle(styles.normalStyle);
+		styles.xmlDocsTagsStyle = styles.xmlDocsTagsStyle ?? new GUIStyle(styles.normalStyle);
+		styles.lineNumbersStyle = styles.lineNumbersStyle ?? new GUIStyle(styles.normalStyle);
+		styles.tooltipTextStyle = styles.tooltipTextStyle ?? new GUIStyle(styles.normalStyle);
+
+		styles.hyperlinkStyle.font = styles.normalStyle.font;
+		styles.mailtoStyle.font = styles.normalStyle.font;
+		styles.keywordStyle.font = styles.normalStyle.font;
+		styles.constantStyle.font = styles.normalStyle.font;
+		styles.stringStyle.font = styles.normalStyle.font;
+		styles.builtInLiteralsStyle.font = styles.normalStyle.font;
+		styles.operatorStyle.font = styles.normalStyle.font;
+		styles.punctuatorStyle.font = styles.normalStyle.font;
+		styles.referenceTypeStyle.font = styles.normalStyle.font;
+		styles.valueTypeStyle.font = styles.normalStyle.font;
+		styles.interfaceTypeStyle.font = styles.normalStyle.font;
+		styles.enumTypeStyle.font = styles.normalStyle.font;
+		styles.delegateTypeStyle.font = styles.normalStyle.font;
+		styles.builtInRefTypeStyle.font = styles.normalStyle.font;
+		styles.builtInValueTypeStyle.font = styles.normalStyle.font;
+		styles.namespaceStyle.font = styles.normalStyle.font;
+		styles.methodStyle.font = styles.normalStyle.font;
+		styles.fieldStyle.font = styles.normalStyle.font;
+		styles.propertyStyle.font = styles.normalStyle.font;
+		styles.eventStyle.font = styles.normalStyle.font;
+		styles.parameterStyle.font = styles.normalStyle.font;
+		styles.variableStyle.font = styles.normalStyle.font;
+		styles.typeParameterStyle.font = styles.normalStyle.font;
+		styles.enumMemberStyle.font = styles.normalStyle.font;
+		styles.preprocessorStyle.font = styles.normalStyle.font;
+		styles.defineSymbols.font = styles.normalStyle.font;
+		styles.inactiveCodeStyle.font = styles.normalStyle.font;
+		styles.commentStyle.font = styles.normalStyle.font;
+		styles.xmlDocsStyle.font = styles.normalStyle.font;
+		styles.xmlDocsTagsStyle.font = styles.normalStyle.font;
+		styles.lineNumbersStyle.font = styles.normalStyle.font;
+		styles.tooltipTextStyle.font = styles.normalStyle.font;
+		styles.tooltipTextStyle.wordWrap = true;
+
+		if (isDynamicFont)
+		{
+			styles.hyperlinkStyle.fontSize = styles.normalStyle.fontSize;
+			styles.mailtoStyle.fontSize = styles.normalStyle.fontSize;
+			styles.keywordStyle.fontSize = styles.normalStyle.fontSize;
+			styles.constantStyle.fontSize = styles.normalStyle.fontSize;
+			styles.stringStyle.fontSize = styles.normalStyle.fontSize;
+			styles.builtInLiteralsStyle.fontSize = styles.normalStyle.fontSize;
+			styles.operatorStyle.fontSize = styles.normalStyle.fontSize;
+			styles.punctuatorStyle.fontSize = styles.normalStyle.fontSize;
+			styles.referenceTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.valueTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.interfaceTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.enumTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.delegateTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.builtInRefTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.builtInValueTypeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.namespaceStyle.fontSize = styles.normalStyle.fontSize;
+			styles.methodStyle.fontSize = styles.normalStyle.fontSize;
+			styles.fieldStyle.fontSize = styles.normalStyle.fontSize;
+			styles.propertyStyle.fontSize = styles.normalStyle.fontSize;
+			styles.eventStyle.fontSize = styles.normalStyle.fontSize;
+			styles.parameterStyle.fontSize = styles.normalStyle.fontSize;
+			styles.variableStyle.fontSize = styles.normalStyle.fontSize;
+			styles.typeParameterStyle.fontSize = styles.normalStyle.fontSize;
+			styles.enumMemberStyle.fontSize = styles.normalStyle.fontSize;
+			styles.preprocessorStyle.fontSize = styles.normalStyle.fontSize;
+			styles.defineSymbols.fontSize = styles.normalStyle.fontSize;
+			styles.inactiveCodeStyle.fontSize = styles.normalStyle.fontSize;
+			styles.commentStyle.fontSize = styles.normalStyle.fontSize;
+			styles.xmlDocsStyle.fontSize = styles.normalStyle.fontSize;
+			styles.xmlDocsTagsStyle.fontSize = styles.normalStyle.fontSize;
+			styles.lineNumbersStyle.fontSize = styles.normalStyle.fontSize;
+			styles.tooltipTextStyle.fontSize = styles.normalStyle.fontSize;
+		}
+		else
+		{
+			styles.normalStyle.fontSize = 0;
+			styles.hyperlinkStyle.fontSize = 0;
+			styles.mailtoStyle.fontSize = 0;
+			styles.keywordStyle.fontSize = 0;
+			styles.constantStyle.fontSize = 0;
+			styles.stringStyle.fontSize = 0;
+			styles.builtInLiteralsStyle.fontSize = 0;
+			styles.operatorStyle.fontSize = 0;
+			styles.punctuatorStyle.fontSize = 0;
+			styles.referenceTypeStyle.fontSize = 0;
+			styles.valueTypeStyle.fontSize = 0;
+			styles.interfaceTypeStyle.fontSize = 0;
+			styles.enumTypeStyle.fontSize = 0;
+			styles.delegateTypeStyle.fontSize = 0;
+			styles.builtInRefTypeStyle.fontSize = 0;
+			styles.builtInValueTypeStyle.fontSize = 0;
+			styles.namespaceStyle.fontSize = 0;
+			styles.methodStyle.fontSize = 0;
+			styles.fieldStyle.fontSize = 0;
+			styles.propertyStyle.fontSize = 0;
+			styles.eventStyle.fontSize = 0;
+			styles.parameterStyle.fontSize = 0;
+			styles.variableStyle.fontSize = 0;
+			styles.typeParameterStyle.fontSize = 0;
+			styles.enumMemberStyle.fontSize = 0;
+			styles.preprocessorStyle.fontSize = 0;
+			styles.defineSymbols.fontSize = 0;
+			styles.inactiveCodeStyle.fontSize = 0;
+			styles.commentStyle.fontSize = 0;
+			styles.xmlDocsStyle.fontSize = 0;
+			styles.xmlDocsTagsStyle.fontSize = 0;
+			styles.lineNumbersStyle.fontSize = 0;
+			styles.tooltipTextStyle.fontSize = 0;
+		}
+
+		styles.lineNumbersBackground = styles.lineNumbersBackground ?? new GUIStyle();
+		styles.lineNumbersSeparator = styles.lineNumbersSeparator ?? new GUIStyle();
+		styles.caretStyle = styles.caretStyle ?? new GUIStyle();
+		styles.activeSelectionStyle = styles.activeSelectionStyle ?? new GUIStyle();
+		styles.passiveSelectionStyle = styles.passiveSelectionStyle ?? new GUIStyle();
+		styles.trackChangesAfterSaveStyle = styles.trackChangesAfterSaveStyle ?? new GUIStyle();
+		styles.trackChangesBeforeSaveStyle = styles.trackChangesBeforeSaveStyle ?? new GUIStyle();
+		styles.trackChangesRevertedStyle = styles.trackChangesRevertedStyle ?? new GUIStyle();
+		styles.currentLineStyle = styles.currentLineStyle ?? new GUIStyle();
+		styles.currentLineInactiveStyle = styles.currentLineInactiveStyle ?? new GUIStyle();
+		styles.referenceHighlightStyle = styles.referenceHighlightStyle ?? new GUIStyle();
+		styles.referenceModifyHighlightStyle = styles.referenceModifyHighlightStyle ?? new GUIStyle();
+		styles.tooltipBgStyle = styles.tooltipBgStyle ?? new GUIStyle();
+		styles.tooltipFrameStyle = styles.tooltipFrameStyle ?? new GUIStyle();
+		
+		styles.listFrameStyle = styles.listFrameStyle ?? new GUIStyle();
+		styles.listBgStyle = styles.listBgStyle ?? new GUIStyle();
+		
+		styles.upArrowStyle = styles.upArrowStyle ?? new GUIStyle();
+		styles.downArrowStyle = styles.downArrowStyle ?? new GUIStyle();
+		styles.upArrowStyle.normal.background = LoadEditorResource<Texture2D>("upArrowOff.png", "d_upArrowOff.png");
+		styles.upArrowStyle.hover.background = styles.upArrowStyle.active.background
+			= LoadEditorResource<Texture2D>("upArrow.png", "d_upArrow.png");
+		styles.downArrowStyle.normal.background = LoadEditorResource<Texture2D>("downArrowOff.png", "d_downArrowOff.png");
+		styles.downArrowStyle.hover.background = styles.downArrowStyle.active.background
+			= LoadEditorResource<Texture2D>("downArrow.png", "d_downArrow.png");
+
+		wavyUnderline = LoadEditorResource<Texture2D>("wavyUnderline.png");
+
+		wrenchIcon = LoadEditorResource<Texture2D>("l_wrench.png", "d_wrench.png");
+
+		saveIcon = LoadEditorResource<Texture2D>("saveIconBW.png");
+		buildIcon = LoadEditorResource<Texture2D>("buildIconBW.png");
+		undoIcon = LoadEditorResource<Texture2D>("editUndoIconBW.png");
+		redoIcon = LoadEditorResource<Texture2D>("editRedoIconBW.png");
+#if !UNITY_4_0 && !UNITY_4_1
+		versionControlIcon = LoadEditorResource<Texture2D>("versionControl.png");
+#endif
+		//hyperlinksIcon = LoadEditorResource<Texture2D>("hyperlinksIconBW.png");
+		popOutIcon = LoadEditorResource<Texture2D>("popOutIconBW.png");
+
+		styles.ping = styles.ping ?? new GUIStyle();
+#if !UNITY_3_5
+		styles.ping.richText = false;
+#endif
+		styles.ping.normal.background = LoadEditorResource<Texture2D>("yellowPing.png");
+		styles.ping.normal.textColor = Color.black;
+		styles.ping.font = styles.normalStyle.font;
+		if (isDynamicFont)
+			styles.ping.fontSize = styles.normalStyle.fontSize;
+		else
+			styles.ping.fontSize = 0;
+		styles.ping.border = new RectOffset(10, 10, 10, 10);
+		styles.ping.overflow = new RectOffset(7, 7, 6, 6);
+		styles.ping.stretchWidth = false;
+		styles.ping.stretchHeight = false;
+
+		ApplyTheme(styles, forText ? currentThemeText : currentThemeCode);
 	}
 
 	private static void ApplyTheme(Styles styles, Theme currentTheme)
@@ -2618,10 +1572,14 @@ public class FGTextEditor
 			parentWindow = window;
 		if (EditorWindow.focusedWindow == window)
 			FGTextBuffer.activeEditor = this;
-
+		
 		if (Event.current.type != EventType.layout)
 		{
-			scrollViewRect = GUILayoutUtility.GetRect(1f, Screen.width, 1f, Screen.height);
+			if (parentWindow)
+				scrollViewRect = new Rect(0f, 0f, parentWindow.position.width, parentWindow.position.height);
+			else
+				scrollViewRect = GUILayoutUtility.GetRect(1f, Screen.width, 1f, Screen.height);
+			//Debug.Log("GetRect: " + scrollViewRect + "\nposition: " + parentWindow.position);
 			if (!(window is FGCodeWindow))
 			{
 				scrollViewRect.xMin = 0;
@@ -2629,7 +1587,7 @@ public class FGTextEditor
 			}
 			scrollViewRect = margins.Remove(scrollViewRect);
 		}
-		else
+		else if (!parentWindow)
 		{
 			GUILayoutUtility.GetRect(1f, Screen.width, 112f, Screen.height);
 		}
@@ -2644,6 +1602,11 @@ public class FGTextEditor
 
 		if (textBuffer != null)
 		{
+			//if (Event.current.type == EventType.Repaint && textBuffer.isCsFile && textBuffer.IsLoading)
+			//{
+			//	EditorApplication.delayCall += textBuffer.LoadImmediately;
+			//}
+			
 			Rect rc = new Rect(scrollViewRect.xMax - 21f, scrollViewRect.yMin - 17f, 18f, 16f);
 			if (GUI.Button(rc, GUIContent.none, EditorStyles.toolbarButton))
 			{
@@ -2697,11 +1660,11 @@ public class FGTextEditor
 				codeViewPopupMenu.AddSeparator("Font//");
 				codeViewPopupMenu.AddItem(new GUIContent("Font/Use Font Hinting"), SISettings.fontHinting, ToggleFontHinting);
 				
-				string[] sortedThemes = availableThemes.Clone() as string[];
+                string[] sortedThemes = availableThemes.ToArray();
 				Array.Sort<string>(sortedThemes, StringComparer.OrdinalIgnoreCase);
 				for (int i = 0; i < sortedThemes.Length; ++i)
 				{
-					int themeIndex = Array.IndexOf(availableThemes, sortedThemes[i]);
+					int themeIndex = availableThemes.IndexOf(sortedThemes[i]);
 					if (textBuffer.isText)
 						codeViewPopupMenu.AddItem(new GUIContent("Color Scheme (Text)/" + sortedThemes[i]), currentThemeText == themes[themeIndex], x => SelectTheme((int)x, true), themeIndex);
 					else
@@ -2793,8 +1756,8 @@ public class FGTextEditor
 		{
 			scrollViewRect = GUILayoutUtility.GetRect(1f, Screen.width, 1f, Screen.height);
 			scrollViewRect.xMin = 0f;
-			//scrollViewRect.xMax = Screen.width - 1f;
-			scrollViewRect.yMin -= 32f;
+			scrollViewRect.xMax += 4f;
+			scrollViewRect.yMin -= 30f;
 			scrollViewRect.yMax += 13f;
 		}
 		else
@@ -2858,9 +1821,12 @@ public class FGTextEditor
 
 	private void DoGUIWithAutocomplete(bool enableGUI)
 	{
-		if (caretMoveTime == 0f)
+		FGTextBuffer.tabSize = SISettings.tabSize;
+		wordWrapping = WordWrapping;
+		
+		if (caretMoveTime == default(System.DateTime))
 		{
-			caretMoveTime = Time.realtimeSinceStartup;
+			caretMoveTime = frameTime;
 			lastCaretMoveWasSearch = false;
 //			if (EditorWindow.focusedWindow == parentWindow)
 //				parentWindow.Focus();
@@ -2904,6 +1870,22 @@ public class FGTextEditor
 					{
 						autocompleteWindow.UpdateTypedInPart();
 					}
+					
+#if UNITY_EDITOR_OSX
+					if (autocompleteWindow != null && Event.current.type == EventType.Repaint)
+					{
+						Vector2 offset = new Vector2(autocompleteWindow.position.x, autocompleteWindow.position.y);
+						if (offset.x != 0f || offset.y != 0f)
+						{
+							offset = GUIUtility.ScreenToGUIPoint(offset);
+							autocompleteWindow.OnExternalGUI(offset);
+						}
+						else
+						{
+							OwnerWindow.Repaint();
+						}
+					}
+#endif
 				}
 			}
 		}
@@ -2925,7 +1907,7 @@ public class FGTextEditor
 			lastCodeViewRect = codeViewRect;
 		
 		if (caretPosition != matchedBracesAtCaretPosition ||
-			scrollToCaret || caretMoveTime == Time.realtimeSinceStartup)
+			scrollToCaret || caretMoveTime == frameTime)
 		{
 			if (showingArgumentsForMethod != null)
 			{
@@ -3144,8 +2126,254 @@ public class FGTextEditor
 		return lineBreaks;
 	}
 	
+#if UNITY_5_3 || UNITY_5_4_OR_NEWER
+	internal sealed class ScrollViewState
+	{
+		public Rect position;
+		public Rect visibleRect;
+		public Rect viewRect;
+		public Vector2 scrollPosition;
+		public bool apply;
+		
+		internal void ScrollTo(Rect position)
+		{
+			ScrollTowards(position, float.PositiveInfinity);
+		}
+		
+		internal bool ScrollTowards(Rect position, float maxDelta)
+		{
+			var b = this.ScrollNeeded(position);
+			if (b.sqrMagnitude < 0.0001f)
+				return false;
+	
+			if (maxDelta == 0f)
+				return true;
+	
+			if (b.magnitude > maxDelta)
+				b = b.normalized * maxDelta;
+			scrollPosition += b;
+			apply = true;
+			return true;
+		}
+		
+		internal Vector2 ScrollNeeded(Rect position)
+		{
+			var rect = visibleRect;
+			rect.x += scrollPosition.x;
+			rect.y += scrollPosition.y;
+			var delta = position.width - visibleRect.width;
+			if (delta > 0f)
+			{
+				position.width -= delta;
+				position.x += delta * 0.5f;
+			}
+			delta = position.height - visibleRect.height;
+			if (delta > 0f)
+			{
+				position.height -= delta;
+				position.y += delta * 0.5f;
+			}
+	
+			var result = Vector2.zero;
+			if (position.xMax > rect.xMax)
+			{
+				result.x += position.xMax - rect.xMax;
+			}
+			else if (position.xMin < rect.xMin)
+			{
+				result.x -= rect.xMin - position.xMin;
+			}
+			if (position.yMax > rect.yMax)
+			{
+				result.y += position.yMax - rect.yMax;
+			}
+			else if (position.yMin < rect.yMin)
+			{
+				result.y -= rect.yMin - position.yMin;
+			}
+	
+			Rect rcView = viewRect;
+			rcView.width = Mathf.Max(rcView.width, visibleRect.width);
+			rcView.height = Mathf.Max(rcView.height, visibleRect.height);
+	
+			result.x = Mathf.Clamp(result.x, rcView.xMin - scrollPosition.x, rcView.xMax - visibleRect.width - scrollPosition.x);
+			result.y = Mathf.Clamp(result.y, rcView.yMin - scrollPosition.y, rcView.yMax - visibleRect.height - scrollPosition.y);
+			return result;
+		}
+	}
+
+	static int scrollViewHash = "ScrollView".GetHashCode();
+	static int sliderHash = "Slider".GetHashCode();
+	static int repeatButtonHash = "RepeatButton".GetHashCode();
+	static GUIStyle horizontalScrollbar;
+	static GUIStyle verticalScrollbar;
+	
+	static ScrollViewState scrollViewState;
+#endif
+	
+	internal static Vector2 BeginScrollView(Rect position, Vector2 scrollPosition, Rect viewRect)
+	{
+#if UNITY_5_3 || UNITY_5_4_OR_NEWER
+		horizontalScrollbar = GUI.skin.horizontalScrollbar;
+		verticalScrollbar = GUI.skin.verticalScrollbar;
+		
+		if (Event.current.type == EventType.DragUpdated && position.Contains(Event.current.mousePosition))
+		{
+			if (Mathf.Abs(Event.current.mousePosition.y - position.y) < 8f)
+			{
+				scrollPosition.y -= 16f;
+				//GUI.InternalRepaintEditorWindow();
+			}
+			else if (Mathf.Abs(Event.current.mousePosition.y - position.yMax) < 8f)
+			{
+				scrollPosition.y += 16f;
+				//GUI.InternalRepaintEditorWindow();
+			}
+		}
+		
+		var controlID = GUIUtility.GetControlID(scrollViewHash, FocusType.Passive);
+		scrollViewState = (ScrollViewState) GUIUtility.GetStateObject(typeof(ScrollViewState), controlID);
+		if (scrollViewState.apply)
+		{
+			scrollPosition = scrollViewState.scrollPosition;
+			scrollViewState.apply = false;
+		}
+		scrollViewState.position = position;
+		scrollViewState.scrollPosition = scrollPosition;
+		scrollViewState.visibleRect = scrollViewState.viewRect = viewRect;
+		scrollViewState.visibleRect.width = position.width;
+		scrollViewState.visibleRect.height = position.height;
+		
+		var screenRect = position;
+		var type = Event.current.type;
+		if (type != EventType.Layout)
+		{
+			if (type != EventType.Used)
+			{
+				bool showVertical = false;
+				bool showHorizontal = false;
+				if (viewRect.width > screenRect.width)
+				{
+					scrollViewState.visibleRect.height = position.height - horizontalScrollbar.fixedHeight + horizontalScrollbar.margin.top;
+					screenRect.height -= horizontalScrollbar.fixedHeight + horizontalScrollbar.margin.top;
+					showHorizontal = true;
+				}
+		
+				if (viewRect.height > screenRect.height)
+				{
+					scrollViewState.visibleRect.width = position.width - verticalScrollbar.fixedWidth + verticalScrollbar.margin.left;
+					screenRect.width -= verticalScrollbar.fixedWidth + verticalScrollbar.margin.left;
+					showVertical = true;
+		
+					if (!showHorizontal && viewRect.width > screenRect.width)
+					{
+						scrollViewState.visibleRect.height = position.height - horizontalScrollbar.fixedHeight + horizontalScrollbar.margin.top;
+						screenRect.height -= horizontalScrollbar.fixedHeight + horizontalScrollbar.margin.top;
+						showHorizontal = true;
+					}
+				}
+		
+				if (showHorizontal && horizontalScrollbar != GUIStyle.none)
+				{
+					scrollPosition.x = GUI.HorizontalScrollbar(
+						new Rect(
+							position.x,
+							position.yMax - horizontalScrollbar.fixedHeight,
+							screenRect.width,
+							horizontalScrollbar.fixedHeight),
+						scrollPosition.x,
+						Mathf.Min(screenRect.width, viewRect.width),
+						0f,
+						viewRect.width);
+				}
+				else
+				{
+					GUIUtility.GetControlID(sliderHash, FocusType.Passive);
+					GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+					GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+					if (horizontalScrollbar != GUIStyle.none)
+					{
+						scrollPosition.x = 0f;
+					}
+					else
+					{
+						scrollPosition.x = Mathf.Clamp(scrollPosition.x, 0f, Mathf.Max(viewRect.width - position.width, 0f));
+					}
+				}
+		
+				if (showVertical && verticalScrollbar != GUIStyle.none)
+				{
+					scrollPosition.y = GUI.VerticalScrollbar(
+						new Rect(
+							screenRect.xMax + (float)verticalScrollbar.margin.left,
+							screenRect.y,
+							verticalScrollbar.fixedWidth,
+							screenRect.height),
+						scrollPosition.y,
+						Mathf.Min(screenRect.height, viewRect.height),
+						0f,
+						viewRect.height);
+				}
+				else
+				{
+					GUIUtility.GetControlID(sliderHash, FocusType.Passive);
+					GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+					GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+					if (verticalScrollbar != GUIStyle.none)
+					{
+						scrollPosition.y = 0f;
+					}
+					else
+					{
+						scrollPosition.y = Mathf.Clamp(scrollPosition.y, 0f, Mathf.Max(viewRect.height - position.height, 0f));
+					}
+				}
+			}
+		}
+		else
+		{
+			GUIUtility.GetControlID(sliderHash, FocusType.Passive);
+			GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+			GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+			GUIUtility.GetControlID(sliderHash, FocusType.Passive);
+			GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+			GUIUtility.GetControlID(repeatButtonHash, FocusType.Passive);
+		}
+		
+		GUI.BeginClip(
+			screenRect,
+			new Vector2(Mathf.Round(-scrollPosition.x - viewRect.x), Mathf.Round(-scrollPosition.y - viewRect.y)),
+			Vector2.zero,
+			false);
+		
+		return scrollPosition;
+#else
+		return GUI.BeginScrollView(position, scrollPosition, viewRect);
+#endif
+	}
+	
+	public static void EndScrollView(bool handleScrollWheel = true)
+	{
+#if UNITY_5_3 || UNITY_5_4_OR_NEWER
+		GUI.EndClip();
+		if (handleScrollWheel && Event.current.type == EventType.ScrollWheel && scrollViewState.position.Contains(Event.current.mousePosition))
+		{
+			scrollViewState.scrollPosition.x = Mathf.Clamp(scrollViewState.scrollPosition.x + Event.current.delta.x * 20f, 0f, scrollViewState.viewRect.width - scrollViewState.visibleRect.width);
+			scrollViewState.scrollPosition.y = Mathf.Clamp(scrollViewState.scrollPosition.y + Event.current.delta.y * 20f, 0f, scrollViewState.viewRect.height - scrollViewState.visibleRect.height);
+			scrollViewState.apply = true;
+			Event.current.Use();
+		}
+#else
+		GUI.EndScrollView(handleScrollWheel);
+#endif
+	}
+	
+	[NonSerialized]
+	private bool allowFontResizeWithWheel = true;
+	
 	private static EditorWindow lastFocusedWindow = null;
 	private static bool wasScrollWheel = false;
+	[NonSerialized]
 	private Rect lastCodeViewRect;
 	
 	public void DoGUI(bool enableGUI)
@@ -3323,7 +2551,7 @@ public class FGTextEditor
 					else
 						ReindentLines(insertAt.line, updateToLine);
 
-					caretMoveTime = Time.realtimeSinceStartup;
+					caretMoveTime = frameTime;
 					lastCaretMoveWasSearch = false;
 					scrollToCaret = true;
 					//Repaint();
@@ -3377,6 +2605,25 @@ public class FGTextEditor
 							var tokens = textBuffer.formatedLines[lineIndex].tokens;
 							if (tokenIndex < tokens.Count - 1)
 								token = tokens[tokenIndex + 1];
+						}
+						
+						if (token.parent != null && token.parent.resolvedSymbol != null && token.parent.semanticError == "unknown symbol")
+						{
+							var fixes = FGResolver.GetFixes(textBuffer, token);
+							foreach (var fix in fixes)
+							{
+								var captured = fix;
+								codeViewPopupMenu.AddItem(
+									new GUIContent("Resolve/" + captured.GetTitle(token)),
+									false,
+									() => {
+										BeginRefactoring(captured.GetTitle(token));
+										captured.Apply(this, token);
+										EndRefactoring();
+									});
+							}
+							if (fixes.Count > 0)
+								codeViewPopupMenu.AddSeparator("");
 						}
 						
 						string helpUrl = HelpURL();
@@ -3479,7 +2726,7 @@ public class FGTextEditor
 											var firstLeaf = nameNode as ParseTree.Leaf ?? (nameNode as ParseTree.Node).GetFirstLeaf();
 											
 											var signature = "";
-											if (decl.definition.kind == SymbolKind.Method || decl.definition.kind == SymbolKind.ExtensionMethod)
+											if (decl.definition.kind == SymbolKind.Method)
 											{
 												var definition = decl.definition;
 												signature = decl.Name + " (" + definition.PrintParameters(definition.GetParameters(), true) + ")";
@@ -3620,14 +2867,22 @@ public class FGTextEditor
 				var tokenAtCursor = GetTokenAtCursor();
 				if (tokenAtCursor != null && tokenAtCursor.tokenKind < SyntaxToken.Kind.Keyword && tokenAtCursor.tokenKind != SyntaxToken.Kind.BuiltInLiteral)
 					tokenAtCursor = null;
-				var rcCaret = tokenAtCursor != null ? GetTokenRect(tokenAtCursor) : GetCaretRect();
-				rcCaret.x += scrollViewRect.x - scrollPosition.x;
-				rcCaret.y += 4f + scrollViewRect.y - scrollPosition.y;
-				if (tokenAtCursor != null)
+				Rect rcCaret;
+				if (mouseDownOnSelection)
 				{
-					var ssTopLeft = GUIUtility.ScreenToGUIPoint(new Vector2(rcCaret.x, rcCaret.y));
-					rcCaret.x += ssTopLeft.x - rcCaret.x;
-					rcCaret.y += ssTopLeft.y - rcCaret.y;
+					rcCaret = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 1f, 1f);
+				}
+				else
+				{
+					rcCaret = tokenAtCursor != null ? GetTokenRect(tokenAtCursor) : GetCaretRect();
+					rcCaret.x += scrollViewRect.x - scrollPosition.x;
+					rcCaret.y += 4f + scrollViewRect.y - scrollPosition.y;
+					if (tokenAtCursor != null)
+					{
+						var ssTopLeft = GUIUtility.ScreenToGUIPoint(new Vector2(rcCaret.x, rcCaret.y));
+						rcCaret.x += ssTopLeft.x - rcCaret.x;
+						rcCaret.y += ssTopLeft.y - rcCaret.y;
+					}
 				}
 				codeViewPopupMenu.DropDown(rcCaret);
 				return;
@@ -3649,14 +2904,38 @@ public class FGTextEditor
 		if (Event.current.type == EventType.scrollWheel)
 		{
 			mouseHoverToken = null;
-			mouseHoverTime = 0f;
+			mouseHoverTime = default(System.DateTime);
 			if (tokenTooltip != null)
 				tokenTooltip.Hide();
 			
 			if (argumentsHint != null)
 				CloseArgumentsHint();
-			
-		//	needsRepaint = true;
+		}
+		
+		if (SISettings.changeFontSizeUsingWheel)
+		{
+			if (Event.current.type == EventType.ScrollWheel)
+			{
+				if (EditorGUI.actionKey)
+				{
+					if (allowFontResizeWithWheel)
+					{
+						Event.current.Use();
+						EndScrollView();
+						ModifyFontSize(-(int)Event.current.delta.y);
+						return;
+					}
+				}
+				else
+				{
+					allowFontResizeWithWheel = false;
+				}
+			}
+			else if (!allowFontResizeWithWheel)
+			{
+				if (Event.current.type == EventType.MouseDown || Event.current.character != '\0')
+					allowFontResizeWithWheel = true;
+			}
 		}
 
 		var contentWidth = charSize.x * textBuffer.longestLine;
@@ -3671,7 +2950,7 @@ public class FGTextEditor
 			
 			if (showLineNumbers)
 			{
-				lineNumbersMaxLength = (textBuffer.formatedLines.Length + 1 + lineNumbersOffset).ToString().Length;
+				lineNumbersMaxLength = Mathf.FloorToInt(Mathf.Log10(textBuffer.formatedLines.Length + 1 + lineNumbersOffset) + 1f);
 				lineNumbersWidth = charSize.x * lineNumbersMaxLength;
 				marginLeft = lineNumbersWidth;
 			}
@@ -3679,7 +2958,11 @@ public class FGTextEditor
 			{
 				marginLeft += showLineNumbers ? 7f : 3f;
 			}
-			if (showLineNumbers || trackChanges)
+			// if (enableCodeFolding)
+			//{
+			//	marginLeft += charSize.x;
+			//}
+			if (marginLeft > 0f)
 			{
 				marginLeft += 9f;
 			}
@@ -3852,10 +3135,10 @@ public class FGTextEditor
 				}
 			}
 
-			pingStartTime = Time.realtimeSinceStartup;
-			
 			if (needsRepaint)
 			{
+				pingStartTime = frameTime;
+				
 				if (CanEdit())
 				{
 					scrollPositionLine = GetLineAt(scrollPosition.y);
@@ -3863,6 +3146,10 @@ public class FGTextEditor
 				}
 				needsRepaint = false;
 				goto onScroll;
+			}
+			else
+			{
+				pingTimer = 0.999f;
 			}
 		}
 
@@ -3902,7 +3189,7 @@ public class FGTextEditor
 			return;
 		}
 
-		if (showLineNumbers || trackChanges)
+		if (marginLeft > 0f)
 			contentRect.xMax += marginLeft + marginRight;
 
 		// Filling the background
@@ -3927,7 +3214,10 @@ public class FGTextEditor
 #endif
 			
 			if (toLine > textBuffer.formatedLines.Length)
+			{
 				toLine = textBuffer.formatedLines.Length;
+				fromLine = Mathf.Max(0, Mathf.Min(fromLine, toLine - (int)(scrollViewRect.height / charSize.y)));
+			}
 		}
 
 		if (!scrollPositionInitialized)
@@ -3935,26 +3225,25 @@ public class FGTextEditor
 			scrollPositionInitialized = true;
 			smoothScrollPosition = scrollPosition;
 			currentScrollVelocity = Vector2.zero;
-			lastSmoothScrollTime = 0f;
+			lastSmoothScrollTime = default(System.DateTime);
 		}
 
 		if (float.IsNaN(smoothScrollPosition.x) || float.IsNaN((smoothScrollPosition.y)))
 		{
 			smoothScrollPosition = scrollPosition;
 			currentScrollVelocity = Vector2.zero;
-			lastSmoothScrollTime = 0f;
+			lastSmoothScrollTime = default(System.DateTime);
 			if (float.IsNaN(smoothScrollPosition.x) || float.IsNaN((smoothScrollPosition.y)))
 				scrollPositionInitialized = false;
 		}
 		
-		wasScrollWheel = wasScrollWheel || Event.current.type == EventType.scrollWheel && !EditorGUI.actionKey;
+		//wasScrollWheel = wasScrollWheel || Event.current.type == EventType.scrollWheel && !EditorGUI.actionKey;
 		if (SISettings.smoothScrolling && !wasScrollWheel)
 		{
 			if (Event.current.type == EventType.repaint)
 			{
-				var currentTime = Time.realtimeSinceStartup;
-				var deltaTime = Mathf.Clamp01(currentTime - lastSmoothScrollTime);
-				lastSmoothScrollTime = currentTime;
+				var deltaTime = Mathf.Clamp01((float) (frameTime - lastSmoothScrollTime).TotalSeconds);
+				lastSmoothScrollTime = frameTime;
 				if (smoothScrollPosition != scrollPosition)
 				{
 					smoothScrollPosition.x = Mathf.SmoothDamp(smoothScrollPosition.x, scrollPosition.x, ref currentScrollVelocity.x, 0.05f, Mathf.Infinity, deltaTime);
@@ -3975,7 +3264,10 @@ public class FGTextEditor
 	beginScrollViewAgain:
 		var roundedSmoothScrollPosition = new Vector2(Mathf.Round(smoothScrollPosition.x), Mathf.Round(smoothScrollPosition.y));
 		
-		Vector2 newScrollPosition = GUI.BeginScrollView(scrollViewRect, roundedSmoothScrollPosition, wordWrapping ? new Rect(contentRect.x, contentRect.y, 1, contentHeight) : contentRect);
+		var rounderContentRect = wordWrapping ? new Rect(contentRect.x, contentRect.y, 1, contentHeight) : contentRect;
+		rounderContentRect = new Rect(rounderContentRect.x, rounderContentRect.y,
+			Mathf.Ceil(rounderContentRect.width), Mathf.Ceil(rounderContentRect.height));
+		Vector2 newScrollPosition = BeginScrollView(scrollViewRect, roundedSmoothScrollPosition, rounderContentRect);
 		if (CanEdit() && scrollPosition != newScrollPosition)
 		{
 			if (roundedSmoothScrollPosition != newScrollPosition)
@@ -3987,7 +3279,7 @@ public class FGTextEditor
 
 				newScrollPosition = roundedSmoothScrollPosition;
 
-				GUI.EndScrollView();
+				EndScrollView();
 				goto beginScrollViewAgain;
 			}
 
@@ -4005,7 +3297,10 @@ public class FGTextEditor
 #endif
 			
 			if (toLine > textBuffer.formatedLines.Length)
+			{
 				toLine = textBuffer.formatedLines.Length;
+				fromLine = Mathf.Max(0, Mathf.Min(fromLine, toLine - (int)(scrollViewRect.height / charSize.y)));
+			}
 		}
 		else
 		{
@@ -4013,7 +3308,7 @@ public class FGTextEditor
 		}
 		if (textBuffer.lines.Count == 0)
 		{
-			GUI.EndScrollView();
+			EndScrollView();
 			wasScrollWheel = false;
 			return;
 		}
@@ -4036,13 +3331,11 @@ public class FGTextEditor
 		if (focusCodeView)
 		{
 			focusCodeView = false;
-			caretMoveTime = Time.realtimeSinceStartup;
+			caretMoveTime = frameTime;
 			GUIUtility.keyboardControl = codeViewControlID;
 			Repaint();
 		}
 		hasCodeViewFocus = GUIUtility.keyboardControl == codeViewControlID;
-		if (hasCodeViewFocus)
-			Input.imeCompositionMode = IMECompositionMode.On;
 		if (hasCodeViewFocus && Event.current.rawType != EventType.mouseUp)
 		{
 			EditorWindow wnd = EditorWindow.focusedWindow;
@@ -4055,6 +3348,8 @@ public class FGTextEditor
 				hasCodeViewFocus = wnd == OwnerWindow;
 			}
 		}
+		if (hasCodeViewFocus)
+			Input.imeCompositionMode = IMECompositionMode.On;
 
 		if (Event.current.type != EventType.layout)
 		{
@@ -4213,13 +3508,13 @@ public class FGTextEditor
 				}
 			}
 
-			if (pingTimer > 0f && pingStartTime != 0f)
+			if (pingTimer > 0f && pingStartTime != default(System.DateTime))
 			{
-				pingTimer = 1f - (Time.realtimeSinceStartup - pingStartTime) * 0.5f;
+				pingTimer = 1f - ((float) (frameTime - pingStartTime).TotalSeconds) * 0.5f;
 				if (pingTimer < 0f)
 				{
 					pingTimer = 0f;
-					pingStartTime = 0f;
+					pingStartTime = default(System.DateTime);
 				}
 
 				int row;
@@ -4230,14 +3525,6 @@ public class FGTextEditor
 				
 				DrawPing(marginLeft, rcPing, true);
 			}
-		}
-
-		if (Event.current.type == EventType.ScrollWheel && EditorGUI.actionKey && SISettings.changeFontSizeUsingWheel)
-		{
-			Event.current.Use();
-			GUI.EndScrollView();
-			ModifyFontSize(-(int)Event.current.delta.y);
-			return;
 		}
 
 		List<SyntaxToken> tempTokens = null;
@@ -4369,8 +3656,10 @@ public class FGTextEditor
 									}
 								}
 							}
-
-							GUI.Label(rect, tokenText, token.style);
+							
+							if (Event.current.type == EventType.Repaint)
+								token.style.Draw(rect, tokenText, false, false, false, false);
+							//GUI.Label(rect, tokenText, token.style);
 						}
 					}
 
@@ -4476,7 +3765,9 @@ public class FGTextEditor
 									}
 								}
 								
-								GUI.Label(rect, tokenText, token.style);
+								if (Event.current.type == EventType.Repaint)
+									token.style.Draw(rect, tokenText, false, false, false, false);
+								//GUI.Label(rect, tokenText, token.style);
 							}
 						}
 
@@ -4570,11 +3861,11 @@ public class FGTextEditor
 
 		if (hasCodeViewFocus && Event.current.type == EventType.repaint && CanEdit())
 		{
-			FGTextBuffer.CaretPos position = codeViewDragging && mouseDownOnSelection ? mouseDropPosition.Clone() : caretPosition.Clone();
+			FGTextBuffer.CaretPos position = codeViewDragging && mouseDownOnSelection ? mouseDropPosition : caretPosition;
 
-			float caretTime = (Time.realtimeSinceStartup - caretMoveTime) % 1f; // / 1f;
+			float caretTime = ((float) (frameTime - caretMoveTime).TotalSeconds) % 1f;
 			isCaretOn = caretTime < 0.5f;
-			if ((isCaretOn || pingTimer > 0f && pingStartTime != 0f) && position.line >= fromLine && position.line < toLine)
+			if ((isCaretOn || pingTimer > 0f && pingStartTime != default(System.DateTime)) && position.line >= fromLine && position.line < toLine)
 			{
 				int row;
 				int column;
@@ -4610,11 +3901,11 @@ public class FGTextEditor
 				// if the source code is shorter than the view...
 				if (rect.height < scrollViewRect.height)
 					rect.height = scrollViewRect.height;
-				GUI.Label(rect, GUIContent.none, styles.lineNumbersBackground);
+				styles.lineNumbersBackground.Draw(rect, false, false, false, false);
 
 				rect.xMin = marginLeft - 5f + smoothScrollPosition.x;
 				rect.width = 1f;
-				GUI.Label(rect, GUIContent.none, styles.lineNumbersSeparator);
+				styles.lineNumbersSeparator.Draw(rect, false, false, false, false);
 			}
 
 			if (showLineNumbers)
@@ -4642,7 +3933,9 @@ public class FGTextEditor
 
 			if (trackChanges)
 			{
-				rect.xMin = marginLeft - 13f + smoothScrollPosition.x;
+				rect.xMin = marginLeft - 13f - smoothScrollPosition.x;
+				//if (enableCodefolding)
+					//rect.xMin -= charSize.x;
 				rect.width = 5f;
 
 				for (int i = fromLine; i < toLine; ++i)
@@ -4665,6 +3958,40 @@ public class FGTextEditor
 					}
 				}
 			}
+			
+			//if (enableCodeFolding)
+			//{
+			//	for (int i = fromLine; i < toLine; ++i)
+			//	{
+			//		if (!IsLineVisible(i))
+			//		{
+			//			continue;
+			//		}
+					
+			//		var region = textBuffer.formatedLines[i].regionTree;
+			//		if (region == null || region.line == null)
+			//		{
+			//			continue;
+			//		}
+					
+			//		if (region.kind != FGTextBuffer.RegionTree.Kind.Region &&
+			//			region.kind != FGTextBuffer.RegionTree.Kind.InactiveRegion)
+			//		{
+			//			continue;
+			//		}
+					
+			//		var lineIndex = region.line.index;
+			//		if (i != lineIndex)
+			//		{
+			//			continue;
+			//		}
+					
+			//		tempContent.text = collapsedRegions.Contains(textBuffer.formatedLines[i].GetRegionName()) ? "▶" : "▼";
+			//		rect.Set(marginLeft - charSize.x - 6f, GetLineOffset(i), charSize.x, charSize.y);
+			//		styles.lineNumbersStyle.Draw(rect, tempContent, caretPosition.line == i, false, false, false);
+			//		EditorGUIUtility.AddCursorRect(rect, MouseCursor.ArrowMinus);
+			//	}
+			//}
 		}
 		
 		if (needsReformat)
@@ -4678,10 +4005,10 @@ public class FGTextEditor
 			{
 				smoothScrollPosition = scrollPosition;
 				currentScrollVelocity = Vector2.zero;
-				lastSmoothScrollTime = 0f;
+				lastSmoothScrollTime = default(System.DateTime);
 			}
 			
-			GUI.EndScrollView();
+			EndScrollView();
 			Repaint();
 			return;
 		}
@@ -4689,17 +4016,17 @@ public class FGTextEditor
 		if (Event.current.type == EventType.repaint)
 			EditorGUIUtility.AddCursorRect(wordWrapping ? new Rect(contentRect.x, contentRect.y, contentRect.width, contentHeight) : contentRect, MouseCursor.Text);
 
-		if (Event.current.type == EventType.repaint && pingTimer > 0f)
+		if (Event.current.type == EventType.repaint && pingTimer > 0f && pingStartTime != default(System.DateTime))
 		{
 			int row;
+			
 			int column;
 			BufferToViewPosition(caretPosition, out row, out column);
 			var rcPing = scrollToRect;
 			rcPing.y = charSize.y * row + GetLineOffset(caretPosition.line);
 			
 			DrawPing(marginLeft, rcPing, false);
-			if (pingTimer > 0f)
-				Repaint();
+			Repaint();
 		}
 
 	endScrollViewAndExit:
@@ -4711,11 +4038,11 @@ public class FGTextEditor
 		
 		if (tryArgumentsHint)
 			UpdateArgumentsHint(true);
-		else if (argumentsHint != null && caretMoveTime == Time.realtimeSinceStartup)
+		else if (argumentsHint != null && caretMoveTime == frameTime)
 			UpdateArgumentsHint(true);
 		tryArgumentsHint = false;
 		
-		GUI.EndScrollView();
+		EndScrollView();
 	}
 	
 	private GUIStyle GetTokenStyle(SyntaxToken token)
@@ -5053,20 +4380,29 @@ public class FGTextEditor
 	private bool lineSelectMode = false;
 	[NonSerialized]
 	private bool mouseIsDown = false;
+	//[NonSerialized]
+	//private int mouseDownOnFolddingLine = -1;
 	[NonSerialized]
-	public static float lastDoubleClickTime = 0;
+	public static System.DateTime lastDoubleClickTime;
 
 	[NonSerialized]
 	public SyntaxToken mouseHoverToken;
 	[NonSerialized]
 	private Rect mouseHoverTokenRect;
 	[NonSerialized]
-	public float mouseHoverTime;
+	public System.DateTime mouseHoverTime;
 	[NonSerialized]
 	public FGTooltip tokenTooltip;
 	
 	[NonSerialized]
 	public FGTooltip argumentsHint;
+	
+	[NonSerialized]
+	FGTextBuffer.CaretPos nextCaretPos = new FGTextBuffer.CaretPos();
+	[NonSerialized]
+	FGTextBuffer.CaretPos clickedPos = new FGTextBuffer.CaretPos();
+	[NonSerialized]
+	FGTextBuffer.CaretPos mouseOverPos = new FGTextBuffer.CaretPos();
 	
 	private void ProcessEditorMouse(float margin, Event current)
 	{
@@ -5079,12 +4415,46 @@ public class FGTextEditor
 		if (GUIUtility.hotControl != 0 && GUIUtility.hotControl != codeViewControlID && DragAndDrop.GetGenericData("ScriptInspector.Text") == null)
 			return;
 
+		clickedPos.line = -1;
+		mouseOverPos.line = -1;
+		//nextCaretPos.line = -1;
 		if (current.type == EventType.MouseDown)
 		{
 			nextF12GoesBack = false;
 
 			if (current.button == 0)
+			{
 				mouseIsDown = true;
+				
+				// if (enableCodeFolding)
+				//{
+				//	// Check code folding buttons
+				//	if (current.mousePosition.x >= marginLeft - charSize.x - 6f &&
+				//		current.mousePosition.x < marginLeft - charSize.x - 6f + charSize.x)
+				//	{
+				//		var lineIndex = GetLineAt(current.mousePosition.y);
+				//		if (lineIndex >= 0 && lineIndex < textBuffer.lines.Count)
+				//		{
+				//			if (current.mousePosition.y - GetLineOffset(lineIndex) < charSize.y)
+				//			{
+				//				var region = textBuffer.formatedLines[lineIndex].regionTree;
+				//				if (region != null && region.line != null)
+				//				{
+				//					if (region.kind == FGTextBuffer.RegionTree.Kind.Region ||
+				//						region.kind == FGTextBuffer.RegionTree.Kind.InactiveRegion)
+				//					{
+				//						var regionStartsAt = region.line.index;
+				//						if (regionStartsAt == lineIndex)
+				//						{
+				//							mouseDownOnFolddingLine = lineIndex;
+				//						}
+				//					}
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
+			}
 		}
 		if (!mouseIsDown && current.button == 0 && current.rawType != EventType.MouseUp && current.type != EventType.MouseMove)
 			return;
@@ -5102,7 +4472,11 @@ public class FGTextEditor
 		int nextCaretColumn = caretPosition.virtualColumn;
 		int nextCharacterIndex = caretPosition.characterIndex;
 		int nextCaretLine = caretPosition.line;
-		FGTextBuffer.CaretPos nextCaretPos = caretPosition.Clone();
+		
+		nextCaretPos.line = caretPosition.line;
+		nextCaretPos.characterIndex = caretPosition.characterIndex;
+		nextCaretPos.column = caretPosition.column;
+		nextCaretPos.virtualColumn = caretPosition.virtualColumn;
 
 		float x = current.mousePosition.x;
 		float y = current.mousePosition.y;
@@ -5118,21 +4492,16 @@ public class FGTextEditor
 		int clickedLine;
 		int clickedCharIndex;
 		int mouseOverCharIndex;
-		FGTextBuffer.CaretPos clickedPos;
-		FGTextBuffer.CaretPos mouseOverPos;
 		if (!wordWrapping)
 		{
 			clickedLine = Mathf.Clamp((int)(y / charSize.y), 0, textBuffer.lines.Count - 1);
 			if (mouseOverColumn == clickedColumn)
 			{
 				clickedCharIndex = textBuffer.ColumnToCharIndex(ref clickedColumn, clickedLine);			
-				clickedPos = new FGTextBuffer.CaretPos
-				{
-					line = clickedLine,
-					virtualColumn = clickedColumn,
-					column = clickedColumn,
-					characterIndex = clickedCharIndex
-				};
+				clickedPos.line = clickedLine;
+				clickedPos.virtualColumn = clickedColumn;
+				clickedPos.column = clickedColumn;
+				clickedPos.characterIndex = clickedCharIndex;
 				
 				mouseOverPos = clickedPos;
 				mouseOverCharIndex = clickedCharIndex;
@@ -5140,22 +4509,16 @@ public class FGTextEditor
 			else
 			{
 				clickedCharIndex = textBuffer.ColumnToCharIndex(ref clickedColumn, clickedLine);
-				clickedPos = new FGTextBuffer.CaretPos
-				{
-					line = clickedLine,
-					virtualColumn = clickedColumn,
-					column = clickedColumn,
-					characterIndex = clickedCharIndex
-				};
+				clickedPos.line = clickedLine;
+				clickedPos.virtualColumn = clickedColumn;
+				clickedPos.column = clickedColumn;
+				clickedPos.characterIndex = clickedCharIndex;
 				
 				mouseOverCharIndex = textBuffer.ColumnToCharIndex(ref mouseOverColumn, clickedLine);
-				mouseOverPos = new FGTextBuffer.CaretPos
-				{
-					line = clickedLine,
-					virtualColumn = mouseOverColumn,
-					column = mouseOverColumn,
-					characterIndex = mouseOverCharIndex
-				};
+				mouseOverPos.line = clickedLine;
+				clickedPos.virtualColumn = mouseOverColumn;
+				clickedPos.column = mouseOverColumn;
+				clickedPos.characterIndex = mouseOverCharIndex;
 			}
 		}
 		else
@@ -5193,7 +4556,7 @@ public class FGTextEditor
 			var hoverToken = textBuffer.GetTokenAt(textPos, out tokenLine, out tokenIndex, out atTokenEnd);
 			if (hoverToken != mouseHoverToken)
 			{
-				mouseHoverTime = 0f;
+				mouseHoverTime = default(System.DateTime);
 				mouseHoverToken = null;
 				if (tokenTooltip != null)
 					tokenTooltip.Hide();
@@ -5214,14 +4577,14 @@ public class FGTextEditor
 					if (mouseHoverTokenRect.Contains(mouseScreenPoint))
 					{
 						mouseHoverToken = hoverToken;
-						mouseHoverTime = hoverToken != null ? Time.realtimeSinceStartup : 0;
+						mouseHoverTime = hoverToken != null ? frameTime : default(System.DateTime);
 					}
 				}
 			}
 		}
 		else
 		{
-			mouseHoverTime = 0f;
+			mouseHoverTime = default(System.DateTime);
 			mouseHoverToken = null;
 		}
 
@@ -5280,10 +4643,7 @@ public class FGTextEditor
 
 					textBuffer.EndEdit();
 				}
-			}
-
-			if (eventType != EventType.DragUpdated)
-			{
+				
 				DragAndDrop.AcceptDrag();
 				DragAndDrop.SetGenericData("ScriptInspector.Text", null);
 
@@ -5300,12 +4660,20 @@ public class FGTextEditor
 			}
 
 			if (mouseOnSelection)
-				clickedPos = caretPosition.Clone();
+			{
+				clickedPos.line = caretPosition.line;
+				clickedPos.characterIndex = caretPosition.characterIndex;
+				clickedPos.column = caretPosition.column;
+				clickedPos.virtualColumn = caretPosition.virtualColumn;
+			}
 
 			if (clickedPos != mouseDropPosition)
 			{
-				mouseDropPosition = clickedPos.Clone();
-				caretMoveTime = Time.realtimeSinceStartup;
+				mouseDropPosition.line = clickedPos.line;
+				mouseDropPosition.characterIndex = clickedPos.characterIndex;
+				mouseDropPosition.column = clickedPos.column;
+				mouseDropPosition.virtualColumn = clickedPos.virtualColumn;
+				caretMoveTime = frameTime;
 				lastCaretMoveWasSearch = false;
 				//scrollToCaret = true;
 				needsRepaint = true;
@@ -5340,7 +4708,7 @@ public class FGTextEditor
 //				if (!codeViewRect.Contains(current.mousePosition))
 //					return;
 
-				lastAutoScrollTime = Time.realtimeSinceStartup;
+				lastAutoScrollTime = frameTime;
 
 				if (mouseDownOnSelection && !current.shift)
 				{
@@ -5373,7 +4741,10 @@ public class FGTextEditor
 					nextCharacterIndex = clickedPos.characterIndex;
 					nextCaretColumn = clickedColumn;
 					nextCaretLine = clickedLine;
-					nextCaretPos = clickedPos.Clone();
+					nextCaretPos.line = clickedPos.line;
+					nextCaretPos.characterIndex = clickedPos.characterIndex;
+					nextCaretPos.column = clickedPos.column;
+					nextCaretPos.virtualColumn = clickedPos.virtualColumn;
 					scrollToCaret = true;
 				}
 				else
@@ -5401,8 +4772,8 @@ public class FGTextEditor
 						wordSelectMode = false;
 						anchorWordStart = anchorWordEnd = null;
 					}
-					else if (Time.realtimeSinceStartup > lastDoubleClickTime &&
-						Time.realtimeSinceStartup <= lastDoubleClickTime + 0.5f)
+					else if (frameTime > lastDoubleClickTime &&
+						((float) (frameTime - lastDoubleClickTime).TotalSeconds) <= 0.5f)
 					{
 						lineSelectMode = true;
 						wordSelectMode = false;
@@ -5417,7 +4788,10 @@ public class FGTextEditor
 				nextCharacterIndex = clickedCharIndex;
 				nextCaretColumn = clickedColumn;
 				nextCaretLine = clickedLine;
-				nextCaretPos = clickedPos.Clone();
+				nextCaretPos.line = clickedPos.line;
+				nextCaretPos.characterIndex = clickedPos.characterIndex;
+				nextCaretPos.column = clickedPos.column;
+				nextCaretPos.virtualColumn = clickedPos.virtualColumn;
 					
 				if (current.button == 0)
 				{
@@ -5430,7 +4804,7 @@ public class FGTextEditor
 					if (!lineSelectMode && (current.clickCount == 2 || EditorGUI.actionKey || wordSelectMode))
 					{
 						if (current.clickCount == 2)
-							lastDoubleClickTime = Time.realtimeSinceStartup;
+							lastDoubleClickTime = frameTime;
 						
 						int wordStart;
 						int wordEnd;
@@ -5504,7 +4878,7 @@ public class FGTextEditor
 									{
 										anchorWordStart = caretPosition.Clone();
 										anchorWordEnd = caretPosition.Clone();
-										Debug.Log(anchorWordEnd.characterIndex >= anchorWordStart.characterIndex ? "OK" : "WRONG");
+										//Debug.Log(anchorWordEnd.characterIndex >= anchorWordStart.characterIndex ? "OK" : "WRONG");
 									}
 									
 									nextCharacterIndex = forward ? wordEnd : wordStart;
@@ -5536,6 +4910,42 @@ public class FGTextEditor
 
 		if (current.rawType == EventType.mouseUp && current.button == 0 && GUIUtility.hotControl != 0)
 		{
+			// if (enableCodeFolding)
+			//{
+			//	// Code folding buttons
+			//	if (mouseDownOnFolddingLine >= 0)
+			//	{
+			//		if (current.mousePosition.x >= marginLeft - charSize.x - 6f &&
+			//			current.mousePosition.x < marginLeft - charSize.x - 6f + charSize.x)
+			//		{
+			//			var lineIndex = GetLineAt(current.mousePosition.y);
+			//			if (lineIndex == mouseDownOnFolddingLine)
+			//			{
+			//				mouseDownOnFolddingLine = -1;
+							
+			//				if (current.mousePosition.y - GetLineOffset(lineIndex) < charSize.y)
+			//				{
+			//					var region = textBuffer.formatedLines[lineIndex].regionTree;
+			//					if (region != null && region.line != null)
+			//					{
+			//						if (region.kind == FGTextBuffer.RegionTree.Kind.Region ||
+			//							region.kind == FGTextBuffer.RegionTree.Kind.InactiveRegion)
+			//						{
+			//							var regionStartsAt = region.line.index;
+			//							if (regionStartsAt == lineIndex)
+			//							{
+			//								ToggleFolding(lineIndex);
+			//								Event.current.Use();
+			//								return;
+			//							}
+			//						}
+			//					}
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
+			
 			if (mouseDownOnSelection)
 			{
 				if (!codeViewDragging)
@@ -5571,7 +4981,7 @@ public class FGTextEditor
 			nextCaretPos.line != (caretPosition.line + lineSelectOffset) ||
 			eventType == EventType.mouseDown && current.button == 0)
 		{
-			caretMoveTime = Time.realtimeSinceStartup;
+			caretMoveTime = frameTime;
 			lastCaretMoveWasSearch = false;
 
 			//if (nextCaretLine < 0)
@@ -5616,7 +5026,12 @@ public class FGTextEditor
 				}
 			}
 
-			caretPosition = nextCaretPos;
+			if (!mouseDownOnSelection)
+			{
+				caretPosition.line = nextCaretPos.line;
+				caretPosition.characterIndex = nextCaretPos.characterIndex;
+				caretPosition.column = nextCaretPos.column;
+				caretPosition.virtualColumn = nextCaretPos.virtualColumn;
 			//caretPosition.line = nextCaretLine;
 			if (nextCaretLine >= 0)
 			{
@@ -5632,6 +5047,7 @@ public class FGTextEditor
 				//}
 				caretPosition.virtualColumn = caretPosition.column;
 			}
+			}
 
 			if (!isDrag && !lineSelectMode && (modifiers & EventModifiers.Shift) == 0)
 				selectionStartPosition = null;
@@ -5643,6 +5059,47 @@ public class FGTextEditor
 			}
 			//Repaint();
 			needsRepaint = true;
+		}
+	}
+	
+	[SerializeField]
+	private List<string> collapsedRegions = new List<string>();
+	
+	private void ToggleFolding(int line)
+	{
+		var regionName = textBuffer.formatedLines[line].GetRegionName();
+		var index = collapsedRegions.IndexOf(regionName);
+		if (index < 0)
+		{
+			collapsedRegions.Add(regionName);
+			
+			var region = textBuffer.formatedLines[line].regionTree;
+			while (++line < textBuffer.formatedLines.Length)
+			{
+				var currentRegion = textBuffer.formatedLines[line].regionTree;
+				while (currentRegion != region && currentRegion != null)
+					currentRegion = currentRegion.parent;
+				HideLine(line);
+				if (currentRegion != region)
+					break;
+			}
+		}
+		else
+		{
+			collapsedRegions.RemoveAt(index);
+			
+			var region = textBuffer.formatedLines[line].regionTree;
+			while (++line < textBuffer.formatedLines.Length)
+			{
+				var currentRegion = textBuffer.formatedLines[line].regionTree;
+				while (currentRegion != region && currentRegion != null)
+					currentRegion = currentRegion.parent;
+				//UnhideLine(line);
+				if (currentRegion != region)
+					break;
+			}
+			hiddenLinesStart.Clear();
+			hiddenLinesCount.Clear();
 		}
 	}
 
@@ -5709,7 +5166,7 @@ public class FGTextEditor
 				caretPosition.column = caretPosition.virtualColumn = CharIndexToColumn(caretPosition.characterIndex, textBuffer.numParsedLines - 1);
 
 				Event.current.Use();
-				caretMoveTime = Time.realtimeSinceStartup;
+				caretMoveTime = frameTime;
 				lastCaretMoveWasSearch = false;
 				scrollToCaret = true;
 				Repaint();
@@ -5754,7 +5211,7 @@ public class FGTextEditor
 					tryArgumentsHint = true;
 					
 					Event.current.Use();
-					caretMoveTime = Time.realtimeSinceStartup;
+					caretMoveTime = frameTime;
 					lastCaretMoveWasSearch = false;
 					scrollToCaret = true;
 					Repaint();
@@ -5781,7 +5238,7 @@ public class FGTextEditor
 						AddRecentLocation(0, true);
 						tryArgumentsHint = true;
 						
-						caretMoveTime = Time.realtimeSinceStartup;
+						caretMoveTime = frameTime;
 						lastCaretMoveWasSearch = false;
 						scrollToCaret = true;
 						Repaint();
@@ -5813,7 +5270,7 @@ public class FGTextEditor
 							
 							AddRecentLocation(0, true);
 							
-							caretMoveTime = Time.realtimeSinceStartup;
+							caretMoveTime = frameTime;
 							lastCaretMoveWasSearch = false;
 							scrollToCaret = true;
 							Repaint();
@@ -5828,6 +5285,10 @@ public class FGTextEditor
 			{
 				if (Application.platform == RuntimePlatform.OSXEditor ||
 					selectionStartPosition == null && !SISettings.copyCutFullLine)
+				{
+					CommandDeleteLine();
+				}
+				else if (selectionStartPosition == null && textBuffer.lines[caretPosition.line] == "")
 				{
 					CommandDeleteLine();
 				}
@@ -6402,6 +5863,7 @@ public class FGTextEditor
 				//Debug.Log("tokenLeft: " + tokenLeft.parent.grammarNode);
 
 				var scanner = TextBuffer.Parser.MoveAfterLeaf(tokenLeft != null ? tokenLeft.parent : null);
+				var currentScannerNode = scanner != null ? scanner.CurrentParseTreeNode : null;
 			//	Debug.Log("scanner.CurrentParseTreeNode before: " + ParentsLog(scanner.CurrentParseTreeNode));
 
 				var grammar = CsGrammar.Instance;
@@ -6410,6 +5872,7 @@ public class FGTextEditor
 				if (scanner != null)
 				{
 					scanner.CollectCompletions(tokenSet);
+					scanner.Delete();
 					if (tryAutocomplete && tokenSet.Matches(grammar.tokenName))
 					{
 						CloseAutocomplete();
@@ -6429,7 +5892,6 @@ public class FGTextEditor
 					if (!autocompleteWindow.IdentifiersOnly)
 						data.Add(new KeywordAsSD("null"));
 				
-				var currentScannerNode = scanner != null ? scanner.CurrentParseTreeNode : null;
 				var enclosingScopeNode = CsGrammar.EnclosingScopeNode(currentScannerNode);
 				var enclosingScope = enclosingScopeNode != null ? enclosingScopeNode.scope : null;
 				
@@ -6782,9 +6244,9 @@ public class FGTextEditor
 		}
 	}
 
-	private static void FilterCompletions(HashSet<SymbolDefinition> data)
+	private void FilterCompletions(HashSet<SymbolDefinition> data)
 	{
-		data.RemoveWhere(x => !DerivesFromOrContains(x, attributeType));
+		data.RemoveWhere(x => !DerivesFromOrContains(x, attributeType, true));
 	}
 
 	private static TypeDefinitionBase _attributeType;
@@ -6797,19 +6259,43 @@ public class FGTextEditor
 		}
 	}
 
-	private static bool DerivesFromOrContains(SymbolDefinition symbol, TypeDefinitionBase type)
+	private bool DerivesFromOrContains(SymbolDefinition symbol, TypeDefinitionBase type, bool checkReferencedAssemblies)
 	{
-		if (symbol.kind != SymbolKind.Namespace && symbol.kind != SymbolKind.Class)
-			return false;
-		if (symbol.kind == SymbolKind.Class)
+		if (symbol.kind == SymbolKind.Namespace)
+		{
+			for (var i = 0; i < symbol.members.Count; ++i)
+			{
+				var child = symbol.members[i];
+				if (DerivesFromOrContains(child, type, true))
+					return true;
+			}
+			
+			if (checkReferencedAssemblies)
+			{
+				var namespaceDefinition = (NamespaceDefinition) symbol;
+				var assembly = ((CompilationUnitScope) textBuffer.Parser.parseTree.root.scope).assembly;
+				if (assembly != null)
+				{
+					foreach (var ra in assembly.referencedAssemblies)
+					{
+						var nsDef = ra.FindSameNamespace(namespaceDefinition);
+						if (nsDef != null)
+						{
+							for (var i = 0; i < nsDef.members.Count; ++i)
+							{
+								var child = nsDef.members[i];
+								if (DerivesFromOrContains(child, type, false))
+									return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (symbol.kind == SymbolKind.Class)
 		{
 			var asType = symbol as TypeDefinitionBase;
 			if (asType.DerivesFrom(type))
-				return true;
-		}
-		foreach (var child in symbol.members)
-		{
-			if (DerivesFromOrContains(child, type))
 				return true;
 		}
 		return false;
@@ -7282,7 +6768,7 @@ public class FGTextEditor
 				var nameNode = decl.NameNode();
 				var firstLeaf = nameNode as ParseTree.Leaf ?? (nameNode as ParseTree.Node).GetFirstLeaf();
 				var signature = "";
-				if (decl.kind == SymbolKind.Method || decl.kind == SymbolKind.ExtensionMethod)
+				if (decl.kind == SymbolKind.Method)
 				{
 					var definition = decl.definition;
 					signature = decl.Name + " (" + definition.PrintParameters(definition.GetParameters(), true) + ")";
@@ -7614,6 +7100,72 @@ public class FGTextEditor
 					current.Use();
 					ModifyFontSize(1);
 					return;
+				}
+				else if (mods == 0 && (current.keyCode == KeyCode.Period || current.keyCode == KeyCode.KeypadPeriod))
+				{
+					if (textBuffer.isCsFile)
+					{
+						int lineIndex, tokenIndex;
+						bool atTokenEnd;
+						var token = textBuffer.GetTokenAt(caretPosition, out lineIndex, out tokenIndex, out atTokenEnd);
+						var tokens = textBuffer.formatedLines[lineIndex].tokens;
+						if (token != null)
+						{
+							if (atTokenEnd &&
+								token.tokenKind != SyntaxToken.Kind.Identifier &&
+								token.tokenKind != SyntaxToken.Kind.ContextualKeyword &&
+								token.tokenKind != SyntaxToken.Kind.Keyword)
+							{
+								if (tokenIndex < tokens.Count - 1)
+									token = tokens[tokenIndex + 1];
+							}
+						}
+						
+						tokenIndex = -1;
+						while (tokenIndex < tokens.Count)
+						{
+							if (token != null && token.parent != null &&
+								token.parent.resolvedSymbol != null && token.parent.semanticError == "unknown symbol")
+							{
+								var fixes = FGResolver.GetFixes(textBuffer, token);
+								if (fixes.Count > 0)
+								{
+									current.Use();
+									var tokenMenu = new GenericMenu();
+									foreach (var fix in fixes)
+									{
+										var captured = fix;
+										tokenMenu.AddItem(
+											new GUIContent(captured.GetTitle(token)),
+											false,
+											() => {
+												BeginRefactoring(captured.GetTitle(token));
+												captured.Apply(this, token);
+												EndRefactoring();
+											});
+									}
+									
+									var rc = GetTokenRect(token);
+									rc.x += scrollViewRect.x - scrollPosition.x;
+									rc.y += 4f + scrollViewRect.y - scrollPosition.y;
+									var ssTopLeft = GUIUtility.ScreenToGUIPoint(new Vector2(rc.x, rc.y));
+									rc.x += ssTopLeft.x - rc.x;
+									rc.y += ssTopLeft.y - rc.y;
+									tokenMenu.DropDown(rc);
+									
+									caretMoveTime = frameTime;
+									lastCaretMoveWasSearch = false;
+									scrollToCaret = true;
+									AddRecentLocation(2, true);
+									return;
+								}
+							}
+							
+							// Check fixes for the next token;
+							++tokenIndex;
+							token = tokenIndex < tokens.Count ? tokens[tokenIndex] : null;
+						}
+					}
 				}
 			}
 		}
@@ -8169,7 +7721,7 @@ public class FGTextEditor
 						IndentMoreOrInsertTab(!acceptingAutoComplete);
 					
 					focusCodeView = true;
-					caretMoveTime = Time.realtimeSinceStartup;
+					caretMoveTime = frameTime;
 					lastCaretMoveWasSearch = false;
 					needsRepaint = true;
 				}
@@ -8184,7 +7736,7 @@ public class FGTextEditor
 					IndentMore();
 				
 				focusCodeView = true;
-				caretMoveTime = Time.realtimeSinceStartup;
+				caretMoveTime = frameTime;
 				lastCaretMoveWasSearch = false;
 				needsRepaint = true;
 				current.Use();
@@ -8495,7 +8047,7 @@ public class FGTextEditor
 		//    nextCaretLine != caretPosition.line)
 		if (current.type == EventType.Used)
 		{
-			caretMoveTime = Time.realtimeSinceStartup;
+			caretMoveTime = frameTime;
 			lastCaretMoveWasSearch = false;
 
 			if (selectionStartPosition == null && current.shift)
@@ -8593,7 +8145,10 @@ public class FGTextEditor
 								textBuffer.BeginEdit("Smart Semicolon Placement");
 								ProcessEditorKeyboard(Event.KeyboardEvent("backspace"), true);
 								
-								var lastTokenSpan = textBuffer.GetTokenSpan(tokenLeft.Line, lastTokenIndex - 1);
+								tokens = textBuffer.formatedLines[caretPosition.line].tokens;
+								lastTokenIndex = tokens.FindLastIndex(t => t.tokenKind > SyntaxToken.Kind.LastWSToken);
+								
+								var lastTokenSpan = textBuffer.GetTokenSpan(caretPosition.line, lastTokenIndex);
 								caretPosition = new FGTextBuffer.CaretPos {
 									line = lastTokenSpan.line,
 									characterIndex = lastTokenSpan.EndPosition.index
@@ -8900,12 +8455,12 @@ public class FGTextEditor
 				if (char.IsLetterOrDigit(uc) || uc == '_')
 				{
 					autoPopupCompletions = true;
-					if (nextCharacterIndex >= 2)
-					{
-						var prevChar = textBuffer.lines[nextCaretLine][nextCharacterIndex - 2];
-						if (char.IsLetterOrDigit(prevChar) || prevChar == '_')
-							autoPopupCompletions = false;
-					}
+					//if (nextCharacterIndex >= 2)
+					//{
+					//	var prevChar = textBuffer.lines[nextCaretLine][nextCharacterIndex - 2];
+					//	if (char.IsLetterOrDigit(prevChar) || prevChar == '_')
+					//		autoPopupCompletions = false;
+					//}
 				}
 			}
 		}
@@ -8970,6 +8525,40 @@ public class FGTextEditor
 		}
 	}
 	
+	private void OnRemovedTextTrackSelection(FGTextBuffer.CaretPos fromPos, FGTextBuffer.CaretPos toPos)
+	{
+		var from = new TextPosition(fromPos.line, fromPos.characterIndex);
+		var to = new TextPosition(toPos.line, toPos.characterIndex);
+		
+		if (from <= savedCaretPos)
+		{
+			if (to > savedCaretPos)
+			{
+				savedCaretPos = from;
+			}
+			else
+			{
+				if (to.line == savedCaretPos.line)
+					savedCaretPos.index -= to.index - from.index;
+				savedCaretPos.line -= to.line - from.line;
+			}
+		}
+		
+		if (from <= savedSelectionPos)
+		{
+			if (to > savedSelectionPos)
+			{
+				savedSelectionPos = from;
+			}
+			else
+			{
+				if (to.line == savedSelectionPos.line)
+					savedSelectionPos.index -= to.index - from.index;
+				savedSelectionPos.line -= to.line - from.line;
+			}
+		}
+	}
+	
 	private void OnInsertedText(FGTextBuffer.CaretPos fromPos, FGTextBuffer.CaretPos toPos)
 	{
 		var from = new TextPosition(fromPos.line, fromPos.characterIndex);
@@ -9000,6 +8589,95 @@ public class FGTextEditor
 		}
 	}
 	
+	private void OnInsertedTextTrackSelection(FGTextBuffer.CaretPos fromPos, FGTextBuffer.CaretPos toPos)
+	{
+		var from = new TextPosition(fromPos.line, fromPos.characterIndex);
+		var to = new TextPosition(toPos.line, toPos.characterIndex);
+		
+		if (isRefactoring)
+		{
+			if (from <= savedCaretPos)
+			{
+				if (from.line == savedCaretPos.line)
+					savedCaretPos.index += to.index - from.index;
+				savedCaretPos.line += to.line - from.line;
+			}
+			if (from <= savedSelectionPos)
+			{
+				if (from.line == savedSelectionPos.line)
+					savedSelectionPos.index += to.index - from.index;
+				savedSelectionPos.line += to.line - from.line;
+			}
+		}
+	}
+	
+	[NonSerialized]
+	private bool isRefactoring;
+	[NonSerialized]
+	private TextPosition savedCaretPos;
+	[NonSerialized]
+	private TextPosition savedSelectionPos;
+	
+	public void BeginRefactoring(string description)
+	{
+		if (isRefactoring)
+			return;
+		
+		textBuffer.onInsertedText += OnInsertedTextTrackSelection;
+		textBuffer.onRemovedText += OnRemovedTextTrackSelection;
+		
+		textBuffer.BeginEdit("Refactoring");
+		isRefactoring = true;
+		savedCaretPos = new TextPosition(caretPosition.line, caretPosition.characterIndex);
+		if (selectionStartPosition != null)
+			savedSelectionPos = new TextPosition(selectionStartPosition.line, selectionStartPosition.characterIndex);
+		else
+			savedSelectionPos = TextPosition.invalid;
+	}
+	
+	public void EndRefactoring()
+	{
+		if (!isRefactoring)
+			Debug.LogError("EndRefactoring() called without calling BeginRefactoring()");
+		
+		textBuffer.onInsertedText -= OnInsertedTextTrackSelection;
+		textBuffer.onRemovedText -= OnRemovedTextTrackSelection;
+		
+		isRefactoring = false;
+		
+		var column = CharIndexToColumn(savedCaretPos.index, savedCaretPos.line);
+		caretPosition = new FGTextBuffer.CaretPos {
+			line = savedCaretPos.line,
+			characterIndex = savedCaretPos.index,
+			column = column,
+			virtualColumn = column
+		};
+		
+		selectionStartPosition = null;
+		if (savedSelectionPos.line >= 0 && savedSelectionPos != savedCaretPos)
+		{
+			column = CharIndexToColumn(savedSelectionPos.index, savedSelectionPos.line);
+			selectionStartPosition = new FGTextBuffer.CaretPos {
+				line = savedSelectionPos.line,
+				characterIndex = savedSelectionPos.index,
+				column = column,
+				virtualColumn = column
+			};
+		}
+		
+		ValidateCarets();
+		if (hasSelection && selectionStartPosition.IsSameAs(caretPosition))
+			selectionStartPosition = null;
+		
+		caretMoveTime = frameTime;
+		lastCaretMoveWasSearch = false;
+		scrollToCaret = true;
+		
+		textBuffer.EndEdit();
+		
+		AddRecentLocation(1, true);
+	}
+	
 	private string TryAutoClose(string closeWith)
 	{
 		var textLine = textBuffer.lines[caretPosition.line];
@@ -9019,7 +8697,7 @@ public class FGTextEditor
 		return closeWith;
 	}
 	
-	private void ReindentLines(int from, int to)
+	public void ReindentLines(int from, int to)
 	{
 		if (autocompleteWindow != null)
 			return;
@@ -9073,6 +8751,9 @@ public class FGTextEditor
 	{
 		showArgumentsHintForLeaf = null;
 		currentArgumentIndex = -1;
+		
+		if (caretPosition.line >= textBuffer.formatedLines.Length)
+			return;
 		
 		int line, characterIndex;
 		var tokenLeft = textBuffer.GetNonTriviaTokenLeftOf(caretPosition, out line, out characterIndex);
@@ -9430,7 +9111,7 @@ public class FGTextEditor
 		{
 			caretPosition = from;
 		}
-		caretMoveTime = Time.realtimeSinceStartup;
+		caretMoveTime = frameTime;
 		lastCaretMoveWasSearch = false;
 		scrollToCaret = true;
 
@@ -9470,13 +9151,14 @@ public class FGTextEditor
 		Initialize();
 
 		pingTimer = 1f;
+		pingStartTime = frameTime;
 		pingColor = yellowPingColor;
 		scrollToRect.x = charSize.x * fromColumn;
 		scrollToRect.y = GetLineOffset(caretPosition.line);
 		scrollToRect.width = charSize.x * pingContent.text.Length;
 		scrollToRect.height = charSize.y;
 
-		caretMoveTime = Time.realtimeSinceStartup;
+		caretMoveTime = frameTime;
 		Repaint();
 	}
 	
@@ -9581,19 +9263,24 @@ public class FGTextEditor
 			virtualColumn = column
 		};
 		ValidateCaret(ref caretPosition);
-		scrollToCaret = true;
-		caretMoveTime = Time.realtimeSinceStartup;
 		
-		pingContent = new GUIContent();
-		pingColor = yellowPingColor;
-		pingColor.a = 0.4f;
-		pingTimer = 1f;
-		scrollToRect.x = charSize.x * caretPosition.column - 3f;
-		scrollToRect.y = GetLineOffset(caretPosition.line);
-		scrollToRect.width = 6f;
-		scrollToRect.height = charSize.y;
+		if (!isRefactoring)
+		{
+			scrollToCaret = true;
+			caretMoveTime = frameTime;
 		
-		Repaint();
+			pingContent = new GUIContent();
+			pingColor = yellowPingColor;
+			pingColor.a = 0.4f;
+			pingTimer = 1f;
+			pingStartTime = frameTime;
+			scrollToRect.x = charSize.x * caretPosition.column - 3f;
+			scrollToRect.y = GetLineOffset(caretPosition.line);
+			scrollToRect.width = 6f;
+			scrollToRect.height = charSize.y;
+			
+			Repaint();
+		}
 	}
 	
 	struct CodePath
@@ -9664,9 +9351,12 @@ public class FGTextEditor
 		FGTextBuffer.FormatedLine ppLine = null;
 		SyntaxToken token = null;
 		var i = caretPosition.characterIndex;
-		for (var atLine = caretPosition.line; token == null && atLine < textBuffer.lines.Count; ++atLine)
+		var formatedLines = textBuffer.formatedLines;
+		var textBufferLines = textBuffer.lines;
+		var totalLinesCount = textBufferLines.Count;
+		for (var atLine = caretPosition.line; token == null && atLine < totalLinesCount; ++atLine)
 		{
-			var line = textBuffer.formatedLines[atLine];
+			var line = formatedLines[atLine];
 			if (line == null || line.tokens == null)
 			{
 				GUI.enabled = wasGuiEnabled;
@@ -9674,15 +9364,16 @@ public class FGTextEditor
 			}
 
 			var tokens = line.tokens;
+			var tokensCount = tokens.Count;
 			var tokenIndex = 0;
-			while (i > 0 && tokenIndex < tokens.Count - 1)
+			while (i > 0 && tokenIndex < tokensCount - 1)
 			{
 				i -= tokens[tokenIndex].text.Length;
 				if (i > 0)
 					++tokenIndex;
 			}
 
-			for ( ; tokenIndex < tokens.Count; ++tokenIndex)
+			for ( ; tokenIndex < tokensCount; ++tokenIndex)
 			{
 				var t = tokens[tokenIndex];
 				if (t.tokenKind > SyntaxToken.Kind.LastWSToken)
@@ -9690,8 +9381,8 @@ public class FGTextEditor
 					if (t.parent != null && t.parent.parent != null)
 					{
 						token = t;
-						break;
 					}
+					break;
 				}
 				else if (ppLine == null && t.tokenKind >= SyntaxToken.Kind.Preprocessor
 					&& t.tokenKind != SyntaxToken.Kind.VerbatimStringLiteral)
@@ -9705,7 +9396,7 @@ public class FGTextEditor
 		{
 			for (var atLine = caretPosition.line - 1; token == null && atLine >= 0; --atLine)
 			{
-				var line = textBuffer.formatedLines[atLine];
+				var line = formatedLines[atLine];
 				if (line == null || line.tokens == null)
 				{
 					GUI.enabled = wasGuiEnabled;
@@ -9721,8 +9412,8 @@ public class FGTextEditor
 						if (t.parent != null && t.parent.parent != null)
 						{
 							token = tokens[tokenIndex];
-							break;
 						}
+						break;
 					}
 					else if (ppLine == null && t.tokenKind >= SyntaxToken.Kind.Preprocessor
 						&& t.tokenKind != SyntaxToken.Kind.VerbatimStringLiteral)
@@ -9760,7 +9451,7 @@ public class FGTextEditor
 							ruleName == "structMemberDeclaration" ||
 							ruleName == "interfaceMemberDeclaration")
 						{
-							node = node.NodeAt(node.numValidNodes - 1);
+							node = node.NodeAt(-1);
 							ruleName = node != null ? node.RuleName : null;
 						}
 
@@ -10029,8 +9720,9 @@ public class FGTextEditor
 						{
 							var members = codePaths[j - 1].symbol.members;
 							var symbols = new List<SymbolDefinition>(members.Count);
-							foreach (var m in members)
+							for (var memberIndex = 0; memberIndex < members.Count; ++memberIndex)
 							{
+								var m = members[memberIndex];
 								if (m.kind == SymbolKind.MethodGroup)
 								{
 									var methodGroup = (MethodGroupDefinition) m;
@@ -10327,11 +10019,11 @@ public class FGTextEditor
 		switch (name)
 		{
 		case "op_Implicit":
-			addParameters = false;
+			//addParameters = false;
 			name = "implicit operator " + symbol.TypeOf().GetName();
 			break;
 		case "op_Explicit":
-			addParameters = false;
+			//addParameters = false;
 			name = "explicit operator " + symbol.TypeOf().GetName();
 			break;
 		case "op_Addition":
@@ -10873,7 +10565,7 @@ public class FGTextEditor
 		}
 
 		GUI.enabled = CanRedo();
-		contentSize = EditorStyles.toolbarButton.CalcSize(new GUIContent(redoIcon));
+		contentSize = EditorStyles.toolbarButton.CalcSize(redoButtonContent);
 		rc = new Rect(rc.xMax, toolbarRect.yMin, contentSize.x, contentSize.y);
 		if (GUI.Button(rc, redoButtonContent, EditorStyles.toolbarButton))
 		{
@@ -11273,16 +10965,16 @@ public class FGTextEditor
 			return;
 		}
 
-		int i = 0;
-		foreach (string line in textBuffer.lines)
+		var lines = textBuffer.lines;
+		for (int i = 0; i < lines.Count; i++)
 		{
-			for (int pos = 0; (pos = line.IndexOf(text, pos, StringComparison.InvariantCultureIgnoreCase)) != -1; pos += textLength )
+			var line = lines[i];
+			for (int pos = 0; (pos = line.IndexOf(text, pos, StringComparison.OrdinalIgnoreCase)) != -1; pos += textLength )
 			{
 				int columnFrom = textBuffer.CharIndexToColumn(pos, i);
 				FGTextBuffer.CaretPos caretPos = new FGTextBuffer.CaretPos { line = i, characterIndex = pos, column = columnFrom, virtualColumn = columnFrom };
 				searchResults.Add(caretPos);
 			}
-			++i;
 		}
 		
 		highlightSearchResults = text != ""; //text.Trim() != "";
@@ -11326,6 +11018,13 @@ public class FGTextEditor
 		return false;
 	}
 
+	[System.NonSerialized]
+	private string searchInfoString;
+	[System.NonSerialized]
+	private int cachedSearchResultsCount;
+	[System.NonSerialized]
+	private int cachedCurrentSearchResult;
+
 	private string ToolbarSearchField(Rect position, string text)
     {
 		if (styles.toolbarSearchField == null)
@@ -11350,11 +11049,17 @@ public class FGTextEditor
 				styles.toolbarSearchField.alignment = TextAnchor.UpperRight;
 				if (searchResults.Count > 0)
 				{
-					rc.width -= 20f;
-					styles.toolbarSearchField.Draw(rc, (
+					if (searchString == null || searchResults.Count != cachedSearchResultsCount || currentSearchResult != cachedCurrentSearchResult)
+					{
+						cachedCurrentSearchResult = currentSearchResult;
+						cachedSearchResultsCount = searchResults.Count;
+						searchInfoString = (
 						currentSearchResult >= 0 ?
-						(currentSearchResult + 1).ToString() + " of " + searchResults.Count.ToString() :
-						searchResults.Count.ToString() + " results") + "\xa0", false, false, false, hasSearchBoxFocus);
+							(currentSearchResult + 1).ToString() + " of " + cachedSearchResultsCount.ToString() :
+							cachedSearchResultsCount.ToString() + " results") + "\xa0";
+					}
+					rc.width -= 20f;
+					styles.toolbarSearchField.Draw(rc, searchInfoString, false, false, false, hasSearchBoxFocus);
 					rc.width += 20f;
 				}
 				else
@@ -11389,7 +11094,7 @@ public class FGTextEditor
 		text = EditorGUI.TextField(rc, text, styles.toolbarSearchField);
 		GUI.backgroundColor = bgColor;
 		
-		hasSearchBoxFocus = GUI.GetNameOfFocusedControl() == "SearchBox" || focusSearchBox;
+	    hasSearchBoxFocus = focusSearchBox || GUI.GetNameOfFocusedControl() == "SearchBox";
 
 		bool isEmpty = text == string.Empty;
 
@@ -11568,7 +11273,7 @@ public class FGTextEditor
 			virtualColumn = columnTo,
 			line = selectionStartPosition.line
 		};
-		caretMoveTime = Time.realtimeSinceStartup;
+		caretMoveTime = frameTime;
 
 		int fromRow, fromColumn, toRow, toColumn;
 		int fromCharIndex = selectionStartPosition.characterIndex;
@@ -11588,9 +11293,9 @@ public class FGTextEditor
 		scrollToRect.height = charSize.y;
 
 		pingTimer = 1f;
+		pingStartTime = frameTime;
 		numChars = Mathf.Min(numChars, lineText.Length - fromCharIndex);
 		pingContent.text = lineText.Substring(fromCharIndex, numChars);
-		//pingStartTime = Time.realtimeSinceStartup;
 		pingColor = color;
 
 		Repaint();
@@ -11608,7 +11313,7 @@ public class FGTextEditor
 	[MenuItem("CONTEXT/MonoScript/Word Wrap (Code)", false, 141)]
 	private static void ToggleWordWrapCode()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.wordWrapCode.Toggle();
 		else
 			SISettings.wordWrapCodeInspector.Toggle();
@@ -11629,7 +11334,7 @@ public class FGTextEditor
 	[MenuItem("CONTEXT/MonoScript/Line Numbers (Code)", false, 144)]
 	private static void ToggleLineNumbersCode()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.showLineNumbersCode.Toggle();
 		else
 			SISettings.showLineNumbersCodeInspector.Toggle();
@@ -11637,7 +11342,7 @@ public class FGTextEditor
 
 	private static void ToggleLineNumbersText()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.showLineNumbersText.Toggle();
 		else
 			SISettings.showLineNumbersTextInspector.Toggle();
@@ -11646,7 +11351,7 @@ public class FGTextEditor
 	[MenuItem("CONTEXT/MonoScript/Track Changes (Code)", false, 145)]
 	private static void ToggleTrackChangesCode()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.trackChangesCode.Toggle();
 		else
 			SISettings.trackChangesCodeInspector.Toggle();
@@ -11654,7 +11359,7 @@ public class FGTextEditor
 
 	private static void ToggleTrackChangesText()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.trackChangesText.Toggle();
 		else
 			SISettings.trackChangesTextInspector.Toggle();
@@ -11662,7 +11367,7 @@ public class FGTextEditor
 
 	private static void ToggleWordWrapText()
 	{
-		if (EditorWindow.focusedWindow.GetType().ToString() != "UnityEditor.InspectorWindow")
+		if (!ScriptInspector.IsFocused())
 			SISettings.wordWrapText.Toggle();
 		else
 			SISettings.wordWrapTextInspector.Toggle();

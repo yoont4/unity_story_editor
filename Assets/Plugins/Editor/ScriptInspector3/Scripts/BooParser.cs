@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -21,15 +21,20 @@ using Debug = UnityEngine.Debug;
 
 public class BooParser : FGParser
 {
-	public override string[] Keywords { get { return keywords; } }
-	public override string[] BuiltInLiterals { get { return scriptLiterals; } }
+	public override HashSet<string> Keywords { get { return keywords; } }
+	public override HashSet<string> BuiltInLiterals { get { return scriptLiterals; } }
 
 	public override bool IsBuiltInType(string word)
 	{
-		return Array.BinarySearch(builtInTypes, word, StringComparer.Ordinal) >= 0;
+		return builtInTypes.Contains(word);
 	}
-
-	private static readonly string[] keywords = new string[] {
+	
+	public override bool IsBuiltInLiteral(string word)
+	{
+		return scriptLiterals.Contains(word);
+	}
+	
+	private static readonly HashSet<string> keywords = new HashSet<string> {
 		"abstract", "and", "as", "break", "callable", "cast", "class", "const", "constructor", "destructor", "continue",
 		"def", "do", "elif", "else", "enum", "ensure", "event", "except", "final", "for", "from", "given", "get", "goto",
 		"if", "interface", "in", "include", "import", "is", "isa", "mixin", "namespace", "not", "or", "otherwise",
@@ -48,15 +53,10 @@ public class BooParser : FGParser
 		"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "=>"
 	};
 
-	private static readonly string[] builtInTypes = new string[] {
+	private static readonly HashSet<string> builtInTypes = new HashSet<string> {
 		"bool", "byte", "char", "date", "decimal", "double", "int", "long", "object", "sbyte", "short", "single", "string",
 		"timespan", "uint", "ulong", "ushort", "void"
 	};
-
-	static BooParser()
-	{
-		Array.Sort(keywords);
-	}
 
 	public override void LexLine(int currentLine, FGTextBuffer.FormatedLine formatedLine)
 	{
@@ -419,7 +419,7 @@ public class BooParser : FGParser
 
 	private bool IsKeyword(string word)
 	{
-		return Array.BinarySearch(Keywords, word, StringComparer.Ordinal) >= 0;
+		return keywords.Contains(word);
 	}
 
 	private bool IsOperator(string text)

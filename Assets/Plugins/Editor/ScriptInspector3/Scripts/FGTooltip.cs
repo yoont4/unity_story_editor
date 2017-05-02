@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -122,10 +122,15 @@ public class FGTooltip : FGPopupWindow
 								leafScope = i.scope;
 								break;
 							}
-						var candidates = group.CollectCandidates(null, null, null, leafScope, null);
-						if (candidates != null)
+						
+						if (MethodGroupDefinition.methodCandidatesStack.Count != 0)
+							throw new System.IndexOutOfRangeException();
+						
+						var numCandidates = group.CollectCandidates(-1, leafScope, null);
+						if (numCandidates != 0)
 						{
-							methodOverloads = candidates.ToArray();
+							methodOverloads = MethodGroupDefinition.methodCandidatesStack.ToArray();
+							MethodGroupDefinition.methodCandidatesStack.Clear();
 							if (constructedType != null)
 							{
 								overloads = new SymbolDefinition[methodOverloads.Length];
@@ -136,7 +141,14 @@ public class FGTooltip : FGPopupWindow
 							{
 								overloads = methodOverloads;
 							}
-							currentOverload = Mathf.Clamp(System.Array.IndexOf(overloads, symbolDefinition), 0, overloads.Length - 1);
+							currentOverload = System.Array.IndexOf(overloads, symbolDefinition);
+							//Debug.Log(currentOverload + " " + symbolDefinition.GetTooltipText());
+							if (currentOverload == -1)
+							{
+								currentOverload = System.Array.IndexOf(overloads, symbolDefinition.GetGenericSymbol());
+								//Debug.Log(currentOverload + " " + symbolDefinition.GetTooltipText());
+							}
+							currentOverload = Mathf.Clamp(currentOverload, 0, overloads.Length - 1);
 						}
 					}
 					//else if (group == null)
@@ -170,7 +182,7 @@ public class FGTooltip : FGPopupWindow
 		{
 			if (leaf.syntaxError != null)
 			{
-				tooltipText = leaf.syntaxError;
+				tooltipText = leaf.syntaxError.GetErrorMessage();
 			}
 			else if (leaf.semanticError != null && (symbolDefinition == null || symbolDefinition.kind != SymbolKind.Error))
 			{
@@ -263,7 +275,7 @@ public class FGTooltip : FGPopupWindow
 		text = null;
 		if (this == textEditor.tokenTooltip)
 		{
-			textEditor.mouseHoverTime = 0f;
+			textEditor.mouseHoverTime = default(System.DateTime);
 			textEditor.mouseHoverToken = null;
 			textEditor.tokenTooltip = null;
 		}

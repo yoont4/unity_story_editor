@@ -7,7 +7,7 @@ using UnityEditor;
 /*
   Connections represent the connection between 2 control points.
 */
-public class Connection {
+public class Connection : ScriptableObject {
 	
 	// bezier curve draw vars
 	public const float TANGENT_DIST = 50f;
@@ -20,7 +20,9 @@ public class Connection {
 	// the Action that defines what happens on removal
 	private Action<Connection> OnRemoveConnection;
 	
-	public Connection(ConnectionPoint inPoint, ConnectionPoint outPoint, Action<Connection> OnRemoveConnection) {
+	public Connection() {}
+	
+	public void Init(ConnectionPoint inPoint, ConnectionPoint outPoint, Action<Connection> OnRemoveConnection) {
 		this.inPoint = inPoint;
 		this.outPoint = outPoint;
 		this.OnRemoveConnection = OnRemoveConnection;

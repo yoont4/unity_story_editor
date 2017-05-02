@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -45,7 +45,7 @@ public enum SymbolKind : byte
 	Event,
 	Indexer,
 	Method,
-	ExtensionMethod,
+	//ExtensionMethod,
 	MethodGroup,
 	Constructor,
 	Destructor,
@@ -307,6 +307,7 @@ public abstract class Scope
 	public virtual void ResolveAttribute(ParseTree.Leaf leaf)
 	{
 		leaf.resolvedSymbol = null;
+		leaf.semanticError = null;
 		if (parentScope != null)
 			parentScope.ResolveAttribute(leaf);
 	}
@@ -409,8 +410,9 @@ public class ReflectedMember : InstanceDefinition
 		accessLevel = AccessLevelFromModifiers(modifiers);
 
 		memberInfo = info;
-		var generic = info.Name.IndexOf('`');
-		name = generic < 0 ? info.Name : info.Name.Substring(0, generic);
+		var memberName = info.Name;
+		var generic = memberName.IndexOf("`", StringComparison.Ordinal);
+		name = generic < 0 ? memberName : memberName.Substring(0, generic);
 		parentSymbol = memberOf;
 		switch (info.MemberType)
 		{
@@ -487,8 +489,10 @@ public class ReflectedMember : InstanceDefinition
 		if (accessor.IsStatic)
 			modifiers |= Modifiers.Static;
 		var baseDefinition = accessor.GetBaseDefinition();
-		if (baseDefinition != null && baseDefinition.DeclaringType != accessor.DeclaringType)
+		if (baseDefinition != null && baseDefinition != accessor)
+		{
 			modifiers = (modifiers & ~Modifiers.Virtual) | Modifiers.Override;
+		}
 		return modifiers;
 	}
 
@@ -652,9 +656,10 @@ public class ReflectedTypeReference : SymbolReference
 						if (member != null && member.kind == SymbolKind.MethodGroup)
 						{
 							var methodGroup = (MethodGroupDefinition) member;
-							foreach (var m in methodGroup.methods)
+							var methods = methodGroup.methods;
+							for (var i = methods.Count; i --> 0; )
 							{
-								var reflectedMethod = m as ReflectedMethod;
+								var reflectedMethod = methods[i] as ReflectedMethod;
 								if (reflectedMethod != null && reflectedMethod.reflectedMethodInfo == reflectedDeclaringMethod)
 								{
 									member = reflectedMethod;
@@ -735,11 +740,11 @@ public class ReflectedTypeReference : SymbolReference
 
 				if (declaringSymbol != null && declaringSymbol.kind != SymbolKind.Error)
 				{
-					var rankSpecifier = tn.IndexOf('[');
+					var rankSpecifier = tn.IndexOf("[", StringComparison.Ordinal);
 					if (rankSpecifier > 0)
 						tn = tn.Substring(0, rankSpecifier);
 					var numTypeArgs = 0;
-					var genericMarkerIndex = tn.IndexOf('`');
+					var genericMarkerIndex = tn.IndexOf("`", StringComparison.Ordinal);
 					if (genericMarkerIndex > 0)
 					{
 						numTypeArgs = int.Parse(tn.Substring(genericMarkerIndex + 1));
@@ -795,9 +800,9 @@ public class ReflectedMethod : MethodDefinition
 			modifiers |= Modifiers.Virtual;
 		if (methodInfo.IsStatic)
 			modifiers |= Modifiers.Static;
-		if (methodInfo.GetBaseDefinition().DeclaringType != methodInfo.DeclaringType)
+		if (methodInfo.GetBaseDefinition() != methodInfo)
 			modifiers = (modifiers & ~Modifiers.Virtual) | Modifiers.Override;
-		if (methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false) && IsStatic)
+		if (IsStatic && methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false))
 		{
 			var parentType = memberOf.parentSymbol as TypeDefinitionBase;
 			if (parentType.kind == SymbolKind.Class && parentType.IsStatic && parentType.NumTypeParameters == 0)
@@ -809,29 +814,33 @@ public class ReflectedMethod : MethodDefinition
 		accessLevel = AccessLevelFromModifiers(modifiers);
 
 		reflectedMethodInfo = methodInfo;
-		var genericMarker = methodInfo.Name.IndexOf('`');
-		name = genericMarker < 0 ? methodInfo.Name : methodInfo.Name.Substring(0, genericMarker);
+		var methodName = methodInfo.Name;
+		var genericMarker = methodName.IndexOf("`", StringComparison.Ordinal);
+		name = genericMarker < 0 ? methodName : methodName.Substring(0, genericMarker);
 		parentSymbol = memberOf;
-
-		var tp = methodInfo.GetGenericArguments();
-		if (tp.Length > 0)
+		
+		if (methodInfo.IsGenericMethod)
 		{
-			var numGenericArgs = tp.Length;
-		//	Debug.Log(methodInfo.Name + " with " + tp.Length + " generic arguments.");
-			typeParameters = new List<TypeParameterDefinition>(tp.Length);
-			for (var i = tp.Length - numGenericArgs; i < tp.Length; ++i)
+			var tp = methodInfo.GetGenericArguments();
+			if (tp.Length > 0)
 			{
-				var tpDef = new TypeParameterDefinition { kind = SymbolKind.TypeParameter, name = tp[i].Name, parentSymbol = this };
-				typeParameters.Add(tpDef);
+				var numGenericArgs = tp.Length;
+				typeParameters = new List<TypeParameterDefinition>(tp.Length);
+				for (var i = tp.Length - numGenericArgs; i < tp.Length; ++i)
+				{
+					var tpDef = new TypeParameterDefinition { kind = SymbolKind.TypeParameter, name = tp[i].Name, parentSymbol = this };
+					typeParameters.Add(tpDef);
+				}
 			}
 		}
 
 		returnType = ReflectedTypeReference.ForType(methodInfo.ReturnType);
 
-		if (parameters == null)
-			parameters = new List<ParameterDefinition>();
 		var methodParameters = methodInfo.GetParameters();
-		for (var i = 0; i < methodParameters.Length; ++i)
+		var numParameters = methodParameters.Length;
+		if (parameters == null && numParameters != 0)
+			parameters = new List<ParameterDefinition>(methodParameters.Length);
+		for (var i = 0; i < numParameters; ++i)
 		{
 			var p = methodParameters[i];
 
@@ -843,22 +852,25 @@ public class ReflectedMethod : MethodDefinition
 				parentSymbol = this,
 				name = p.Name,
 				type = ReflectedTypeReference.ForType(parameterType),
-				modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : Attribute.IsDefined(p, typeof(ParamArrayAttribute)) ? Modifiers.Params : Modifiers.None,
+				modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : parameterType.IsArray && p.IsDefined(typeof(ParamArrayAttribute), false) ? Modifiers.Params : Modifiers.None,
 			};
-			if (i == 0 && isExtensionMethod)
-				parameterToAdd.modifiers |= Modifiers.This;
 			if (p.RawDefaultValue != DBNull.Value)
 			{
-				//var dv = Attribute.GetCustomAttribute(p, typeof(System.ComponentModel.DefaultValueAttribute));
+				var dv = p.RawDefaultValue;
 				parameterToAdd.defaultValue =
-					p.RawDefaultValue == null ? "null"
-					: p.RawDefaultValue is string ? "\"" + ((string)p.RawDefaultValue) + "\""
-					: p.RawDefaultValue is Enum ? parameterType.ToString() + "." + p.RawDefaultValue.ToString()
-					: p.RawDefaultValue.ToString();
+					dv == null ? "null"
+					: dv is string ? "\"" + dv.ToString() + "\""
+					: dv is Enum ? parameterType.ToString() + "." + dv.ToString()
+					: dv.ToString();
 			}
 			parameters.Add(parameterToAdd);
 		}
 		
+		if (isExtensionMethod)
+		{
+			parameters[0].modifiers |= Modifiers.This;
+		}
+
 		isOperator = IsStatic && IsPublic && methodInfo.IsSpecialName && IsOperatorName(name);
 	}
 }
@@ -890,10 +902,14 @@ public class ReflectedConstructor : MethodDefinition
 
 		returnType = new SymbolReference(memberOf);
 
-		if (parameters == null)
-			parameters = new List<ParameterDefinition>();
-		foreach (var p in constructorInfo.GetParameters())
+		var constructorParameters = constructorInfo.GetParameters();
+		var numParameters = constructorParameters.Length;
+		if (parameters == null && numParameters != 0)
+			parameters = new List<ParameterDefinition>(numParameters);
+		for (var i = 0; i < numParameters; ++i)
 		{
+			var p = constructorParameters[i];
+			
 			var isByRef = p.ParameterType.IsByRef;
 			var parameterType = isByRef ? p.ParameterType.GetElementType() : p.ParameterType;
 			var parameterToAdd = new ParameterDefinition
@@ -902,12 +918,16 @@ public class ReflectedConstructor : MethodDefinition
 				parentSymbol = this,
 				name = p.Name,
 				type = ReflectedTypeReference.ForType(parameterType),
-				modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : Attribute.IsDefined(p, typeof(ParamArrayAttribute)) ? Modifiers.Params : Modifiers.None,
+				modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : parameterType.IsArray && p.IsDefined(typeof(ParamArrayAttribute), false) ? Modifiers.Params : Modifiers.None,
 			};
 			if (p.RawDefaultValue != DBNull.Value)
 			{
-				//var dv = Attribute.GetCustomAttribute(p, typeof(System.ComponentModel.DefaultValueAttribute));
-				parameterToAdd.defaultValue = p.RawDefaultValue == null ? "null" : p.RawDefaultValue.ToString();
+				var dv = p.RawDefaultValue;
+				parameterToAdd.defaultValue =
+					dv == null ? "null"
+					: dv is string ? "\"" + dv.ToString() + "\""
+					: dv is Enum ? parameterType.ToString() + "." + dv.ToString()
+					: dv.ToString();
 			}
 			parameters.Add(parameterToAdd);
 		}
@@ -947,10 +967,12 @@ public class ReflectedType : TypeDefinition
 
 		var assemblyDefinition = AssemblyDefinition.FromAssembly(type.Assembly);
 
-		var generic = type.Name.IndexOf('`');
-		name = generic < 0 ? type.Name : type.Name.Substring(0, generic);
+		var generic = type.Name.IndexOf("`", StringComparison.Ordinal);
+		var typeName = type.Name;
+		name = generic < 0 ? typeName : typeName.Substring(0, generic);
 		name = name.Replace("[*]", "[]");
-		parentSymbol = string.IsNullOrEmpty(type.Namespace) ? assemblyDefinition.GlobalNamespace : assemblyDefinition.FindNamespace(type.Namespace);
+		var typeNamespace = type.Namespace;
+		parentSymbol = string.IsNullOrEmpty(typeNamespace) ? assemblyDefinition.GlobalNamespace : assemblyDefinition.FindNamespace(typeNamespace);
 		if (type.IsInterface)
 			kind = SymbolKind.Interface;
 		else if (type.IsEnum)
@@ -999,15 +1021,8 @@ public class ReflectedType : TypeDefinition
 		
 		if (IsStatic && NumTypeParameters == 0 && !type.IsNested)
 		{
-			var attributes = System.Attribute.GetCustomAttributes(type);
-			foreach (var attribute in attributes)
-			{
-				if (attribute is System.Runtime.CompilerServices.ExtensionAttribute)
-				{
-					ReflectAllMembers(BindingFlags.Public | BindingFlags.NonPublic);
-					break;
-				}
-			}
+			if (type.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false))
+				ReflectAllMembers(BindingFlags.Public | BindingFlags.NonPublic);
 		}
 	}
 
@@ -1044,68 +1059,131 @@ public class ReflectedType : TypeDefinition
 		return result;
 	}
 	
-	private Dictionary<int, SymbolDefinition> importedMembers;
-	public SymbolDefinition ImportReflectedMember(MemberInfo info)
+	//private Dictionary<int, SymbolDefinition> importedMembers;
+	private SymbolDefinition ImportReflectedMember(Type info, bool importInternal)
 	{
-		if (info.MemberType == MemberTypes.Method && ((MethodInfo) info).IsPrivate)
+		if (/*info.MemberType == MemberTypes.NestedType &&*/ info.IsNestedPrivate || !importInternal && info.IsNestedAssembly)
 			return null;
-		if (info.MemberType == MemberTypes.Constructor && ((ConstructorInfo) info).IsPrivate)
-			return null;
-		if (info.MemberType == MemberTypes.Field && (((FieldInfo) info).IsPrivate || kind == SymbolKind.Enum && info.Name == "value__"))
-			return null;
-		if (info.MemberType == MemberTypes.NestedType && ((Type)info).IsNestedPrivate)
-			return null;
-		if (info.MemberType == MemberTypes.Property)
-		{
-			var p = (PropertyInfo) info;
-			var get = p.GetGetMethod(true);
-			var set = p.GetSetMethod(true);
-			if ((get == null || get.IsPrivate) && (set == null || set.IsPrivate))
-				return null;
-		}
-		if (info.MemberType == MemberTypes.Event)
-		{
-			var e = (EventInfo) info;
-			var add = e.GetAddMethod(true);
-			var remove = e.GetRemoveMethod(true);
-			if ((add == null || add.IsPrivate) && (remove == null || remove.IsPrivate))
-				return null;
-		}
-		//if (info.Name.IndexOf('.', 1) > 0)
-		//{
-		//	Debug.Log("m.Name");
-		//}
 		
 		SymbolDefinition imported = null;
 
-		if (importedMembers == null)
-			importedMembers = new Dictionary<int, SymbolDefinition>();
-		else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
-			return imported;
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
 
-		if (info.MemberType == MemberTypes.NestedType || info.MemberType == MemberTypes.TypeInfo)
+		imported = ImportReflectedType(info);
+		
+		//members[imported.name, imported.NumTypeParameters] = imported;
+		//importedMembers[info.MetadataToken] = imported;
+		return imported;
+	}
+
+	private SymbolDefinition ImportReflectedMember(FieldInfo info, bool importInternal)
+	{
+		if (info.IsPrivate || kind == SymbolKind.Enum && info.Name == "value__" || !importInternal && info.IsAssembly)
+			return null;
+		
+		SymbolDefinition imported = null;
+
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
+
+		imported = new ReflectedMember(info, this);
+		
+		members[imported.name, imported.NumTypeParameters] = imported;
+		//importedMembers[info.MetadataToken] = imported;
+		return imported;
+	}
+
+	private SymbolDefinition ImportReflectedMember(PropertyInfo info, bool importInternal)
+	{
+		var get = info.GetGetMethod(true);
+		var set = info.GetSetMethod(true);
+		if ((get == null || get.IsPrivate || !importInternal && get.IsAssembly) &&
+			(set == null || set.IsPrivate || !importInternal && set.IsAssembly))
 		{
-			imported = ImportReflectedType(info as Type);
-		}
-		else if (info.MemberType == MemberTypes.Method)
-		{
-			var methodInfo = (MethodInfo) info;
-			if (methodInfo.Name == "Finalize" && methodInfo.GetParameters().Length == 0 && !methodInfo.IsGenericMethod)
-				return null;
-			
-			imported = ImportReflectedMethod(info as MethodInfo);
-		}
-		else if (info.MemberType == MemberTypes.Constructor)
-		{
-			imported = ImportReflectedConstructor(info as ConstructorInfo);
-		}
-		else
-		{
-			imported = new ReflectedMember(info, this);
+			return null;
 		}
 		
-		members[imported.name, imported.kind != SymbolKind.MethodGroup ? imported.NumTypeParameters : 0] = imported;
-		importedMembers[info.MetadataToken] = imported;
+		SymbolDefinition imported = null;
+
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
+
+		imported = new ReflectedMember(info, this);
+		
+		members[imported.name, imported.NumTypeParameters] = imported;
+		//importedMembers[info.MetadataToken] = imported;
+		return imported;
+	}
+
+	private SymbolDefinition ImportReflectedMember(EventInfo info, bool importInternal)
+	{
+		var add = info.GetAddMethod(true);
+		var remove = info.GetRemoveMethod(true);
+		if ((add == null || add.IsPrivate || !importInternal && add.IsAssembly) &&
+			(remove == null || remove.IsPrivate || !importInternal && remove.IsAssembly))
+		{
+			return null;
+		}
+		
+		SymbolDefinition imported = null;
+
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
+
+		imported = new ReflectedMember(info, this);
+		
+		members[imported.name, imported.NumTypeParameters] = imported;
+		//importedMembers[info.MetadataToken] = imported;
+		return imported;
+	}
+
+	private SymbolDefinition ImportReflectedMember(MethodInfo info, bool importInternal)
+	{
+		if (info.IsPrivate || !importInternal && info.IsAssembly)
+			return null;
+		
+		SymbolDefinition imported = null;
+
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
+
+		if (info.Name == "Finalize" && !info.IsGenericMethod && info.GetParameters().Length == 0)
+			return null;
+		
+		imported = ImportReflectedMethod(info);
+		
+		//members[imported.name, 0] = imported;
+		//importedMembers[info.MetadataToken] = imported;
+		return imported;
+	}
+
+	private SymbolDefinition ImportReflectedMember(ConstructorInfo info, bool importInternal)
+	{
+		if (info.IsPrivate || !importInternal && info.IsAssembly)
+			return null;
+		
+		SymbolDefinition imported = null;
+
+		//if (importedMembers == null)
+		//	importedMembers = new Dictionary<int, SymbolDefinition>();
+		//else if (importedMembers.TryGetValue(info.MetadataToken, out imported))
+		//	return imported;
+
+		imported = ImportReflectedConstructor(info);
+		
+		//members[imported.name, imported.kind != SymbolKind.MethodGroup ? imported.NumTypeParameters : 0] = imported;
+		//importedMembers[info.MetadataToken] = imported;
 		return imported;
 	}
 
@@ -1147,12 +1225,6 @@ public class ReflectedType : TypeDefinition
 	////	return new ArrayTypeDefinition(this, rank) { kind = kind };
 	//}
 
-	private static bool FilterByName(MemberInfo m, object filterCriteria)
-	{
-		var memberName = (string)filterCriteria;
-		return m.Name == memberName || m.Name.Length > memberName.Length && m.Name.StartsWith(memberName, StringComparison.Ordinal) && m.Name[memberName.Length] == '`';
-	}
-
 	public override SymbolDefinition FindName(string memberName, int numTypeParameters, bool asTypeOnly)
 	{
 		memberName = DecodeId(memberName);
@@ -1170,17 +1242,30 @@ public class ReflectedType : TypeDefinition
 
 	public void ReflectAllMembers(BindingFlags flags)
 	{
-		flags |= BindingFlags.DeclaredOnly;
-
-		var instaceMembers = reflectedType.GetMembers(flags | BindingFlags.Instance);
-		foreach (var m in instaceMembers)
-			if (m.MemberType != MemberTypes.Method || !((MethodInfo) m).IsSpecialName)
-				ImportReflectedMember(m);
-
-		var staticMembers = reflectedType.GetMembers(flags | BindingFlags.Static);
-		foreach (var m in staticMembers)
-			if (m.MemberType != MemberTypes.Method || !((MethodInfo) m).IsSpecialName || IsOperatorName(m.Name))
-				ImportReflectedMember(m);
+		if (allPublicMembersReflected && allNonPublicMembersReflected)
+			return;
+		
+		flags |= BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Instance;
+		
+		if (allPublicMembersReflected)
+			flags &= ~BindingFlags.Public;
+		if (allNonPublicMembersReflected)
+			flags &= ~BindingFlags.NonPublic;
+		
+		bool importInternals = Assembly.assemblyId != AssemblyDefinition.UnityAssembly.None;
+		foreach (var m in reflectedType.GetNestedTypes(flags))
+			ImportReflectedMember(m, importInternals);
+		foreach (var m in reflectedType.GetFields(flags))
+			ImportReflectedMember(m, importInternals);
+		foreach (var m in reflectedType.GetProperties(flags))
+			ImportReflectedMember(m, importInternals);
+		foreach (var m in reflectedType.GetEvents(flags))
+			ImportReflectedMember(m, importInternals);
+		foreach (var m in reflectedType.GetMethods(flags))
+			if (!m.IsSpecialName || IsOperatorName(m.Name))
+				ImportReflectedMember(m, importInternals);
+		foreach (var m in reflectedType.GetConstructors(flags))
+			ImportReflectedMember(m, importInternals);
 
 		if ((flags & BindingFlags.Public) == BindingFlags.Public)
 			allPublicMembersReflected = true;
@@ -1212,7 +1297,7 @@ public class ReflectedType : TypeDefinition
 					parentSymbol = this,
 					name = p.Name,
 					type = ReflectedTypeReference.ForType(parameterType),
-					modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : Attribute.IsDefined(p, typeof(ParamArrayAttribute)) ? Modifiers.Params : Modifiers.None,
+					modifiers = isByRef ? (p.IsOut ? Modifiers.Out : Modifiers.Ref) : parameterType.IsArray && p.IsDefined(typeof(ParamArrayAttribute), false) ? Modifiers.Params : Modifiers.None,
 				});
 			}
 		}
@@ -1605,7 +1690,10 @@ public class InstanceDefinition : SymbolDefinition
 	public override SymbolDefinition TypeOf()
 	{
 		if (_resolvingTypeOf)
+		{
+			//Debug.Log("Resolving type of " + GetName());
 			return unknownType;
+		}
 		_resolvingTypeOf = true;
 		
 		if (type != null && (type.definition == null || !type.definition.IsValid()))
@@ -1824,9 +1912,15 @@ public class InstanceDefinition : SymbolDefinition
 					}
 					if (methodId != null && methodId.token.tokenKind == SyntaxToken.Kind.Identifier)
 					{
-						if (methodId.resolvedSymbol == null || methodId.resolvedSymbol.kind == SymbolKind.MethodGroup)
-							FGResolver.ResolveNode(node);
-						
+						//Debug.Log("Resolving implicit types in " + methodId.token.text + " - " + methodId.resolvedSymbol);
+
+						if (methodId.resolvedSymbol == null ||
+							methodId.resolvedSymbol.kind == SymbolKind.MethodGroup ||
+							methodId.resolvedSymbol.kind == SymbolKind.Error)
+						{
+							FGResolver.GetResolvedSymbol(methodId);
+						}
+
 						var method = methodId.resolvedSymbol as MethodDefinition;
 						var constructedSymbol = methodId.resolvedSymbol as ConstructedSymbolReference;
 						if (method != null)
@@ -2096,6 +2190,12 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 
 	protected bool convertingToBase; // Prevents infinite recursion
 
+	protected static bool InvalidSymbolReference(SymbolReference x)
+	{
+		var definition = x.definition;
+		return definition == null || !definition.IsValid();
+	}
+	
 	public override Type GetRuntimeType()
 	{
 		if (Assembly == null || Assembly.assembly == null)
@@ -2204,9 +2304,10 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 			
 			if (!asTypeOnly && interfaces != null && (kind == SymbolKind.Interface || kind == SymbolKind.TypeParameter))
 			{
-				foreach (var i in interfaces)
+				for (var i = interfaces.Count; i --> 0; )
 				{
-					i.definition.ResolveMember(leaf, context, numTypeArgs, asTypeOnly);
+					var element = interfaces[i];
+					element.definition.ResolveMember(leaf, context, numTypeArgs, asTypeOnly);
 					if (leaf.resolvedSymbol != null)
 					{
 						resolvingInBase = false;
@@ -2262,13 +2363,16 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 	public virtual List<SymbolDefinition> GetAllIndexers()
 	{
 		List<SymbolDefinition> indexers = null;
-		foreach (var m in members)
+		for (var i = 0; i < members.Count; ++i)
+		{
+			var m = members[i];
 			if (m.kind == SymbolKind.Indexer)
 			{
 				if (indexers == null)
 					indexers = new List<SymbolDefinition>();
 				indexers.Add(m);
 			}
+		}
 		return indexers;
 	}
 	
@@ -2296,8 +2400,10 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 				var asMethodGroup = member as MethodGroupDefinition;
 				if (asMethodGroup != null)
 				{
-					foreach (var method in asMethodGroup.methods)
+					var mgMethods = asMethodGroup.methods;
+					for (var j = mgMethods.Count; j --> 0; )
 					{
+						var method = mgMethods[j];
 						if ((method.IsVirtual || method.IsAbstract) && method.IsAccessible(accessLevelMask))
 						{
 							methods.Add(method);
@@ -2338,7 +2444,16 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 
 	public virtual bool CanConvertTo(TypeDefinitionBase otherType)
 	{
-		return ConvertTo(otherType) != null;
+		if (ConvertTo(otherType) != null)
+			return true;
+		
+		if (HasImplicitConversionOperatorTo(otherType))
+			return true;
+		
+		if (otherType.HasImplicitConversionOperatorFrom(this))
+			return true;
+		
+		return false;
 	}
 
 	public virtual TypeDefinitionBase ConvertTo(TypeDefinitionBase otherType)
@@ -2417,6 +2532,54 @@ public abstract class TypeDefinitionBase : SymbolDefinition
 			return otherType;
 
 		return null;
+	}
+	
+	public bool HasImplicitConversionOperatorTo(TypeDefinitionBase otherType)
+	{
+		var mg = FindName("op_Implicit", 0, false) as MethodGroupDefinition;
+		if (mg == null)
+			return false;
+		
+		var candidates = mg.methods;
+		var numCandidates = candidates.Count;
+		if (numCandidates > 0)
+		{
+			for (var i = numCandidates; i --> 0; )
+			{
+				var candidate = candidates[i];
+				var retType = candidate.ReturnType();
+				if (retType != null && retType.IsSameType(otherType))
+					return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public bool HasImplicitConversionOperatorFrom(TypeDefinitionBase otherType)
+	{
+		var mg = FindName("op_Implicit", 0, false) as MethodGroupDefinition;
+		if (mg == null)
+			return false;
+		
+		var candidates = mg.methods;
+		var numCandidates = candidates.Count;
+		if (numCandidates > 0)
+		{
+			for (var i = numCandidates; i --> 0; )
+			{
+				var candidate = candidates[i];
+				var parameters = candidate.GetParameters();
+				if (parameters.Count != 1)
+					continue;
+				
+				var parameterType = parameters[0].TypeOf();
+				if (parameterType != null && parameterType.IsSameType(otherType))
+					return true;
+			}
+		}
+		
+		return false;
 	}
 }
 
@@ -2543,7 +2706,6 @@ public class EnumTypeDefinition : TypeDefinition
 				name = "op_Addition",
 				modifiers = Modifiers.Public | Modifiers.Static,
 				parentSymbol = this,
-				members = new SymbolList(),
 			};
 			AddMember(predefinedOpAddition);
 			predefinedOpAddition.AddMethod(MethodDefinition.CreateOperator("op_Addition", this, this, underlyingType.definition as TypeDefinitionBase));
@@ -2557,7 +2719,6 @@ public class EnumTypeDefinition : TypeDefinition
 				name = "op_Subtraction",
 				modifiers = Modifiers.Public | Modifiers.Static,
 				parentSymbol = this,
-				members = new SymbolList(),
 			};
 			AddMember(predefinedOpSubtraction);
 			predefinedOpSubtraction.AddMethod(MethodDefinition.CreateOperator("op_Subtraction", underlyingType.definition as TypeDefinitionBase, this, this));
@@ -2565,6 +2726,11 @@ public class EnumTypeDefinition : TypeDefinition
 		}
 		
 		return base.FindName(memberName, numTypeParameters, asTypeOnly);
+	}
+
+	public override TypeDefinitionBase BaseType()
+	{
+		return builtInTypes_Enum;
 	}
 }
 
@@ -2714,7 +2880,7 @@ public class TypeParameterDefinition : TypeDefinitionBase
 		resolvingBaseType = true;
 		
 		if (baseTypeConstraint != null && (baseTypeConstraint.definition == null || !baseTypeConstraint.definition.IsValid()) ||
-			interfacesConstraint != null && interfacesConstraint.Exists(x => x.definition == null || !x.definition.IsValid()))
+			interfacesConstraint != null && interfacesConstraint.Exists(InvalidSymbolReference))
 		{
 			baseTypeConstraint = null;
 			interfacesConstraint = null;
@@ -3009,7 +3175,7 @@ public class ConstructedTypeDefinition : TypeDefinition
 	public override TypeDefinitionBase BaseType()
 	{
 		if (baseType != null && (baseType.definition == null || !baseType.definition.IsValid()) ||
-			interfaces != null && interfaces.Exists(x => x.definition == null || !x.definition.IsValid()))
+			interfaces != null && interfaces.Exists(InvalidSymbolReference))
 		{
 			baseType = null;
 			interfaces = null;
@@ -3138,12 +3304,15 @@ public class ConstructedTypeDefinition : TypeDefinition
 
 		if (otherType.kind == SymbolKind.Interface || otherType.kind == SymbolKind.TypeParameter)
 		{
-			foreach (var i in interfaces)
-				if (((TypeDefinitionBase) i.definition).DerivesFromRef(ref otherType))
+			for (var i = interfaces.Count; i --> 0; )
+			{
+				var element = interfaces[i];
+				if (((TypeDefinitionBase) element.definition).DerivesFromRef(ref otherType))
 				{
 					otherType = otherType.SubstituteTypeParameters(this);
 					return true;
 				}
+			}
 		}
 
 		if (baseType != null && baseType.DerivesFromRef(ref otherType))
@@ -3710,24 +3879,28 @@ public class TypeDefinition : TypeDefinitionBase
 			return null;
 		resolvingBaseType = true;
 		
+		var rebuildInterfaces = interfaces == null;
+		
 		if (baseType != null && (baseType.definition == null || !baseType.definition.IsValid()) ||
-			interfaces != null && interfaces.Exists(x => x.definition == null || !x.definition.IsValid()))
+			interfaces != null && interfaces.Exists(InvalidSymbolReference))
 		{
 			baseType = null;
-			interfaces = null;
+			rebuildInterfaces = true;
 		}
 
-		if (baseType == null && interfaces == null)
+		if (baseType == null && rebuildInterfaces)
 		{
-			interfaces = new List<SymbolReference>();
+			interfaces = interfaces ?? new List<SymbolReference>();
+			interfaces.Clear();
 			
 			ParseTree.Node baseNode = null;
 			ParseTree.Node interfaceListNode = null;
 			SymbolDeclaration decl = null;
 			if (declarations != null)
 			{
-				foreach (var d in declarations)
+				for (var i = declarations.Count; i --> 0; )
 				{
+					var d = declarations[i];
 					if (d != null)
 					{
 						baseNode = (ParseTree.Node) d.parseTreeNode.FindChildByName(
@@ -4148,36 +4321,46 @@ public class MethodGroupDefinition : SymbolDefinition
 	public static readonly MethodDefinition ambiguousMethodOverload = new MethodDefinition { kind = SymbolKind.Error, name = "ambiguous method overload" };
 	public static readonly MethodDefinition unresolvedMethodOverload = new MethodDefinition { kind = SymbolKind.Error, name = "unresolved method overload" };
 
-	public readonly HashSet<MethodDefinition> methods = new HashSet<MethodDefinition>();
-//	public int numTypeParameters;
+	public readonly List<MethodDefinition> methods = new List<MethodDefinition>();
 
 	public virtual void AddMethod(MethodDefinition method)
 	{
-		methods.RemoveWhere(x => !x.IsValid());
+		for (var i = methods.Count; i --> 0; )
+			if (!methods[i].IsValid())
+				methods.RemoveAt(i);
+		
 		if (method.declarations != null)
 		{
 			var d = method.declarations[0];
-			foreach (var x in methods)
+			for (var i = methods.Count; i --> 0;)
 			{
+				var x = methods[i];
 				if (x.declarations != null && x.declarations.Contains(d))
 				{
-					methods.Remove(x);
+					methods.RemoveAt(i);
 					break;
 				}
 			}
 		}
+		
 		methods.Add(method);
 		method.parentSymbol = this;
+	}
+	
+	public override SymbolDefinition AddDeclaration(SymbolDeclaration symbol)
+	{
+		Debug.LogWarning("Removing method " + symbol.Name);
+		return base.AddDeclaration(symbol);
 	}
 
 	public override void RemoveDeclaration(SymbolDeclaration symbol)
 	{
-		//Debug.Log("removing " + symbol.Name + " - " + (symbol.parseTreeNode.ChildAt(0) ?? symbol.parseTreeNode).Print());
-		foreach (var x in methods)
+		for (var i = methods.Count; i --> 0; )
 		{
-			if (x.declarations != null && x.declarations.Contains(symbol))
+			var declarations = methods[i].declarations;
+			if (declarations != null && declarations.Contains(symbol))
 			{
-				methods.Remove(x);
+				methods.RemoveAt(i);
 				break;
 			}
 		}
@@ -4193,13 +4376,14 @@ public class MethodGroupDefinition : SymbolDefinition
 				methods = genericSymbol.methods;
 		}
 
-		foreach (var m in methods)
+		var leafText = DecodeId(leaf.token.text);
+		for (var i = methods.Count; i --> 0; )
 		{
+			var m = methods[i];
 			var p = m.GetParameters();
-			var leafText = DecodeId(leaf.token.text);
-			for (var i = p.Count; i --> 0; )
+			for (var j = p.Count; j --> 0; )
 			{
-				var pd = p[i];
+				var pd = p[j];
 				if (pd.name == leafText)
 					return leaf.resolvedSymbol = pd;
 			}
@@ -4207,23 +4391,45 @@ public class MethodGroupDefinition : SymbolDefinition
 		return leaf.resolvedSymbol = unknownParameterName;
 	}
 	
-	public static int ProcessArgumentListNode(ParseTree.Node argumentListNode, out Modifiers[] modifiers, out List<TypeDefinitionBase> argumentTypes, TypeDefinitionBase extendedType, out SymbolDefinition[] resolvedArguments)
+	public override SymbolDefinition Rebind()
 	{
-		var numArguments = argumentListNode == null ? 0 : (argumentListNode.numValidNodes + 1) / 2;
+		if (parentSymbol == null && savedParentSymbol == null)
+			return this;
+		
+		var newParent = (parentSymbol ?? savedParentSymbol).Rebind();
+		if (newParent == null)
+			return null;
+		
+		if (newParent == parentSymbol)
+			return this;
+		
+		SymbolDefinition newSymbol = newParent.FindName(name, -1, false);
+#if SI3_WARNINGS
+		if (newSymbol == null)
+		{
+			Debug.LogWarning(GetTooltipText() + " not found in " + newParent.GetTooltipText());
+			return null;
+		}
+#endif
+		return newSymbol;
+	}
+	
+	public static List<Modifiers> modifiersStack = new List<Modifiers>();
+	public static List<TypeDefinitionBase> argumentTypesStack = new List<TypeDefinitionBase>();
+	public static List<SymbolDefinition> resolvedArgumentsStack = new List<SymbolDefinition>();
+	
+	public static int ProcessArgumentListNode(ParseTree.Node argumentListNode, TypeDefinitionBase extendedType)
+	{
 		var thisOffest = 0;
+		var numArguments = argumentListNode == null ? 0 : (argumentListNode.numValidNodes + 1) / 2;
 		if (extendedType != null)
 		{
 			thisOffest = 1;
 			++numArguments;
-		}
-		
-		modifiers = new Modifiers[numArguments];
-		argumentTypes = new List<TypeDefinitionBase>();
-		resolvedArguments = new SymbolDefinition[numArguments];
-		
-		if (extendedType != null)
-		{
-			argumentTypes.Add(extendedType);
+			
+			modifiersStack.Add(Modifiers.This);
+			argumentTypesStack.Add(extendedType);
+			resolvedArgumentsStack.Add(null);//extendedType.GetThisInstance());
 		}
 		
 		for (var i = thisOffest; i < numArguments; ++i)
@@ -4234,19 +4440,21 @@ public class MethodGroupDefinition : SymbolDefinition
 				var argumentValueNode = argumentNode.FindChildByName("argumentValue") as ParseTree.Node;
 				if (argumentValueNode != null)
 				{
-					resolvedArguments[i] = ResolveNode(argumentValueNode);
-					if (resolvedArguments[i] != null)
-						argumentTypes.Add(resolvedArguments[i].TypeOf() as TypeDefinitionBase ?? unknownType);
-					else
-						argumentTypes.Add(unknownType);
+					var resolvedArg = ResolveNode(argumentValueNode);
+					resolvedArgumentsStack.Add(resolvedArg);
+					argumentTypesStack.Add(unknownType);
+					modifiersStack.Add(Modifiers.None);
+					
+					if (resolvedArg != null)
+						argumentTypesStack[argumentTypesStack.Count - 1] = resolvedArg.TypeOf() as TypeDefinitionBase ?? unknownType;
 					
 					var modifierLeaf = argumentValueNode.LeafAt(0);
 					if (modifierLeaf != null)
 					{
 						if (modifierLeaf.IsLit("ref"))
-							modifiers[i] = Modifiers.Ref;
+							modifiersStack[modifiersStack.Count - 1] = Modifiers.Ref;
 						else if (modifierLeaf.IsLit("out"))
-							modifiers[i] = Modifiers.Out;
+							modifiersStack[modifiersStack.Count - 1] = Modifiers.Out;
 					}
 					
 					continue;
@@ -4262,27 +4470,26 @@ public class MethodGroupDefinition : SymbolDefinition
 
 	public override SymbolDefinition ResolveMethodOverloads(ParseTree.Node argumentListNode, SymbolReference[] typeArgs, Scope scope, ParseTree.Leaf invokedLeaf)
 	{
-		Modifiers[] modifiers;
-		List<TypeDefinitionBase> argumentTypes;
-		SymbolDefinition[] resolvedArguments;
-
-		ProcessArgumentListNode(argumentListNode, out modifiers, out argumentTypes, null, out resolvedArguments);
-
-		var resolved = ResolveMethodOverloads(argumentTypes, resolvedArguments, modifiers, scope, invokedLeaf);
+		int baseIndex = modifiersStack.Count;
+		
+		int numArguments = ProcessArgumentListNode(argumentListNode, null);
+		var resolved = ResolveMethodOverloads(numArguments, scope, invokedLeaf);
+		
+		modifiersStack.RemoveRange(baseIndex, numArguments);
+		argumentTypesStack.RemoveRange(baseIndex, numArguments);
+		resolvedArgumentsStack.RemoveRange(baseIndex, numArguments);
+		
 		return resolved;
 	}
+	
+	public static List<MethodDefinition> methodCandidatesStack = new List<MethodDefinition>();
 
-	public virtual List<MethodDefinition> CollectCandidates(
-		List<TypeDefinitionBase> argumentTypes,
-		SymbolDefinition[] resolvedArguments,
-		Modifiers[] modifiers,
-		Scope scope,
-		ParseTree.Leaf invokedLeaf)
+	public virtual int CollectCandidates(int numArguments, Scope scope, ParseTree.Leaf invokedLeaf)
 	{
 		if (parentSymbol == null && savedParentSymbol != null)
 			Rebind();
 		if (parentSymbol == null)
-			return null;
+			return 0;
 
 		var accessLevelMask = AccessLevelMask.Public;
 		var parentType = parentSymbol as TypeDefinitionBase ?? parentSymbol.parentSymbol as TypeDefinitionBase;
@@ -4297,75 +4504,105 @@ public class MethodGroupDefinition : SymbolDefinition
 			else if (contextType.DerivesFrom(parentType))
 				accessLevelMask |= AccessLevelMask.Public | AccessLevelMask.Protected;
 		}
-
-		var candidates = new List<MethodDefinition>();
-		foreach (var method in methods)
+		
+		var baseIndex = methodCandidatesStack.Count;
+		for (var i = 0; i < methods.Count; ++i)
+		{
+			var method = methods[i];
 			if (!method.IsOverride && method.IsAccessible(accessLevelMask) &&
-				(argumentTypes == null || method.CanCallWith(modifiers, false)))
-					candidates.Add(method);
+				(numArguments == -1 || method.CanCallWith(numArguments, false)))
+			{
+				methodCandidatesStack.Add(method);
+			}
+		}
+		var numCandidates = methodCandidatesStack.Count - baseIndex;
 		
 		var thisAsConstructedMG = this as ConstructedMethodGroupDefinition;
-		for (var i = candidates.Count; i --> 0; )
+		for (var i = numCandidates; i --> 0; )
 		{
-			var candidate = candidates[i];
+			var candidate = methodCandidatesStack[baseIndex + i];
 			if (thisAsConstructedMG == null)
 			{
 				if (invokedLeaf == null)
 					continue;
 				
-				if (candidate.NumTypeParameters == 0 || argumentTypes == null)
+				if (candidate.NumTypeParameters == 0 || numArguments == -1)
 					continue;
 
-				candidate = InferMethodTypeArguments(candidate, argumentTypes, resolvedArguments, invokedLeaf);
+				candidate = InferMethodTypeArguments(candidate, numArguments, invokedLeaf);
 				if (candidate == null)
-					candidates.RemoveAt(i);
+					methodCandidatesStack.RemoveAt(baseIndex + i);
 				else
-					candidates[i] = candidate;
+					methodCandidatesStack[baseIndex + i] = candidate;
 			}
 			else
 			{
 				// TODO: Verify this!!!
-				candidates[i] = candidate.ConstructMethod(thisAsConstructedMG.typeArguments);
+				methodCandidatesStack[baseIndex + i] = candidate.ConstructMethod(thisAsConstructedMG.typeArguments);
 			}
 		}
-
-		if (candidates.Count != 0)
-			return candidates;
+		numCandidates = methodCandidatesStack.Count - baseIndex;
+		
+		if (numCandidates != 0 && numArguments != -1)
+			return numCandidates;
 		
 		var baseType = (TypeDefinitionBase) parentSymbol;
 		while ((baseType = baseType.BaseType()) != null)
 		{
 			var baseSymbol = baseType.FindName(name, 0, false) as MethodGroupDefinition;
 			if (baseSymbol != null)
-				return baseSymbol.CollectCandidates(argumentTypes, resolvedArguments, modifiers, scope, invokedLeaf);
+				return numCandidates + baseSymbol.CollectCandidates(numArguments, scope, invokedLeaf);
 		}
-		return null;
+		return numCandidates;
 	}
+
+	private static Stack<List<int>> rangeListsPool = new Stack<List<int>>();
 
 	private static List<int> GenerateRangeList(int to)
 	{
-		var list = new List<int>();
+		var list = rangeListsPool.Count > 0 ? rangeListsPool.Pop() : new List<int>(to);
 		for (var i = 0; i < to; ++i)
 			list.Add(i);
 		return list;
 	}
 
-	public static MethodDefinition InferMethodTypeArguments(
-		MethodDefinition method,
-		List<TypeDefinitionBase> argumentTypes,
-		SymbolDefinition[] resolvedArguments,
-		ParseTree.Leaf invokedLeaf)
+	private static void ReleaseRangeList(List<int> list)
 	{
+		list.Clear();
+		rangeListsPool.Push(list);
+	}
+
+	private static Stack<List<TypeDefinitionBase>> typeListsPool = new Stack<List<TypeDefinitionBase>>();
+
+	private static List<TypeDefinitionBase> CreateTypeList()
+	{
+		return typeListsPool.Count > 0 ? typeListsPool.Pop() : new List<TypeDefinitionBase>();
+	}
+
+	private static void ReleaseTypeList(List<TypeDefinitionBase> list)
+	{
+		list.Clear();
+		typeListsPool.Push(list);
+	}
+
+	public static MethodDefinition InferMethodTypeArguments(MethodDefinition method, int numArguments, ParseTree.Leaf invokedLeaf)
+	{
+		int baseIndex = argumentTypesStack.Count - numArguments;
+		
 		var numTypeParameters = method.NumTypeParameters;
-		List<TypeDefinitionBase> typeArgs = new List<TypeDefinitionBase>();
-		foreach (var item in method.typeParameters)
+		List<TypeDefinitionBase> typeArgs = CreateTypeList();
+		var typeParams = method.typeParameters;
+		for (var i = 0; i < typeParams.Count; i++)
+		{
+			var item = typeParams[i];
 			typeArgs.Add(item.SubstituteTypeParameters(method));
+		}
 		
 		//var typeArgsUpper = new TypeDefinitionBase[numTypeParameters];
 		//var typeArgsLower = new TypeDefinitionBase[numTypeParameters];
 		
 		var parameters = method.GetParameters();
-		var numParameters = Math.Min(parameters.Count, argumentTypes.Count);
+		var numParameters = Math.Min(parameters.Count, numArguments);
 		
 		var openTypeArguments = GenerateRangeList(numTypeParameters);
 		
@@ -4380,7 +4617,7 @@ public class MethodGroupDefinition : SymbolDefinition
 
 				for (var j = numParameters; j --> 0; )
 				{
-					var argumentType = argumentTypes[j];
+					var argumentType = argumentTypesStack[baseIndex + j];
 					if (argumentType == null)
 						continue;
 					
@@ -4415,39 +4652,47 @@ public class MethodGroupDefinition : SymbolDefinition
 				}
 			}
 		}
+
+		ReleaseRangeList(openTypeArguments);
 		
 		var typeArgRefs = new SymbolReference[numTypeParameters];
 		for (var i = 0; i < numTypeParameters; ++i)
 			typeArgRefs[i] = new SymbolReference(typeArgs[i] ?? builtInTypes_object);
 		method = method.ConstructMethod(typeArgRefs);
+
+		ReleaseTypeList(typeArgs);
 		return method;
 	}
 
-	public virtual MethodDefinition ResolveMethodOverloads(List<TypeDefinitionBase> argumentTypes, SymbolDefinition[] resolvedArguments, Modifiers[] modifiers, Scope scope, ParseTree.Leaf invokedLeaf)
+	public virtual MethodDefinition ResolveMethodOverloads(int numArguments, Scope scope, ParseTree.Leaf invokedLeaf)
 	{
-		var candidates = CollectCandidates(argumentTypes, resolvedArguments, modifiers, scope, invokedLeaf);
-		if (candidates == null)
+		var numCandidates = CollectCandidates(numArguments, scope, invokedLeaf);
+		if (numCandidates == 0)
 			return unresolvedMethodOverload;
 
 	//	if (candidates.Count == 1)
 	//		return candidates[0];
 		
-		return ResolveMethodOverloads(argumentTypes.Count, argumentTypes, resolvedArguments, modifiers, candidates);
+		var result = ResolveMethodOverloads(numArguments, numCandidates);
+		
+		methodCandidatesStack.RemoveRange(methodCandidatesStack.Count - numCandidates, numCandidates);
+		
+		return result;
 	}
 	
-	public static MethodDefinition ResolveMethodOverloads(
-		int numArguments,
-		List<TypeDefinitionBase> argumentTypes,
-		SymbolDefinition[] resolvedArguments,
-		Modifiers[] modifiers,
-		List<MethodDefinition> candidates)
+	public static MethodDefinition ResolveMethodOverloads(int numArguments, int numCandidates)
 	{
+		int argsBaseIndex = argumentTypesStack.Count - numArguments;
+		int baseIndex = methodCandidatesStack.Count - numCandidates;
+		
 		// find best match
 		MethodDefinition bestMatch = null;
 		var bestExactMatches = -1;
 		var numMatchingMethods = 0;
-		foreach (var method in candidates)
+		for (var candidateIndex = 0; candidateIndex < numCandidates; ++candidateIndex)
 		{
+			var method = methodCandidatesStack[baseIndex + candidateIndex];
+			
 			var parameters = method.GetParameters();
 			var expandParams = true;
 
@@ -4455,14 +4700,9 @@ public class MethodGroupDefinition : SymbolDefinition
 
 			var exactMatches = 0;
 			ParameterDefinition paramsArray = null;
-			for (var i = 0; i < UnityEngine.Mathf.Min(numArguments, parameters.Count); ++i)
+			var numParameters = UnityEngine.Mathf.Min(numArguments, parameters.Count);
+			for (var i = 0; i < numParameters; ++i)
 			{
-				if (argumentTypes[i] == null)
-				{
-					exactMatches = -1;
-					break;
-				}
-				
 				if (expandParams && paramsArray == null && parameters[i].IsParametersArray)
 					paramsArray = parameters[i];
 					
@@ -4484,10 +4724,10 @@ public class MethodGroupDefinition : SymbolDefinition
 				}
 				parameterType = parameterType == null ? unknownType : parameterType.SubstituteTypeParameters(method);
 				
-				var resolvedArgument = resolvedArguments[i];
-				if (resolvedArgument != null && resolvedArgument.kind == SymbolKind.MethodGroup)
+				if (parameterType.kind == SymbolKind.Delegate)
 				{
-					if (parameterType.kind == SymbolKind.Delegate)
+					var resolvedArgument = resolvedArgumentsStack[argsBaseIndex + i];
+					if (resolvedArgument != null && resolvedArgument.kind == SymbolKind.MethodGroup)
 					{
 						var methodGroup = resolvedArgument as MethodGroupDefinition;
 						if (methodGroup != null)
@@ -4503,15 +4743,29 @@ public class MethodGroupDefinition : SymbolDefinition
 							break;
 						}
 					}
+				} 
+
+				var argumentType = argumentTypesStack[argsBaseIndex + i];
+				if (argumentType == null || argumentType == unknownType)
+				{
+					exactMatches = -1;
+					break;
 				}
 
-				if (argumentTypes[i].IsSameType(parameterType))
+				if (argumentType.IsSameType(parameterType))
 				{
 					++exactMatches;
 					continue;
 				}
-				if (!argumentTypes[i].CanConvertTo(parameterType))
+				if (!argumentType.CanConvertTo(parameterType))
 				{
+					if (numCandidates == 1 && argumentType.kind == SymbolKind.TypeParameter)
+					{
+						// HACK! FIXME!
+						++exactMatches;
+						continue;
+					}
+					
 					exactMatches = -1;
 					break;
 				}
@@ -4542,21 +4796,21 @@ public class MethodGroupDefinition : SymbolDefinition
 
 		if (bestMatch != null)
 		{
-			for (var i = resolvedArguments.Length; i --> 0; )
+			for (var i = numArguments; i --> 0; )
 			{
-				var r = resolvedArguments[i] as MethodGroupDefinition;
+				var r = resolvedArgumentsStack[argsBaseIndex + i] as MethodGroupDefinition;
 				if (r != null && r.kind == SymbolKind.MethodGroup)
 				{
 					var matchingMethod = r.FindMatchingMethod(bestMatch.GetParameters()[i].TypeOf() as TypeDefinitionBase);
 					if (matchingMethod != null)
 					{
-						resolvedArguments[i] = matchingMethod;
+						resolvedArgumentsStack[argsBaseIndex + i] = matchingMethod;
 					}
 				}
 			}
 			return bestMatch;
 		}
-		if (candidates.Count <= 1)
+		if (numCandidates <= 1)
 			return unresolvedMethodOverload;
 		return numMatchingMethods > 0 ? ambiguousMethodOverload : unresolvedMethodOverload;
 	}
@@ -4570,8 +4824,9 @@ public class MethodGroupDefinition : SymbolDefinition
 		for (var i = parameters.Count; i --> 0; )
 			parameterTypes[i] = (parameters[i].TypeOf() as TypeDefinitionBase).SubstituteTypeParameters(delegateType);
 		
-		foreach (var m in methods)
+		for (var j = methods.Count; j --> 0; )
 		{
+			var m = methods[j];
 			var p = m.GetParameters() ?? _emptyParameterList;
 			if (p.Count != parameters.Count)
 				continue;
@@ -4599,8 +4854,8 @@ public class MethodGroupDefinition : SymbolDefinition
 
 	public override bool IsAccessible(AccessLevelMask accessLevelMask)
 	{
-		foreach (var method in methods)
-			if (method.IsAccessible(accessLevelMask))
+		for (var i = methods.Count; i --> 0; )
+			if (methods[i].IsAccessible(accessLevelMask))
 				return true;
 		return false;
 	}
@@ -4631,17 +4886,13 @@ public class MethodGroupDefinition : SymbolDefinition
 			{
 				if (result.typeArguments.All(x => x.definition != null && x.definition.kind != SymbolKind.Error && x.definition.IsValid()))
 				{
-					result.methods.RemoveWhere(x => !x.IsValid());
+					for (var i = result.methods.Count; i --> 0; )
+						if (!result.methods[i].IsValid())
+							result.methods.RemoveAt(i);
 					
-				restart:
-					foreach (var x in result.methods)
-					{
-						if (!methods.Contains(((ConstructedMethodDefinition) x).genericMethodDefinition))
-						{
-							result.methods.Remove(x);
-							goto restart;
-						}
-					}
+					for (var i = result.methods.Count; i --> 0; )
+						if (!methods.Contains(((ConstructedMethodDefinition) result.methods[i]).genericMethodDefinition))
+							result.methods.RemoveAt(i);
 					
 					if (methods.Count == result.methods.Count)
 						return result;
@@ -4651,8 +4902,13 @@ public class MethodGroupDefinition : SymbolDefinition
 
 		if (result != null)
 		{
-			foreach (var method in result.methods)
+			for (var i = result.methods.Count; i --> 0; )
+			{
+				var method = result.methods[i];
+				method.savedParentSymbol = method.parentSymbol;
 				method.parentSymbol = null;
+			}
+			result.savedParentSymbol = parentSymbol;
 			result.parentSymbol = null;
 		}
 
@@ -4695,34 +4951,31 @@ public class ConstructedMethodGroupDefinition : MethodGroupDefinition
 	private void UpdateMethods()
 	{
 		var genericMethods = genericMethodGroupDefinition.methods;
-		restart:
-		foreach (var x in methods)
+		
+		for (var i = methods.Count; i --> 0; )
+			if (!genericMethods.Contains(methods[i].GetGenericSymbol() as MethodDefinition))
+				methods.RemoveAt(i);
+		
+		for (var i = genericMethods.Count; i --> 0; )
 		{
-			if (!genericMethods.Contains(x.GetGenericSymbol() as MethodDefinition))
-			{
-				methods.Remove(x);
-				goto restart;
-			}
-		}
-		foreach (var m in genericMethods)
-		{
+			var m = genericMethods[i];
 			if (m.NumTypeParameters == typeArguments.Length)
 			{
 				bool ok = false;
-				foreach (var x in methods)
-					if (x.GetGenericSymbol() == m)
+				for (var j = methods.Count; j --> 0; )
+					if (methods[j].GetGenericSymbol() == m)
 					{
 						ok = true;
 						break;
 					}
-				if (ok)
-					continue;
-
-				var constructedMethod = m.ConstructMethod(typeArguments);
-				if (constructedMethod != null)
+				if (!ok)
 				{
-					constructedMethod.parentSymbol = this;
-					methods.Add(constructedMethod);
+					var constructedMethod = m.ConstructMethod(typeArguments);
+					if (constructedMethod != null)
+					{
+						constructedMethod.parentSymbol = this;
+						methods.Add(constructedMethod);
+					}
 				}
 			}
 		}
@@ -4737,21 +4990,16 @@ public class ConstructedMethodGroupDefinition : MethodGroupDefinition
 		return genericMethod;
 	}
 
-	public override MethodDefinition ResolveMethodOverloads(List<TypeDefinitionBase> argumentTypes, SymbolDefinition[] resolvedArguments, Modifiers[] modifiers, Scope scope, ParseTree.Leaf invokedLeaf)
+	public override MethodDefinition ResolveMethodOverloads(int numArguments, Scope scope, ParseTree.Leaf invokedLeaf)
 	{
 		UpdateMethods();
-		return base.ResolveMethodOverloads(argumentTypes, resolvedArguments, modifiers, scope, invokedLeaf);
+		return base.ResolveMethodOverloads(numArguments, scope, invokedLeaf);
 	}
 
-	public override List<MethodDefinition> CollectCandidates(
-		List<TypeDefinitionBase> argumentTypes,
-		SymbolDefinition[] resolvedArguments,
-		Modifiers[] modifiers,
-		Scope scope,
-		ParseTree.Leaf invokedLeaf)
+	public override int CollectCandidates(int numArguments, Scope scope, ParseTree.Leaf invokedLeaf)
 	{
 		UpdateMethods();
-		return base.CollectCandidates(argumentTypes, resolvedArguments, modifiers, scope, invokedLeaf);
+		return base.CollectCandidates(numArguments, scope, invokedLeaf);
 	}
 
 	public override void AddMethod(MethodDefinition method)
@@ -4828,6 +5076,11 @@ public class ConstructedMethodDefinition : MethodDefinition
 		sb.Append('>');
 		return sb.ToString();
 	}
+
+	public override ConstructedMethodDefinition ConstructMethod(SymbolReference[] typeArgs)
+	{
+		return genericMethodDefinition.ConstructMethod(typeArgs);
+	}
 }
 
 public abstract class InvokeableSymbolDefinition : SymbolDefinition
@@ -4874,10 +5127,11 @@ public abstract class InvokeableSymbolDefinition : SymbolDefinition
 		return definition;
 	}
 	
-	public bool CanCallWith(Modifiers[] modifiers, bool asExtensionMethod)
+	public bool CanCallWith(int numArguments, bool asExtensionMethod)
 	{
-		var numArguments = modifiers.Length;
-
+		var modifiers = MethodGroupDefinition.modifiersStack;
+		int baseIndex = modifiers.Count - numArguments;
+		
 		var minArgs = asExtensionMethod ? 1 : 0;
 		var maxArgs = minArgs;
 		if (parameters != null)
@@ -4888,8 +5142,8 @@ public abstract class InvokeableSymbolDefinition : SymbolDefinition
 
 				if (i < numArguments)
 				{
-					var passedWithOut = modifiers[i] == Modifiers.Out;
-					var passedWithRef = modifiers[i] == Modifiers.Ref;
+					var passedWithOut = modifiers[baseIndex + i] == Modifiers.Out;
+					var passedWithRef = modifiers[baseIndex + i] == Modifiers.Ref;
 					if (param.IsOut != passedWithOut || param.IsRef != passedWithRef)
 						return false;
 				}
@@ -5186,7 +5440,7 @@ public class MethodDefinition : InvokeableSymbolDefinition
 			symbol.parseTreeNode != null && symbol.parseTreeNode.parent != null && symbol.parseTreeNode.parent.childIndex == 0)
 		{
 			var parentType = (parentSymbol.kind == SymbolKind.MethodGroup ? parentSymbol.parentSymbol : parentSymbol) as TypeDefinitionBase;
-			if (parentType.kind == SymbolKind.Class && parentType.IsStatic && parentType.NumTypeParameters == 0)
+			if (parentType.kind == SymbolKind.Class && parentType.NumTypeParameters == 0)
 			{
 				var namespaceDefinition = parentType.parentSymbol;
 				if (namespaceDefinition is NamespaceDefinition)
@@ -5232,12 +5486,17 @@ public class MethodDefinition : InvokeableSymbolDefinition
 					case "interfaceMethodDeclaration":
 						refNode = declarations[0].parseTreeNode.FindPreviousNode();
 						break;
+					case "conversionOperatorDeclarator":
+						refNode = declarations[0].parseTreeNode.ChildAt(2);
+						break;
 					default:
 						refNode = declarations[0].parseTreeNode.parent.parent.ChildAt(declarations[0].parseTreeNode.parent.childIndex - 1);
 						break;
 				}
+#if SI3_WARNINGS
 				if (refNode == null)
 					Debug.LogError("Could not find method return type from node: " + declarations[0].parseTreeNode);
+#endif
 				returnType = refNode != null ? new SymbolReference(refNode) : null;
 			}
 		}
@@ -5265,8 +5524,65 @@ public class MethodDefinition : InvokeableSymbolDefinition
 		}
 	}
 	
+	public override SymbolDefinition Rebind()
+	{
+		if (parentSymbol == null && savedParentSymbol == null)
+			return this;
+		
+		var newParent = (parentSymbol ?? savedParentSymbol).Rebind() as MethodGroupDefinition;
+		if (newParent == null)
+			return null;
+		
+		if (newParent == parentSymbol)
+			return this;
+		
+		var tp = GetTypeParameters();
+		var numTypeParams = tp != null ? tp.Count : 0;
+		
+		MethodDefinition newSymbol = null;
+		var ownParams = GetParameters();
+		foreach (var m in newParent.methods)
+		{
+			if (m.NumTypeParameters != numTypeParams)
+				continue;
+				
+			var otherParams = m.GetParameters();
+			if (ownParams.Count != otherParams.Count)
+				continue;
+			
+			var allEqual = true;
+			for (var i = ownParams.Count; i --> 0; )
+			{
+				var own = ownParams[i];
+				var other = otherParams[i];
+				if (own.modifiers != other.modifiers ||
+					own.name != other.name ||
+					own.TypeOf().IsSameType(other.TypeOf() as TypeDefinitionBase))
+				{
+					allEqual = false;
+					break;
+				}
+			}
+			if (allEqual)
+			{
+				newSymbol = m;
+				break;
+			}
+		}
+		
+#if SI3_WARNINGS
+		if (newSymbol == null)
+		{
+			Debug.LogWarning(GetTooltipText() + " not found in " + newParent.GetTooltipText());
+			return null;
+		}
+#endif
+		
+		return newSymbol;
+	}
+	
 	private Dictionary<int, ConstructedMethodDefinition> constructedMethods;
-	public ConstructedMethodDefinition ConstructMethod(SymbolReference[] typeArgs)
+	public virtual ConstructedMethodDefinition ConstructMethod(SymbolReference[] typeArgs)
 	{
 		var numTypeParams = typeParameters != null ? typeParameters.Count : 0;
 		var numTypeArgs = typeArgs != null ? typeArgs.Length : 0;
@@ -5317,13 +5633,15 @@ public class NamespaceDefinition : SymbolDefinition
 {
 	//public override SymbolDefinition AddDeclaration(SymbolDeclaration symbol)
 	//{
-	//	Debug.Log("Adding " + symbol + " to namespace " + name);
+	//	if (symbol.Name == "CsGrammar")
+	//		Debug.Log("Adding " + symbol + " to namespace " + name);
 	//	return base.AddDeclaration(symbol);
 	//}
 	
-	//public virtual void RemoveDeclaration(SymbolDeclaration symbol)
+	//public override void RemoveDeclaration(SymbolDeclaration symbol)
 	//{
-	//	Debug.Log("Removing " + symbol + " from namespace " + name);
+	//	if (symbol.Name == "CsGrammar")
+	//		Debug.Log("Removing " + symbol + " from namespace " + name);
 	//	base.RemoveDeclaration(symbol);
 	//}
 	
@@ -5336,6 +5654,19 @@ public class NamespaceDefinition : SymbolDefinition
 	//    }
 	//    return result;
 	//}
+	
+	public override SymbolDefinition Rebind()
+	{
+		SymbolDefinition assembly = this;
+		while (assembly != null)
+		{
+			var result = assembly as AssemblyDefinition;
+			if (result != null)
+				return result.FindSameNamespace(this);
+			assembly = assembly.parentSymbol ?? assembly.savedParentSymbol;
+		}
+		return null;
+	}
 	
 	public void CollectExtensionMethods(
 		string id,
@@ -5448,6 +5779,7 @@ public class NamespaceDefinition : SymbolDefinition
 		resolvingMember = true;
 
 		leaf.resolvedSymbol = null;
+		leaf.semanticError = null;
 		base.ResolveAttributeMember(leaf, context);
 
 		resolvingMember = false;
@@ -5484,8 +5816,10 @@ public class NamespaceDefinition : SymbolDefinition
 				mask &= ~AccessLevelMask.Internal;
 		}
 		
-		foreach (var m in members)
+		for (var i = 0; i < members.Count; ++i)
 		{
+			var m = members[i];
+			
 			if (m.kind == SymbolKind.Namespace)
 				continue;
 			
@@ -5523,14 +5857,18 @@ public class NamespaceDefinition : SymbolDefinition
 	public void GetExtensionMethodsCompletionData(TypeDefinitionBase targetType, Dictionary<string, SymbolDefinition> data, AccessLevelMask accessLevelMask)
 	{
 //	Debug.Log("Extensions for " + targetType.GetTooltipText());
- 		foreach (var t in members)
+		for (var i = 0; i < members.Count; ++i)
 		{
+			var t = members[i];
+			
 	 		if (t.kind == SymbolKind.Class && t.IsStatic && t.NumTypeParameters == 0 &&
 		 		(t as TypeDefinitionBase).numExtensionMethods > 0 && t.IsAccessible(accessLevelMask))
 			{
 				var classMembers = t.members;
-				foreach (var cm in classMembers)
-				{
+		 		for (var j = 0; j < classMembers.Count; ++j)
+		 		{
+			 		var cm = classMembers[j];
+			 		
 					if (cm.kind == SymbolKind.MethodGroup)
 					{
 						var mg = cm as MethodGroupDefinition;
@@ -5570,19 +5908,45 @@ public class NamespaceDefinition : SymbolDefinition
 			}
 		}
 	}
+	
+	public IEnumerable<TypeDefinitionBase> EnumTypes(string name)
+	{
+		for (var i = members.Count; i --> 0; )
+		{
+			var member = members[i];
+			
+			switch (member.kind)
+			{
+			case SymbolKind.Class:
+			case SymbolKind.Delegate:
+			case SymbolKind.Enum:
+			case SymbolKind.Interface:
+			case SymbolKind.Struct:
+				if (member.name == name)
+					yield return member as TypeDefinitionBase;
+				break;
+				
+			case SymbolKind.Namespace:
+				var nsDef = member as NamespaceDefinition;
+				foreach (var type in nsDef.EnumTypes(name))
+					yield return type;
+				break;
+			}
+		}
+	}
 }
 
 public class CompilationUnitDefinition : NamespaceDefinition
 {
-	public override SymbolDefinition AddDeclaration(SymbolDeclaration symbol)
-	{
-		return base.AddDeclaration(symbol);
-	}
+	//public override SymbolDefinition AddDeclaration(SymbolDeclaration symbol)
+	//{
+	//	return base.AddDeclaration(symbol);
+	//}
 
-	public override void RemoveDeclaration(SymbolDeclaration symbol)
-	{
-		base.RemoveDeclaration(symbol);
-	}
+	//public override void RemoveDeclaration(SymbolDeclaration symbol)
+	//{
+	//	base.RemoveDeclaration(symbol);
+	//}
 }
 
 public class SymbolDeclarationScope : Scope
@@ -5831,6 +6195,7 @@ public class BodyScope : LocalScope
 	public override void ResolveAttribute(ParseTree.Leaf leaf)
 	{
 		leaf.resolvedSymbol = null;
+		leaf.semanticError = null;
 		if (definition != null)
 			definition.ResolveAttributeMember(leaf, this);
 
@@ -6015,7 +6380,12 @@ public class NamespaceScope : Scope
 				}
 			}
 		}
-		
+
+		if (leaf.resolvedSymbol == null)
+		{
+			definition.ResolveMember(leaf, this, numTypeArgs, true);
+		}
+
 		if (leaf.resolvedSymbol == null)
 		{
 			for (var i = declaration.importedNamespaces.Count; i --> 0; )
@@ -6036,7 +6406,7 @@ public class NamespaceScope : Scope
 		}
 		
 		var parentScopeDef = parentScope != null ? ((NamespaceScope) parentScope).definition : null;
-		for (var nsDef = definition;
+		for (var nsDef = definition.parentSymbol as NamespaceDefinition;
 			leaf.resolvedSymbol == null && nsDef != null && nsDef != parentScopeDef;
 			nsDef = nsDef.parentSymbol as NamespaceDefinition)
 		{
@@ -6050,6 +6420,7 @@ public class NamespaceScope : Scope
 	public override void ResolveAttribute(ParseTree.Leaf leaf)
 	{
 		leaf.resolvedSymbol = null;
+		leaf.semanticError = null;
 
 		var id = SymbolDefinition.DecodeId(leaf.token.text);
 		
@@ -6101,15 +6472,14 @@ public class NamespaceScope : Scope
 		
 		var id = invokedSymbol != null && invokedSymbol.kind != SymbolKind.Error ? invokedSymbol.name : invokedLeaf != null ? SymbolDefinition.DecodeId(invokedLeaf.token.text) : "";
 		
-		int numArguments = 1;
-		Modifiers[] modifiers = null;
-		List<TypeDefinitionBase> argumentTypes = null;
-		
 		MethodDefinition firstAccessibleMethod = null;
 		
 		var thisAssembly = GetAssembly();
 		
 		var extensionsMethods = new HashSet<MethodDefinition>();
+		
+		int numArguments = 0;
+		int argsBaseIndex = MethodGroupDefinition.modifiersStack.Count;
 
 		var parentNSScope = parentScope as NamespaceScope;
 		var parentNSDef = parentNSScope != null ? parentNSScope.definition : null;
@@ -6122,34 +6492,45 @@ public class NamespaceScope : Scope
 			{
 				firstAccessibleMethod = extensionsMethods.First();
 
-				SymbolDefinition[] resolvedArguments = null;
-				if (argumentTypes == null)
-					numArguments = MethodGroupDefinition.ProcessArgumentListNode(argumentListNode, out modifiers, out argumentTypes, memberOf, out resolvedArguments);
+				if (numArguments == 0)
+					numArguments = MethodGroupDefinition.ProcessArgumentListNode(argumentListNode, memberOf);
 
-				var candidates = new List<MethodDefinition>(extensionsMethods.Count);
+				var candidatesStack = MethodGroupDefinition.methodCandidatesStack;
+				int baseIndex = candidatesStack.Count;
 				foreach (var method in extensionsMethods)
-					if (argumentTypes == null || method.CanCallWith(modifiers, true))
-						candidates.Add(method);
+					if (numArguments == 0 || method.CanCallWith(numArguments, true))
+						candidatesStack.Add(method);
+				int numCandidates = candidatesStack.Count - baseIndex;
 
 				if (typeArgs == null)
 				{
-					for (var i = candidates.Count; i-- > 0;)
+					for (var i = numCandidates; i --> 0;)
 					{
-						var candidate = candidates[i];
-						if (candidate.NumTypeParameters == 0 || argumentTypes == null)
+						var candidate = candidatesStack[baseIndex + i];
+						if (candidate.NumTypeParameters == 0 || numArguments == 0)
 							continue;
 
-						candidate = MethodGroupDefinition.InferMethodTypeArguments(candidate, argumentTypes, resolvedArguments, invokedLeaf);
+						candidate = MethodGroupDefinition.InferMethodTypeArguments(candidate, numArguments, invokedLeaf);
 						if (candidate == null)
-							candidates.RemoveAt(i);
+							candidatesStack.RemoveAt(baseIndex + i);
 						else
-							candidates[i] = candidate;
+							candidatesStack[i] = candidate;
 					}
 				}
-
-				var resolved = MethodGroupDefinition.ResolveMethodOverloads(numArguments, argumentTypes, resolvedArguments, modifiers, candidates);
+				numCandidates = candidatesStack.Count - baseIndex;
+				
+				var resolved = MethodGroupDefinition.ResolveMethodOverloads(numArguments, numCandidates);
+				
+				candidatesStack.RemoveRange(baseIndex, numCandidates);
+				
 				if (resolved != null && resolved.kind != SymbolKind.Error)
+				{
+					MethodGroupDefinition.modifiersStack.RemoveRange(argsBaseIndex, numArguments);
+					MethodGroupDefinition.argumentTypesStack.RemoveRange(argsBaseIndex, numArguments);
+					MethodGroupDefinition.resolvedArgumentsStack.RemoveRange(argsBaseIndex, numArguments);
+					
 					return resolved;
+				}
 			}
 
 			extensionsMethods.Clear();
@@ -6167,35 +6548,50 @@ public class NamespaceScope : Scope
 			if (firstAccessibleMethod == null)
 				firstAccessibleMethod = extensionsMethods.First();
 
-			SymbolDefinition[] resolvedArguments = null;
-			if (argumentTypes == null)
-				numArguments = MethodGroupDefinition.ProcessArgumentListNode(argumentListNode, out modifiers, out argumentTypes, memberOf, out resolvedArguments);
+			if (numArguments == 0)
+				numArguments = MethodGroupDefinition.ProcessArgumentListNode(argumentListNode, memberOf);
 			
-			var candidates = new List<MethodDefinition>(extensionsMethods.Count);
+			var candidatesStack = MethodGroupDefinition.methodCandidatesStack;
+			int baseIndex = candidatesStack.Count;
 			foreach (var method in extensionsMethods)
-				if (argumentTypes == null || method.CanCallWith(modifiers, true))
-					candidates.Add(method);
+				if (numArguments == 0 || method.CanCallWith(numArguments, true))
+					candidatesStack.Add(method);
+			int numCandidates = candidatesStack.Count - baseIndex;
 
 			if (typeArgs == null)
 			{
-				for (var i = candidates.Count; i --> 0; )
+				for (var i = numCandidates; i --> 0; )
 				{
-					var candidate = candidates[i];
-					if (candidate.NumTypeParameters == 0 || argumentTypes == null)
+					var candidate = candidatesStack[baseIndex + i];
+					if (candidate.NumTypeParameters == 0 || numArguments == 0)
 						continue;
 
-					candidate = MethodGroupDefinition.InferMethodTypeArguments(candidate, argumentTypes, resolvedArguments, invokedLeaf);
+					candidate = MethodGroupDefinition.InferMethodTypeArguments(candidate, numArguments, invokedLeaf);
 					if (candidate == null)
-						candidates.RemoveAt(i);
+						candidatesStack.RemoveAt(baseIndex + i);
 					else
-						candidates[i] = candidate;
+						candidatesStack[i] = candidate;
 				}
 			}
+			numCandidates = candidatesStack.Count - baseIndex;
 			
-			var resolved = MethodGroupDefinition.ResolveMethodOverloads(numArguments, argumentTypes, resolvedArguments, modifiers, candidates);
+			var resolved = MethodGroupDefinition.ResolveMethodOverloads(numArguments, numCandidates);
+			
+			candidatesStack.RemoveRange(baseIndex, numCandidates);
+			
 			if (resolved != null && resolved.kind != SymbolKind.Error)
+			{
+				MethodGroupDefinition.modifiersStack.RemoveRange(argsBaseIndex, numArguments);
+				MethodGroupDefinition.argumentTypesStack.RemoveRange(argsBaseIndex, numArguments);
+				MethodGroupDefinition.resolvedArgumentsStack.RemoveRange(argsBaseIndex, numArguments);
+				
 				return resolved;
+			}
 		}
+		
+		MethodGroupDefinition.modifiersStack.RemoveRange(argsBaseIndex, numArguments);
+		MethodGroupDefinition.argumentTypesStack.RemoveRange(argsBaseIndex, numArguments);
+		MethodGroupDefinition.resolvedArgumentsStack.RemoveRange(argsBaseIndex, numArguments);
 		
 		if (parentScope != null)
 		{
@@ -6232,12 +6628,15 @@ public class NamespaceScope : Scope
 				nsDef.GetTypesOnlyCompletionData(data, AccessLevelMask.Any, context.assembly);
 		}
 		
-		var parentScopeDef = parentScope != null ? ((NamespaceScope) parentScope).definition : null;
-		for (var nsDef = definition.parentSymbol;
-			nsDef != null && nsDef != parentScopeDef;
-			nsDef = nsDef.parentSymbol as NamespaceDefinition)
+		if (parentScope != null)
 		{
-			nsDef.GetCompletionData(data, context);
+			var parentScopeDef = ((NamespaceScope) parentScope).definition;
+			for (var nsDef = definition.parentSymbol;
+				nsDef != null && nsDef != parentScopeDef;
+				nsDef = nsDef.parentSymbol as NamespaceDefinition)
+			{
+				nsDef.GetCompletionData(data, context);
+			}
 		}
 		
 		bool oldFromInstance = context.fromInstance;
@@ -6270,7 +6669,17 @@ public class NamespaceScope : Scope
 		}
 		
  		if (parentScope != null)
+		{
+			var parentScopeDef = ((NamespaceScope) parentScope).definition;
+	 		for (var nsDef = definition.parentSymbol as NamespaceDefinition;
+				nsDef != null && nsDef != parentScopeDef;
+				nsDef = nsDef.parentSymbol as NamespaceDefinition)
+			{
+				assembly.GetExtensionMethodsCompletionData(forType, nsDef, data);
+			}
+
 	 		parentScope.GetExtensionMethodsCompletionData(forType, data);
+		}
 	}
 }
 
@@ -6637,47 +7046,126 @@ public class SymbolDefinition
 	/// <remarks>Check for null!!!</remarks>
 	public List<SymbolDeclaration> declarations;
 
-	public class SymbolList : List<SymbolDefinition>
+	public struct SymbolList
 	{
-		public bool TryGetValue(string name, int numTypeParameters, out SymbolDefinition value)
+		private List<SymbolDefinition> storage;
+		
+		public int Count {
+			get {
+				return storage == null ? 0 : storage.Count;
+			}
+		}
+		
+		public void RemoveAt(int index)
 		{
-			for (var index = Count; index --> 0; )
+			if (storage == null)
+				throw new IndexOutOfRangeException();
+			storage.RemoveAt(index);
+		}
+		
+		private int BinarySearch(string name, int numTypeParameters)
+		{
+			int lo = 0;
+			int hi = storage.Count - 1;
+			while (lo <= hi)
 			{
-				var x = base[index];
-				if (x.name == name &&
-					(numTypeParameters < 0 ||
-						x.kind == SymbolKind.MethodGroup ||
-						x.NumTypeParameters == numTypeParameters))
+				int i = lo + ((hi - lo) >> 1);
+				var current = storage[i];
+				int order = string.CompareOrdinal(current.name, name);
+				
+				if (order == 0)
 				{
-					value = x;
-					return true;
+					while (i > 0 && storage[i-1].name == name)
+					{
+						--i;
+					}
+					current = storage[i];
+					if (numTypeParameters < 0 ||
+						numTypeParameters == current.NumTypeParameters ||
+						current.kind == SymbolKind.MethodGroup)
+					{
+						return i;
+					}
+					
+					while (++i < storage.Count)
+					{
+						current = storage[i];
+						if (current.name != name)
+						{
+							return ~i;
+						}
+						if (current.NumTypeParameters == numTypeParameters)
+						{
+							return i;
+						}
+						if (current.NumTypeParameters > numTypeParameters)
+						{
+							return ~i;
+						}
+					}
+					return ~i;
+				}
+				if (order < 0)
+				{
+					lo = i + 1;
+				}
+				else
+				{
+					hi = i - 1;
 				}
 			}
 			
-			value = null;
-			return false;
+			return ~lo;
+		}
+		
+		public bool TryGetValue(string name, int numTypeParameters, out SymbolDefinition value)
+		{
+			if (storage == null)
+			{
+				value = null;
+				return false;
+			}
+			
+			var index = BinarySearch(name, numTypeParameters);
+			if (index < 0)
+			{
+				value = null;
+				return false;
+			}
+			
+			value = storage[index];
+			return true;
 		}
 
 		public bool Remove(string name, int numTypeParameters)
 		{
-			for (var index = Count; index --> 0; )
+			if (storage == null)
+				return false;
+			
+			var index = BinarySearch(name, numTypeParameters);
+			if (index >= 0)
 			{
-				var x = base[index];
-				if (x.name == name && (x.kind == SymbolKind.MethodGroup || x.NumTypeParameters == numTypeParameters))
-				{
-					RemoveAt(index);
-					return true;
-				}
+				storage.RemoveAt(index);
+				return true;
 			}
+			
 			return false;
 		}
 		
 		public bool Contains(string name, int numTypeParameters)
 		{
-			SymbolDefinition value;
-			return TryGetValue(name, numTypeParameters, out value);
+			return BinarySearch(name, numTypeParameters) >= 0;
 		}
-
+		
+		public SymbolDefinition this[int index]
+		{
+			get {
+				if (storage == null)
+					throw new IndexOutOfRangeException();
+				return storage[index];
+			}
+		}
+		
 		public SymbolDefinition this[string name, int numTypeParameters]
 		{
 			get
@@ -6690,37 +7178,61 @@ public class SymbolDefinition
 
 			set
 			{
-				var index = 0;
-				while (index < Count)
+				if (storage == null)
 				{
-					var x = base[index];
-					if (x.name == name && (x.kind == SymbolKind.MethodGroup || x.NumTypeParameters == numTypeParameters))
-						break;
-					++index;
+					storage = new List<SymbolDefinition>();
+					storage.Add(value);
+					return;
 				}
-				while (index < Count)
+				
+				var index = BinarySearch(name, numTypeParameters);
+				if (index >= 0)
 				{
-					var old = base[index];
-					if (old.declarations == null ||
-						old.declarations.Count == 0 ||
-						old.declarations.All(x => !x.IsValid()))
+					var count = storage.Count;
+					while (index < count)
 					{
-						RemoveAt(index);
-					}
-					else
-					{
-						++index;
-					}
+						var old = storage[index];
+						if (object.ReferenceEquals(value, old))
+							return;
 
-					while (index < Count)
-					{
-						var x = base[index];
-						if (x.name == name && (x.kind == SymbolKind.MethodGroup || x.NumTypeParameters == numTypeParameters))
-							break;
-						++index;
+						var allValid = true;
+						if (old.declarations != null)
+						{
+							var oldDeclarations = old.declarations;
+							for (var i = oldDeclarations.Count; i --> 0; )
+								if (!oldDeclarations[i].IsValid())
+								{
+									allValid = false;
+									break;
+								}
+						}
+						
+						if (old.declarations == null || old.declarations.Count == 0 || !allValid)
+						{
+							storage.RemoveAt(index);
+							--count;
+						}
+						else
+						{
+							++index;
+						}
+						
+						if (index < count)
+						{
+							old = storage[index];
+							if (old.name != name ||
+								old.kind != SymbolKind.MethodGroup && old.NumTypeParameters != numTypeParameters)
+							{
+								break;
+							}
+						}
 					}
 				}
-				Add(value);
+				else
+				{
+					index = ~index;
+				}
+				storage.Insert(index, value);
 			}
 		}
 	}
@@ -6817,7 +7329,7 @@ public class SymbolDefinition
 				if (genericSymbol is ReflectedType || genericSymbol is ReflectedMethod ||
 					genericSymbol is ReflectedConstructor || genericSymbol is ReflectedMember)
 				{
-					return Assembly != null;
+					return genericSymbol.Assembly != null;
 				}
 			}
 			
@@ -6828,6 +7340,9 @@ public class SymbolDefinition
 
 			return true; // kind != SymbolKind.Error;
 		}
+
+		if (kind == SymbolKind.MethodGroup)
+			return true;
 		
 		for (var i = declarations.Count; i --> 0; )
 		{
@@ -6838,6 +7353,7 @@ public class SymbolDefinition
 				if (declaration.scope != null)
 				{
 					declaration.scope.RemoveDeclaration(declaration);
+					declaration.scope = null;
 					++ParseTree.resolverVersion;
 					if (ParseTree.resolverVersion == 0)
 						++ParseTree.resolverVersion;
@@ -6851,7 +7367,7 @@ public class SymbolDefinition
 	public virtual SymbolDefinition Rebind()
 	{
 		if (kind == SymbolKind.Namespace)
-			return Assembly.FindNamespace(FullName);
+			return Assembly.FindSameNamespace(this as NamespaceDefinition);
 		
 		if (parentSymbol == null && savedParentSymbol == null)
 			return this;
@@ -6860,67 +7376,20 @@ public class SymbolDefinition
 		if (newParent == null)
 			return null;
 		
+		if (newParent == parentSymbol)
+			return this;
+		
 		var tp = GetTypeParameters();
 		var numTypeParams = tp != null ? tp.Count : 0;
 		var symbolIsType = this is TypeDefinitionBase;
 		SymbolDefinition newSymbol = newParent.FindName(name, numTypeParams, symbolIsType);
+#if SI3_WARNINGS
 		if (newSymbol == null)
 		{
-			if (newParent.kind == SymbolKind.MethodGroup)
-			{
-				var mg = newParent as MethodGroupDefinition;
-				if (mg == null)
-				{
-					var generic = newParent.GetGenericSymbol();
-					if (generic != null)
-						mg = generic as MethodGroupDefinition;
-				}
-				if (mg != null)
-				{
-					var ownParams = GetGenericSymbol().GetParameters();
-					foreach (var m in mg.methods)
-					{
-						var otherParams = m.GetParameters();
-						if (ownParams.Count == otherParams.Count)
-						{
-							var allEqual = true;
-							for (var i = ownParams.Count; i --> 0; )
-							{
-								var own = ownParams[i];
-								var other = otherParams[i];
-								if (own.modifiers != other.modifiers ||
-									own.name != other.name ||
-									own.TypeOf().GetGenericSymbol() != other.TypeOf().GetGenericSymbol())
-								{
-									allEqual = false;
-									break;
-								}
-							}
-							if (allEqual)
-							{
-								newSymbol = m;
-								break;
-							}
-						}
-					}
-				}
-#if SI3_WARNINGS
-				else
-				{
-					Debug.LogWarning(newParent.GetTooltipText() + " not found a MethodGroupDefinition!");
-					return null;
-				}
-#endif
-				
-			}
-#if SI3_WARNINGS
-			if (newSymbol == null)
-			{
-				Debug.LogWarning(GetTooltipText() + " not found in " + newParent.GetTooltipText());
-				return null;
-			}
-#endif
+			Debug.LogWarning(GetTooltipText() + " not found in " + newParent.GetTooltipText());
+			return null;
 		}
+#endif
 		return newSymbol;
 	}
 	
@@ -7126,7 +7595,7 @@ public class SymbolDefinition
 	
 	public virtual TypeDefinitionBase SubstituteTypeParameters(SymbolDefinition context)
 	{
-		Debug.Log("Not a type! Can't substitute type of: " + GetTooltipText());
+		Debug.LogWarning("Not a type! Can't substitute type of: " + GetTooltipText());
 		return null;
 	}
 
@@ -7136,8 +7605,13 @@ public class SymbolDefinition
 	{
 		ReflectedType reflectedType;
 		if (reflectedTypes.TryGetValue(type, out reflectedType))
+		{
+#if SI3_WARNINGS
+			Debug.LogWarning("Found imported type: " + reflectedType.ReflectionName);
+#endif
 			return reflectedType;
-
+		}
+		
 		if (type.IsArray)
 		{
 			var elementType = ImportReflectedType(type.GetElementType());
@@ -7177,20 +7651,23 @@ public class SymbolDefinition
 		return reflectedType;
 	}
 
-	public SymbolDefinition ImportReflectedMethod(MethodInfo info)
+	public MethodGroupDefinition ImportReflectedMethod(MethodInfo info)
 	{
 		var importedReflectionName = info.Name;
 		SymbolDefinition methodGroup;
-		if (!members.TryGetValue(importedReflectionName, 0, out methodGroup))
+		members.TryGetValue(importedReflectionName, 0, out methodGroup);
+		var asMethodGroup = methodGroup as MethodGroupDefinition;
+		if (methodGroup != null && asMethodGroup == null)
+			Debug.LogError("Si3 Error Importing Method: " + info);
+		if (asMethodGroup == null)
 		{
-			methodGroup = Create(SymbolKind.MethodGroup, importedReflectionName);
-			methodGroup.parentSymbol = this;
-			//(methodGroup as MethodGroupDefinition).numTypeParameters = numTypeParameters;
-			members[importedReflectionName, 0] = methodGroup;
+			asMethodGroup = Create(SymbolKind.MethodGroup, importedReflectionName) as MethodGroupDefinition;
+			asMethodGroup.parentSymbol = this;
+			members[importedReflectionName, 0] = asMethodGroup;
 		}
-		var imported = new ReflectedMethod(info, methodGroup);
-		((MethodGroupDefinition) methodGroup).AddMethod(imported);
-		return methodGroup;
+		var imported = new ReflectedMethod(info, asMethodGroup);
+		asMethodGroup.AddMethod(imported);
+		return asMethodGroup;
 	}
 
 	public SymbolDefinition ImportReflectedConstructor(ConstructorInfo info)
@@ -7268,7 +7745,10 @@ public class SymbolDefinition
 		if (member.IsPartial)
 		{
 			if (member is TypeDefinitionBase)
+			{
 				FGTextBufferManager.FindOtherTypeDeclarationParts(symbol);
+				FGTextBufferManager.ParseAllAsyncBuffers();
+			}
 		}
 
 		return member;
@@ -7307,7 +7787,7 @@ public class SymbolDefinition
 
 		var addToSymbol = parentNamespace ?? this;
 		if (!addToSymbol.members.TryGetValue(symbol.Name, symbol.kind == SymbolKind.Method ? 0 : symbol.numTypeParameters, out definition) ||
-			symbol.kind == SymbolKind.Method && definition is MethodGroupDefinition ||
+			(symbol.kind == SymbolKind.Operator || symbol.kind == SymbolKind.Method) && definition is MethodGroupDefinition ||
 			definition is ReflectedMember || definition is ReflectedType ||
 			definition is ReflectedMethod || definition is ReflectedConstructor ||
 			!definition.IsValid())
@@ -7337,6 +7817,10 @@ public class SymbolDefinition
 					definitionAsType.InvalidateBaseType();
 				}
 				definition.declarations.Add(symbol);
+				
+				definition.modifiers |=
+					symbol.modifiers &
+					(Modifiers.Abstract | Modifiers.New | Modifiers.Sealed | Modifiers.Static);
 			}
 			else
 			{
@@ -7385,13 +7869,13 @@ public class SymbolDefinition
 				{
 					var id = DecodeId(leaf.token.text);
 					if (id != addToSymbol.name)
-						leaf.syntaxError = "Name of destructor must match name of class";
+						leaf.semanticError = "Name of destructor must match name of class";
 				}
 				else if (definition.kind == SymbolKind.Constructor)
 				{
 					var id = DecodeId(leaf.token.text);
 					if (id != addToSymbol.name)
-						leaf.syntaxError = "Methods must have return type";
+						leaf.semanticError = "Methods must have return type";
 				}
 			}
 		}
@@ -7403,19 +7887,15 @@ public class SymbolDefinition
 	{
 		savedParentSymbol = parentSymbol;
 		parentSymbol = null;
-		if (members != null)
-		{
-			foreach (var member in members)
-				member.Invalidate();
-		}
+		for (var i = members.Count; i --> 0; )
+			members[i].Invalidate();
 	}
 
 	public virtual void RemoveDeclaration(SymbolDeclaration symbol)
 	{
-		if (symbol.kind == SymbolKind.Method)
+		if (symbol.kind == SymbolKind.Method || symbol.kind == SymbolKind.Operator)
 		{
-			// TODO: There's no need to RemoveAll - there can only be one
-			for (var i = members.Count; i -- > 0;)
+			for (var i = members.Count; i --> 0; )
 			{
 				var x = members[i];
 				if (x.declarations == null)
@@ -7424,13 +7904,18 @@ public class SymbolDefinition
 				if (x.kind == SymbolKind.MethodGroup)
 				{
 					var mg = x as MethodGroupDefinition;
-					mg.RemoveDeclaration(symbol);
-					if (mg.methods.Count == 0)
+					if (mg.methods.Count > 0)
 					{
-						mg.declarations.Clear();
-						mg.parentSymbol = null;
-
-						members.RemoveAt(i);
+						mg.RemoveDeclaration(symbol);
+						if (mg.methods.Count == 0)
+						{
+							mg.declarations.Clear();
+							mg.savedParentSymbol = mg.parentSymbol;
+							mg.parentSymbol = null;
+	
+							members.RemoveAt(i);
+							break;
+						}
 					}
 				}
 			}
@@ -7937,11 +8422,11 @@ public class SymbolDefinition
 				return null;
 			
 			if (kind == SymbolKind.Indexer)
-				result = result.Substring(0, result.LastIndexOf('.') + 1) + "Index_operator";
+				result = result.Substring(0, result.LastIndexOf(".", StringComparison.Ordinal) + 1) + "Index_operator";
 			else if (kind == SymbolKind.Constructor)
-				result = result.Substring(0, result.LastIndexOf('.')) + "-ctor";
+				result = result.Substring(0, result.LastIndexOf(".", StringComparison.Ordinal)) + "-ctor";
 			else if ((kind == SymbolKind.Field || kind == SymbolKind.Property) && parentSymbol.kind != SymbolKind.Enum)
-				result = result.Substring(0, result.LastIndexOf('.')) + "-" + name;
+				result = result.Substring(0, result.LastIndexOf(".", StringComparison.Ordinal)) + "-" + name;
 			
 			if (kind == SymbolKind.Class && NumTypeParameters > 0)
 				name += "_" + NumTypeParameters;
@@ -8237,8 +8722,8 @@ public class SymbolDefinition
 	{
 		sb.AppendLine(indent + kind + " " + name + " (" + GetType() + ")");
 
-		foreach (var member in members)
-			member.Dump(sb, indent + "  ");
+		for (var i = 0; i < members.Count; ++i)
+			members[i].Dump(sb, indent + "  ");
 	}
 
 	public virtual void ResolveMember(ParseTree.Leaf leaf, Scope context, int numTypeArgs, bool asTypeOnly)
@@ -8268,6 +8753,7 @@ public class SymbolDefinition
 	public virtual void ResolveAttributeMember(ParseTree.Leaf leaf, Scope context)
 	{
 		leaf.resolvedSymbol = null;
+		leaf.semanticError = null;
 
 		var id = leaf.token.text;
 		leaf.resolvedSymbol = FindName(id, 0, true) ?? FindName(id + "Attribute", 0, true);
@@ -8314,84 +8800,106 @@ public class SymbolDefinition
 		}
 	}
 	
-	private static readonly Modifiers[] cachedTwoNoneModifiers = { Modifiers.None, Modifiers.None };
-	
 	private static SymbolDefinition ResolveExpression(string operatorMethodName, SymbolDefinition lhs, SymbolDefinition rhs)
 	{
-		var operandTypes = new List<TypeDefinitionBase>(2);
-		operandTypes.Add(lhs.TypeOf() as TypeDefinitionBase);
-		operandTypes.Add(rhs.TypeOf() as TypeDefinitionBase);
-
-		var resolvedArguments = new SymbolDefinition[] { lhs, rhs };
+		var lhsType = lhs.TypeOf() as TypeDefinitionBase;
+		var rhsType = rhs.TypeOf() as TypeDefinitionBase;
+		var argsBaseIndex = MethodGroupDefinition.resolvedArgumentsStack.Count;
 		
-		List<MethodDefinition> lhsCandidates = null;
-		var type = operandTypes[0];
-		while (lhsCandidates == null && type != builtInTypes_object)
+		var argumentTypesStack = MethodGroupDefinition.argumentTypesStack;
+		var resolvedArgumentsStack = MethodGroupDefinition.resolvedArgumentsStack;
+		var modifiersStack = MethodGroupDefinition.modifiersStack;
+		
+		argumentTypesStack.Add(lhsType);
+		argumentTypesStack.Add(rhsType);
+		resolvedArgumentsStack.Add(lhs);
+		resolvedArgumentsStack.Add(rhs);
+		modifiersStack.Add(Modifiers.None);
+		modifiersStack.Add(Modifiers.None);
+		
+		var candidatesStack = MethodGroupDefinition.methodCandidatesStack;
+		int lhsBaseIndex = candidatesStack.Count;
+		int numLhsCandidates = 0;
+		
+		var type = argumentTypesStack[argsBaseIndex + 0];
+		while (numLhsCandidates == 0 && type != null)
 		{
 			var methodGroup = type.FindName(operatorMethodName, 0, false) as MethodGroupDefinition;
 			if (methodGroup != null)
 			{
-				lhsCandidates = methodGroup.CollectCandidates(operandTypes, resolvedArguments, cachedTwoNoneModifiers, null, null);
-				if (lhsCandidates != null)
+				numLhsCandidates = methodGroup.CollectCandidates(2, null, null);
+				if (numLhsCandidates > 0)
 				{
-					for (var i = lhsCandidates.Count; i --> 0; )
+					for (var i = numLhsCandidates; i --> 0; )
 					{
-						var candidate = lhsCandidates[i];
-						if (!operandTypes[0].CanConvertTo(candidate.parameters[0].TypeOf() as TypeDefinitionBase) ||
-							!operandTypes[1].CanConvertTo(candidate.parameters[1].TypeOf() as TypeDefinitionBase))
+						var candidate = candidatesStack[lhsBaseIndex + i];
+						if (!argumentTypesStack[argsBaseIndex + 0].CanConvertTo(candidate.parameters[0].TypeOf() as TypeDefinitionBase) ||
+							!argumentTypesStack[argsBaseIndex + 1].CanConvertTo(candidate.parameters[1].TypeOf() as TypeDefinitionBase))
 						{
-							lhsCandidates.RemoveAt(i);
+							candidatesStack.RemoveAt(lhsBaseIndex + i);
 						}
 					}
-					if (lhsCandidates.Count == 0)
-						lhsCandidates = null;
+					numLhsCandidates = candidatesStack.Count - lhsBaseIndex;
 				}
 			}
 			type = type.BaseType();
 		};
 		
-		List<MethodDefinition> rhsCandidates = null;
-		type = operandTypes[1];
-		while (rhsCandidates == null && !operandTypes[0].DerivesFrom(type))
+		int rhsBaseIndex = candidatesStack.Count;
+		int numRhsCandidates = 0;
+		
+		type = argumentTypesStack[argsBaseIndex + 1];
+		while (numRhsCandidates == 0 && type != null)
 		{
 			var methodGroup = type.FindName(operatorMethodName, 0, false) as MethodGroupDefinition;
 			if (methodGroup != null)
 			{
-				rhsCandidates = methodGroup.CollectCandidates(operandTypes, resolvedArguments, cachedTwoNoneModifiers, null, null);
-				if (rhsCandidates != null)
+				numRhsCandidates = methodGroup.CollectCandidates(2, null, null);
+				if (numRhsCandidates != 0)
 				{
-					for (var i = rhsCandidates.Count; i --> 0; )
+					for (var i = numRhsCandidates; i --> 0; )
 					{
-						var candidate = rhsCandidates[i];
-						if (!operandTypes[0].CanConvertTo(candidate.parameters[0].TypeOf() as TypeDefinitionBase) ||
-							!operandTypes[1].CanConvertTo(candidate.parameters[1].TypeOf() as TypeDefinitionBase))
+						var candidate = candidatesStack[rhsBaseIndex + i];
+						if (!argumentTypesStack[argsBaseIndex + 0].CanConvertTo(candidate.parameters[0].TypeOf() as TypeDefinitionBase) ||
+							!argumentTypesStack[argsBaseIndex + 1].CanConvertTo(candidate.parameters[1].TypeOf() as TypeDefinitionBase))
 						{
-							rhsCandidates.RemoveAt(i);
+							candidatesStack.RemoveAt(rhsBaseIndex + i);
 						}
 					}
-					if (rhsCandidates.Count == 0)
-						rhsCandidates = null;
+					numRhsCandidates = candidatesStack.Count - rhsBaseIndex;
 				}
 			}
 			type = type.BaseType();
 		};
 		
-		if (lhsCandidates == null)
-			lhsCandidates = rhsCandidates;
-		else if (rhsCandidates != null)
-			for (var i = 0; i < rhsCandidates.Count; i++)
-				lhsCandidates.Add(rhsCandidates[i]);
+		numLhsCandidates += numRhsCandidates;
 		
-		if (lhsCandidates == null)
+		if (numLhsCandidates == 0)
 		{
-			if (!PredefinedOperators.TryGetValue(operatorMethodName, out lhsCandidates))
+			List<MethodDefinition> predefinedOps;
+			if (!PredefinedOperators.TryGetValue(operatorMethodName, out predefinedOps))
 			{
 				Debug.LogError("Unknown predefined operator name: " + operatorMethodName);
-				return operandTypes[0].GetThisInstance();
+				
+				var result = argumentTypesStack[0].GetThisInstance();
+				
+				modifiersStack.RemoveRange(argsBaseIndex, 2);
+				argumentTypesStack.RemoveRange(argsBaseIndex, 2);
+				resolvedArgumentsStack.RemoveRange(argsBaseIndex, 2);
+				
+				return result;
 			}
+			numLhsCandidates = predefinedOps.Count;
+			candidatesStack.AddRange(predefinedOps);
 		}
 		
-		var resolvedOverload = MethodGroupDefinition.ResolveMethodOverloads(2, operandTypes, resolvedArguments, cachedTwoNoneModifiers, lhsCandidates);
+		var resolvedOverload = MethodGroupDefinition.ResolveMethodOverloads(2, numLhsCandidates);
+		candidatesStack.RemoveRange(candidatesStack.Count - numLhsCandidates, numLhsCandidates);
+		
+		modifiersStack.RemoveRange(argsBaseIndex, 2);
+		argumentTypesStack.RemoveRange(argsBaseIndex, 2);
+		resolvedArgumentsStack.RemoveRange(argsBaseIndex, 2);
+		
 		var returnType = resolvedOverload.ReturnType();
 		return returnType == null ? null : returnType.GetThisInstance();
 	}
@@ -8420,6 +8928,7 @@ public class SymbolDefinition
 	public static TypeDefinition builtInTypes_IEnumerable;
 	public static TypeDefinition builtInTypes_IEnumerable_1;
 	public static TypeDefinition builtInTypes_Exception;
+	public static TypeDefinition builtInTypes_Enum;
 
 	//public static HashSet<string> missingResolveNodePaths = new HashSet<string>();
 	
@@ -8500,24 +9009,25 @@ public class SymbolDefinition
 		//	ResolveNode(argumentListNode, scope);
 
 		SymbolReference[] typeArgs = null;
-		if (invokedLeaf != null)
-		{
-			var accessIdentifierNode = invokedLeaf.parent;
-			if (accessIdentifierNode != null && accessIdentifierNode.RuleName == "accessIdentifier")
-			{
-				var typeArgumentListNode = accessIdentifierNode.NodeAt(2);
-				if (typeArgumentListNode != null)
-				{
-					var numTypeArguments = typeArgumentListNode.numValidNodes / 2;
-					typeArgs = new SymbolReference[numTypeArguments];
-					for (int i = 0; i < numTypeArguments; ++i)
-						typeArgs[i] = new SymbolReference(typeArgumentListNode.ChildAt(1 + 2 * i));
-				}
-			}
-		}
-
+		
 		if (invokedSymbol.kind == SymbolKind.MethodGroup)
 		{
+			if (invokedLeaf != null && typeArgs == null)
+			{
+				var accessIdentifierNode = invokedLeaf.parent;
+				if (accessIdentifierNode != null && accessIdentifierNode.RuleName == "accessIdentifier")
+				{
+					var typeArgumentListNode = accessIdentifierNode.NodeAt(2);
+					if (typeArgumentListNode != null)
+					{
+						var numTypeArguments = typeArgumentListNode.numValidNodes / 2;
+						typeArgs = new SymbolReference[numTypeArguments];
+						for (int i = 0; i < numTypeArguments; ++i)
+							typeArgs[i] = new SymbolReference(typeArgumentListNode.ChildAt(1 + 2 * i));
+					}
+				}
+			}
+			
 			result = invokedSymbol.ResolveMethodOverloads(argumentListNode, typeArgs, scope, invokedLeaf);
 			var targetType = invokedSymbol;
 			while (targetType != null && !(targetType is TypeDefinitionBase))
@@ -8555,8 +9065,25 @@ public class SymbolDefinition
 			}
 		}
 		
-		if (memberOf != null && !(memberOf is TypeDefinitionBase))
+		if (//(invokedSymbol.kind == SymbolKind.MethodGroup || invokedSymbol.kind == SymbolKind.Error) &&
+			memberOf != null && !(memberOf is TypeDefinitionBase))
 		{
+			if (invokedLeaf != null && typeArgs == null)
+			{
+				var accessIdentifierNode = invokedLeaf.parent;
+				if (accessIdentifierNode != null && accessIdentifierNode.RuleName == "accessIdentifier")
+				{
+					var typeArgumentListNode = accessIdentifierNode.NodeAt(2);
+					if (typeArgumentListNode != null)
+					{
+						var numTypeArguments = typeArgumentListNode.numValidNodes / 2;
+						typeArgs = new SymbolReference[numTypeArguments];
+						for (int i = 0; i < numTypeArguments; ++i)
+							typeArgs[i] = new SymbolReference(typeArgumentListNode.ChildAt(1 + 2 * i));
+					}
+				}
+			}
+			
 			var memberOfType = memberOf.TypeOf() as TypeDefinitionBase ?? scope.EnclosingType();
 			result = scope.ResolveAsExtensionMethod(invokedLeaf, invokedSymbol, memberOfType, argumentListNode, typeArgs, scope);
 			//Debug.Log("ResolveAsExtensionMethod: " + (invokedLeaf != null ? invokedLeaf.token.text : invokedSymbol.ToString()) + " on " + memberOf.ToString());
@@ -9082,7 +9609,10 @@ public class SymbolDefinition
 						scope.ResolveAttribute(lastLeaf);
 
 					if (lastLeaf.resolvedSymbol == null)
+					{
 						lastLeaf.resolvedSymbol = unknownSymbol;
+						lastLeaf.semanticError = unknownSymbol.name;
+					}
 					return lastLeaf.resolvedSymbol;
 				}
 				return ResolveNode(node.ChildAt(0), scope, asMemberOf, 0, true);
@@ -9667,17 +10197,11 @@ public class SymbolDefinition
 
 			case "castExpression":
 				if (node.numValidNodes == 4)
-				{
-					var target = ResolveNode(node.ChildAt(3), scope);
-					if (target is TypeDefinitionBase || target != null && target.kind == SymbolKind.Namespace)
-					{
-						ResolveNode(node.ChildAt(1), scope);
-						return target;
-					}
-				}
+					ResolveNode(node.ChildAt(3), scope);
+				
 				var castType = ResolveNode(node.ChildAt(1), scope) as TypeDefinitionBase;
-					if (castType != null)
-						return castType.GetThisInstance();
+				if (castType != null)
+					return castType.GetThisInstance();
 				break;
 
 			case "typeofExpression":
@@ -9945,6 +10469,7 @@ public class SymbolDefinition
 				var expressionNode = node.NodeAt(0);
 				if (expressionNode != null)
 					return ResolveNode(expressionNode);
+				//TODO: Resolve type from return statements!
 				return null;
 
 			case "objectCreationExpression":
@@ -9977,12 +10502,14 @@ public class SymbolDefinition
 				return unknownSymbol;
 
 			case "qid":
-				for (var i = 0; i < node.numValidNodes; i++)
+				for (var i = 0; i < node.numValidNodes - 1; i++)
 				{
 					asMemberOf = ResolveNode(node.ChildAt(i), scope, asMemberOf);
 					if (asMemberOf == null || asMemberOf.kind == SymbolKind.Error)
 						break;
 				}
+				if (node.numValidNodes == 1 && node.NodeAt(0).numValidNodes == 3)
+					asMemberOf = ResolveNode(node.NodeAt(0).ChildAt(0), scope);
 				return asMemberOf ?? unknownSymbol;
 
 			case "qidStart":
@@ -9991,7 +10518,7 @@ public class SymbolDefinition
 				if (node.numValidNodes == 2 && node.NodeAt(1) != null)
 				{
 					ResolveNode(node.ChildAt(1), scope);
-					return ResolveNode(node.ChildAt(0), scope, null, node.NodeAt(1).numValidNodes / 3, true);
+					return ResolveNode(node.ChildAt(0), scope, null, node.NodeAt(1).numValidNodes / 2, true);
 				}
 				asMemberOf = ResolveNode(node.ChildAt(0), scope);
 				if (asMemberOf != null && asMemberOf.kind != SymbolKind.Error && node.numValidNodes == 3)
@@ -10040,14 +10567,8 @@ public class SymbolDefinition
 		
 		SymbolDefinition definition;
 		if (!members.TryGetValue(memberName, numTypeParameters, out definition))
-		{
-			var marker = memberName.IndexOf('`');
-			if (marker > 0)
-			{
-				Debug.LogError("FindName!!! " + memberName);
-				members.TryGetValue(memberName.Substring(0, marker), numTypeParameters, out definition);
-			}
-		}
+			return null;
+		
 		if (asTypeOnly && definition != null && definition.kind != SymbolKind.Namespace && !(definition is TypeDefinitionBase))
 			return null;
 		return definition;
@@ -10084,8 +10605,10 @@ public class SymbolDefinition
 		bool onlyStatic = flags == BindingFlags.Static;
 		bool onlyInstance = flags == BindingFlags.Instance;
 
-		foreach (var m in members)
+		for (var i = 0; i < members.Count; ++i)
 		{
+			var m = members[i];
+			
 			if (m.kind == SymbolKind.Namespace)
 			{
 				if (!data.ContainsKey(m.ReflectionName))
@@ -10335,13 +10858,43 @@ public class SymbolDeclaration //: IVisitableTreeNode<SymbolDeclaration, SymbolD
 
 	public bool IsValid()
 	{
+		if (scope == null)
+			return false;
+		
 		var node = parseTreeNode;
 		if (node != null)
 		{
-			while (node.parent != null)
-				node = node.parent;
-			if (node.RuleName == "compilationUnit")
+			if (node.declaration == this)
+			{
+				while (node.parent != null)
+					node = node.parent;
+				if (node.RuleName == "compilationUnit")
+					return true;
+			}
+			else if (kind == SymbolKind.MethodGroup && definition != null)
+			{
+				var mg = definition as MethodGroupDefinition;
+				for (var i = mg.methods.Count; i --> 0; )
+				{
+					if (mg.methods[i].declarations.Contains(node.declaration))
+					{
+						while (node.parent != null)
+							node = node.parent;
+						if (node.RuleName == "compilationUnit")
+							return true;
+					}
+					
+					mg.RemoveDeclaration(node.declaration);
+				}
+				
+				if (mg.methods.Count == 0 && mg.parentSymbol != null)
+				{
+					definition.parentSymbol.RemoveDeclaration(this);
+					return false;
+				}
+				
 				return true;
+			}
 		}
 
 		if (scope != null)
@@ -10353,7 +10906,6 @@ public class SymbolDeclaration //: IVisitableTreeNode<SymbolDeclaration, SymbolD
 		}
 		else if (definition != null)
 		{
-			Debug.Log("Scope is null for declaration " + name + ". Removing " + definition);
 			if (definition.parentSymbol != null)
 				definition.parentSymbol.RemoveDeclaration(this);
 		}
@@ -10780,7 +11332,73 @@ public class AssemblyDefinition : SymbolDefinition
 
 	public readonly Assembly assembly;
 	public readonly UnityAssembly assemblyId;
-
+	
+	static class MonoIslandsHelper
+	{
+		static System.Collections.IEnumerable monoIslands;
+		static FieldInfo outputField;
+		static FieldInfo referencesField;
+		static Type monoIslandType = System.Type.GetType("UnityEditor.Scripting.MonoIsland,UnityEditor.dll");
+		static MethodInfo getMonoIslandsMethod = typeof(UnityEditorInternal.InternalEditorUtility).GetMethod("GetMonoIslands", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+		
+		static MonoIslandsHelper()
+		{
+			if (getMonoIslandsMethod == null)
+				return;
+			
+			if (monoIslandType == null)
+				return;
+			
+			if (outputField == null)
+			{
+				outputField = monoIslandType.GetField("_output", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+				referencesField = monoIslandType.GetField("_references", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			}
+			if (outputField == null || referencesField == null)
+				return;
+			
+			monoIslands = getMonoIslandsMethod.Invoke(null, null) as System.Collections.IEnumerable;
+		}
+		
+		public static string[] GetReferencedAssembliesFor(string assemblyName)
+		{
+			if (monoIslands == null)
+				return null;
+			
+			assemblyName += ".dll";
+			foreach (var island in monoIslands)
+			{
+				var output = outputField.GetValue(island) as string;
+				if (!output.EndsWith(assemblyName, StringComparison.OrdinalIgnoreCase))
+					continue;
+				
+				var references = referencesField.GetValue(island) as string[];
+				if (references == null)
+					return null;
+				
+				for (var i = references.Length; i --> 0; )
+				{
+					var reference = references[i];
+					references[i] = System.IO.Path.GetFullPath(reference);
+				}
+				return references;
+			}
+			
+			Debug.LogWarning(assemblyName + " not found");
+			return null;
+		}
+	}
+	
+	private static bool IsManagedAssembly(string assemblyFile)
+	{
+#if UNITY_5_2 || UNITY_5_3 || UNITY_5_4_OR_NEWER
+		var dllType = UnityEditorInternal.InternalEditorUtility.DetectDotNetDll(assemblyFile);
+		return dllType != UnityEditorInternal.DllType.Unknown && dllType != UnityEditorInternal.DllType.Native;
+#else
+		return true;
+#endif
+	}
+	
 	private AssemblyDefinition[] _referencedAssemblies;
 	public AssemblyDefinition[] referencedAssemblies
 	{
@@ -10788,6 +11406,7 @@ public class AssemblyDefinition : SymbolDefinition
 			if (_referencedAssemblies == null)
 			{
 				var raSet = new HashSet<AssemblyDefinition>();
+				
 				if (assembly != null)
 				{
 					foreach (var ra in assembly.GetReferencedAssemblies())
@@ -10820,14 +11439,24 @@ public class AssemblyDefinition : SymbolDefinition
 				case UnityAssembly.BooEditor:
 					isEditorAssembly = true;
 					break;
+					
+				case UnityAssembly.CSharp:
+				case UnityAssembly.UnityScript:
+				case UnityAssembly.Boo:
+					break;
+					
+				default:
+					if (assembly != null)
+						Debug.LogError(AssemblyName);
+					else
+						Debug.LogError("???");
+					break;
 				}
 				
 				var stdAssemblies = isEditorAssembly ? editorReferencedAssemblies : standardReferencedAssemblies;
 				
-				raSet.UnionWith(
-					from a in stdAssemblies
-					select FromName(a.GetName().Name)
-				);
+				foreach (var a in stdAssemblies)
+					raSet.Add(FromName(a.GetName().Name));
 				
 				if (isEditorAssembly || !isFirstPassAssembly)
 				{
@@ -10843,6 +11472,28 @@ public class AssemblyDefinition : SymbolDefinition
 					raSet.Add(FromId(UnityAssembly.CSharpEditorFirstPass));
 					raSet.Add(FromId(UnityAssembly.UnityScriptEditorFirstPass));
 					raSet.Add(FromId(UnityAssembly.BooEditorFirstPass));
+				}
+				
+				var assemblyName = unityAssemblyNames[(int) assemblyId];
+				if (assemblyName == null && assembly != null)
+					assemblyName = AssemblyName;
+				if (assemblyName != null)
+				{
+					var raPaths = MonoIslandsHelper.GetReferencedAssembliesFor(assemblyName);
+					if (raPaths != null)
+					{
+						for (var i = 0; i < raPaths.Length; i++)
+						{
+							if (!IsManagedAssembly(raPaths[i]))
+								continue;
+							
+							var ra = AssemblyDefinition.FromPath(raPaths[i]);
+							if (ra != null)
+								raSet.Add(ra);
+							else
+								Debug.LogWarning("Can't load " + raPaths[i]);
+						}
+					}
 				}
 				
 				raSet.Remove(null);
@@ -10943,15 +11594,46 @@ public class AssemblyDefinition : SymbolDefinition
 		}
 	}
 	
-	private static AssemblyDefinition FromName(string assemblyName)
+	private static Dictionary<string, AssemblyDefinition> reflectionOnlyAssemblies = new Dictionary<string, AssemblyDefinition>();
+	
+	private static AssemblyDefinition FromPath(string assemblyPath)
 	{
-		assemblyName = assemblyName.ToLower();
+		var assemblyName = System.IO.Path.GetFileNameWithoutExtension(assemblyPath);
 		for (var i = domainAssemblies.Length; i --> 0; )
 		{
 			var assembly = domainAssemblies[i];
 			if (assembly is System.Reflection.Emit.AssemblyBuilder)
 				continue;
-			if (assembly.GetName().Name.ToLower() == assemblyName)
+			if (string.Compare(assembly.GetName().Name, assemblyName, true) == 0)
+				return FromAssembly(assembly);
+		}
+		
+		AssemblyDefinition assemblyDefinition;
+		if (!reflectionOnlyAssemblies.TryGetValue(assemblyPath, out assemblyDefinition))
+		{
+			try
+			{
+				var loadedAssembly = System.Reflection.Assembly.LoadFrom(assemblyPath);
+				assemblyDefinition = FromAssembly(loadedAssembly);
+				if (assemblyDefinition != null)
+					reflectionOnlyAssemblies[assemblyPath] = assemblyDefinition;
+			}
+			catch (System.Exception e)
+			{
+				Debug.LogException(e);
+			}
+		}
+		return assemblyDefinition;
+	}
+	
+	private static AssemblyDefinition FromName(string assemblyName)
+	{
+		for (var i = domainAssemblies.Length; i --> 0; )
+		{
+			var assembly = domainAssemblies[i];
+			if (assembly is System.Reflection.Emit.AssemblyBuilder)
+				continue;
+			if (string.Compare(assembly.GetName().Name, assemblyName, true) == 0)
 				return FromAssembly(assembly);
 		}
 		return null;
@@ -11177,51 +11859,6 @@ public class AssemblyDefinition : SymbolDefinition
 
 		_globalNamespace = new NamespaceDefinition { name = "", kind = SymbolKind.Namespace, parentSymbol = this };
 
-		if (assembly != null)
-		{
-			var types = assemblyId != UnityAssembly.None ? assembly.GetTypes() : assembly.GetExportedTypes();
-			foreach (var t in types)
-			{
-				if (t.IsNested)
-					continue;
-	
-				SymbolDefinition current = _globalNamespace;
-	
-				if (!string.IsNullOrEmpty(t.Namespace))
-				{
-					var ns = t.Namespace.Split('.');
-					for (var i = 0; i < ns.Length; ++i)
-					{
-						var nsName = ns[i];
-						var definition = current.FindName(nsName, 0, true);
-						if (definition != null)
-						{
-							current = definition;
-						}
-						else
-						{
-							var nsd = new NamespaceDefinition
-							{
-								kind = SymbolKind.Namespace,
-								name = nsName,
-								parentSymbol = current,
-								accessLevel = AccessLevel.Public,
-								modifiers = Modifiers.Public,
-							};
-							current.AddMember(nsd);
-							current = nsd;
-						}
-					}
-				}
-	
-				current.ImportReflectedType(t);
-			}
-		}
-
-		//	timer.Stop();
-		//	UnityEngine.Debug.Log(timer.ElapsedMilliseconds + " ms\n" + string.Join(", ", _globalNamespace.members.Keys.ToArray()));
-		//	Debug.Log(_globalNamespace.Dump());
-
 		if (builtInTypes == null)
 		{
 			builtInTypes = new Dictionary<string, TypeDefinitionBase>
@@ -11249,7 +11886,88 @@ public class AssemblyDefinition : SymbolDefinition
 			builtInTypes_IEnumerable = DefineBuiltInType(typeof(System.Collections.IEnumerable));
 			builtInTypes_IEnumerable_1 = DefineBuiltInType(typeof(System.Collections.Generic.IEnumerable<>));
 			builtInTypes_Exception = DefineBuiltInType(typeof(System.Exception));
+			builtInTypes_Enum = DefineBuiltInType(typeof(System.Enum));
 		}
+
+		if (assembly != null)
+		{
+			System.Type[] types = null;
+			try
+			{
+				types = assemblyId != UnityAssembly.None ? assembly.GetTypes() : assembly.GetExportedTypes();
+			}
+			catch
+#if SI3_WARNINGS
+				(System.Exception e)
+#endif
+			{
+#if SI3_WARNINGS
+				Debug.LogException(e);
+				Debug.LogWarning(assembly.FullName);
+#endif
+				return _globalNamespace;
+			}
+				
+			var namespacaes = new Dictionary<string, NamespaceDefinition>();
+				
+			foreach (var t in types)
+			{
+				if (t.IsNested)
+					continue;
+
+				ReflectedType reflectedType;
+				if (reflectedTypes.TryGetValue(t, out reflectedType))
+				{
+					//Debug.Log("Skipping already imported type: " + reflectedType.ReflectionName);
+					continue;
+				}
+				
+				SymbolDefinition current = _globalNamespace;
+				
+				var typeNamespace = t.Namespace;
+				if (!string.IsNullOrEmpty(typeNamespace))
+				{
+					NamespaceDefinition nsd;
+					if (namespacaes.TryGetValue(typeNamespace, out nsd))
+					{
+						current = nsd;
+					}
+					else
+					{
+						var ns = typeNamespace.Split('.');
+						for (var i = 0; i < ns.Length; ++i)
+						{
+							var nsName = ns[i];
+							var definition = current.FindName(nsName, 0, true);
+							if (definition != null)
+							{
+								current = definition;
+							}
+							else
+							{
+								nsd = new NamespaceDefinition
+								{
+									kind = SymbolKind.Namespace,
+									name = nsName,
+									parentSymbol = current,
+									accessLevel = AccessLevel.Public,
+									modifiers = Modifiers.Public,
+								};
+								current.AddMember(nsd);
+								current = nsd;
+							}
+						}
+						namespacaes[typeNamespace] = (NamespaceDefinition) current;
+					}
+				}
+	
+				current.ImportReflectedType(t);
+			}
+		}
+
+		//	timer.Stop();
+		//	UnityEngine.Debug.Log(timer.ElapsedMilliseconds + " ms\n" + string.Join(", ", _globalNamespace.members.Keys.ToArray()));
+		//	Debug.Log(_globalNamespace.Dump());
 
 		return _globalNamespace;
 	}
@@ -11259,7 +11977,7 @@ public class AssemblyDefinition : SymbolDefinition
 		var assembly = FromAssembly(type.Assembly);
 		var @namespace = assembly.FindNamespace(type.Namespace);
 		var name = type.Name;
-		var index = name.IndexOf('`');
+		var index = name.IndexOf("`", StringComparison.Ordinal);
 		if (index > 0)
 			name = name.Substring(0, index);
 		var definition = @namespace.FindName(name, type.GetGenericArguments().Length, true);
@@ -11274,7 +11992,7 @@ public class AssemblyDefinition : SymbolDefinition
 		var start = 0;
 		while (start < namespaceName.Length)
 		{
-			var dotPos = namespaceName.IndexOf('.', start);
+			var dotPos = namespaceName.IndexOf(".", start, StringComparison.Ordinal);
 			var ns = dotPos == -1 ? namespaceName.Substring(start) : namespaceName.Substring(start, dotPos - start);
 			result = result.FindName(ns, 0, true) as NamespaceDefinition;
 			if (result == null)
@@ -11288,10 +12006,11 @@ public class AssemblyDefinition : SymbolDefinition
 	{
 		if (string.IsNullOrEmpty(namespaceDefinition.name))
 			return GlobalNamespace;
-		var parent = FindSameNamespace(namespaceDefinition.parentSymbol as NamespaceDefinition);
-		if (parent == null)
+		var parentNamespace = (namespaceDefinition.parentSymbol ?? namespaceDefinition.savedParentSymbol) as NamespaceDefinition;
+		parentNamespace = FindSameNamespace(parentNamespace) as NamespaceDefinition;
+		if (parentNamespace == null)
 			return null;
-		return parent.FindName(namespaceDefinition.name, 0, true) as NamespaceDefinition;
+		return parentNamespace.FindName(namespaceDefinition.name, 0, true) as NamespaceDefinition;
 	}
 
 	public void ResolveInReferencedAssemblies(ParseTree.Leaf leaf, NamespaceDefinition namespaceDefinition, int numTypeArgs)
@@ -11404,10 +12123,280 @@ public class AssemblyDefinition : SymbolDefinition
 		//foreach (var derived in Assembly.EnumDerivedTypes(this))
 		//	yield return derived;
 	}
+	
+	public IEnumerable<TypeDefinitionBase> EnumTypes(string name)
+	{
+		foreach (var type in GlobalNamespace.EnumTypes(name))
+			yield return type;
+		for (var i = referencedAssemblies.Length; i --> 0; )
+			foreach (var type in referencedAssemblies[i].GlobalNamespace.EnumTypes(name))
+				yield return type;
+	}
+}
+
+public struct CodeIssue
+{
+	public enum Kind
+	{
+		None,
+		UnknownSymbol,
+		UnknownMember,
+	}
+	
+	public Kind kind;
+	
+	public CodeIssue(Kind issueKind)
+	{
+		kind = issueKind;
+	}
+}
+
+public interface IIssueProvider
+{
+	CodeIssue Check(FGTextBuffer textBuffer, SyntaxToken token);
+}
+
+[UnityEditor.InitializeOnLoad]
+public class UnknownSymbolIssueProvider : IIssueProvider
+{
+	static UnknownSymbolIssueProvider()
+	{
+		FGResolver.RegisterIssueProvider(new UnknownSymbolIssueProvider());
+	}
+	
+	public CodeIssue Check(FGTextBuffer textBuffer, SyntaxToken token)
+	{
+		if (token.parent != null &&
+			token.parent.resolvedSymbol != null &&
+			token.parent.semanticError == "unknown symbol")
+		{
+			return new CodeIssue(CodeIssue.Kind.UnknownSymbol);
+		}
+		
+		return new CodeIssue(CodeIssue.Kind.None);
+	}
+}
+
+public interface ICodeFixProvider
+{
+	bool CanFix(CodeIssue issue, FGTextBuffer textBuffer, SyntaxToken token);
+	IEnumerable<ICodeFix> EnumFixes(CodeIssue issue, FGTextBuffer textBuffer, SyntaxToken token);
+}
+
+public interface ICodeFix
+{
+	string GetTitle(SyntaxToken token);
+	void Apply(FGTextEditor editor, SyntaxToken token);
+}
+	
+[UnityEditor.InitializeOnLoad]
+public class ResolveAsTypeFixProvider : ICodeFixProvider
+{
+	static ResolveAsTypeFixProvider()
+	{
+		FGResolver.RegisterCodeFixProvider(new ResolveAsTypeFixProvider());
+	}
+	
+#region ICodeFixProvider
+	
+	public bool CanFix(CodeIssue issue, FGTextBuffer textBuffer, SyntaxToken token)
+	{
+		return issue.kind == CodeIssue.Kind.UnknownSymbol;
+	}
+	
+	public IEnumerable<ICodeFix> EnumFixes(CodeIssue issue, FGTextBuffer textBuffer, SyntaxToken token)
+	{
+		if (token.parent.parent != null &&
+			(	token.parent.parent.RuleName == "primaryExpressionStart" ||
+				token.parent.parent.RuleName == "typeOrGeneric"))
+		{
+			int lineIndex = token.Line;
+			int tokenIndex = token.TokenIndex;
+			var prevToken = textBuffer.GetTokenLeftOf(ref lineIndex, ref tokenIndex);
+			if (prevToken != null && prevToken.tokenKind == SyntaxToken.Kind.Missing)
+				yield break;
+
+			var tokenScopeNode = token.parent.parent;
+			while (tokenScopeNode != null && tokenScopeNode.scope == null)
+				tokenScopeNode = tokenScopeNode.parent;
+			if (tokenScopeNode == null)
+				yield break;
+			
+			var enclosingNamespaceScopeNode = tokenScopeNode;
+			while (enclosingNamespaceScopeNode != null && !(enclosingNamespaceScopeNode.scope is NamespaceScope))
+				enclosingNamespaceScopeNode = enclosingNamespaceScopeNode.parent;
+			if (enclosingNamespaceScopeNode == null)
+				yield break;
+			
+			var namespaceScope = enclosingNamespaceScopeNode.scope as NamespaceScope;
+			var allTypes = namespaceScope.GetAssembly().EnumTypes(token.text);
+			foreach (var type in allTypes)
+			{
+				yield return new AddUsingStatementFix(type);
+				yield return new AddNamespaceQualifierFix(type);
+			}
+			
+			if (token.text.Length > "Attribute".Length &&
+				!token.text.EndsWith("Attribute", StringComparison.Ordinal) &&
+				token.parent.parent.RuleName == "typeOrGeneric" &&
+				token.parent.parent.parent != null &&
+				token.parent.parent.parent.parent != null &&
+				token.parent.parent.parent.parent.parent != null &&
+				token.parent.parent.parent.parent.parent.RuleName == "attribute" /*&&
+				token.parent.parent.childIndex == token.parent.parent.parent.numValidNodes - 1*/)
+			{
+				allTypes = namespaceScope.GetAssembly().EnumTypes(token.text + "Attribute");
+				foreach (var type in allTypes)
+				{
+					yield return new AddUsingStatementFix(type);
+					yield return new AddNamespaceQualifierFix(type);
+				}
+			}
+		}
+#if SI3_WARNINGS
+		else if (token.parent.parent != null)
+		{
+			Debug.LogWarning(token.parent.parent.RuleName);
+		}
+#endif
+	}
+	
+#endregion ICodeFixProvider
+}
+
+public class UnknownSymbolFix
+{
+	protected TypeDefinitionBase type;
+		
+	protected ParseTree.Node EnclosingNamespaceScopeNode(SyntaxToken token)
+	{
+		if (token.parent == null)
+			return null;
+		
+		var enclosingNamespaceScopeNode = token.parent.parent;
+		while (enclosingNamespaceScopeNode != null && !(enclosingNamespaceScopeNode.scope is NamespaceScope))
+			enclosingNamespaceScopeNode = enclosingNamespaceScopeNode.parent;
+		
+		return enclosingNamespaceScopeNode;
+	}
+}
+
+public class AddUsingStatementFix : UnknownSymbolFix, ICodeFix
+{
+	public AddUsingStatementFix(TypeDefinitionBase type)
+	{
+		this.type = type;
+	}
+	
+	public string GetTitle(SyntaxToken token)
+	{
+		return "using " + type.parentSymbol.FullName + ";";
+	}
+	
+	public void Apply(FGTextEditor editor, SyntaxToken token)
+	{
+		var enclosingNamespaceScopeNode = EnclosingNamespaceScopeNode(token);
+		if (enclosingNamespaceScopeNode == null)
+			return;
+		
+		var firstMemberNode = enclosingNamespaceScopeNode.FindChildByName("namespaceMemberDeclaration");
+		if (firstMemberNode == null)
+			return;
+		
+		var textBuffer = editor.TextBuffer;
+		TextPosition insertPos;
+		
+		var previousLeaf = firstMemberNode.FindPreviousLeaf();
+		if (previousLeaf != null)
+		{
+			insertPos = editor.TextBuffer.GetTokenSpan(previousLeaf).EndPosition;
+		}
+		else
+		{
+			insertPos = new TextPosition(firstMemberNode.GetFirstLeaf().line, 0);
+			while (insertPos.line > 0)
+			{
+				SyntaxToken nonWSToken, nonTriviaToken;
+				textBuffer.GetFirstTokens(insertPos.line - 1, out nonWSToken, out nonTriviaToken);
+				if (nonTriviaToken != null)
+					break;
+				if (nonWSToken != null && nonWSToken.text != "//")
+					break;
+				if (nonWSToken != null)
+				{
+					var tokens = textBuffer.formatedLines[insertPos.line - 1].tokens;
+					if (tokens.Count <= nonWSToken.TokenIndex + 1 ||
+						!tokens[nonWSToken.TokenIndex + 1].text.StartsWith("/", StringComparison.Ordinal))
+					{
+						break;
+					}
+				}
+				insertPos.line--;
+			}
+		}
+		
+		editor.SetCursorPosition(insertPos.line, insertPos.index);
+		if (previousLeaf != null)
+			editor.TextBuffer.InsertText(editor.caretPosition, "\nusing " + type.parentSymbol.FullName + ";");
+		else
+			editor.TextBuffer.InsertText(editor.caretPosition, "using " + type.parentSymbol.FullName + ";\n");
+		editor.TextBuffer.UpdateHighlighting(insertPos.line, insertPos.line + 1);
+		editor.ReindentLines(insertPos.line, insertPos.line + 1);
+	}
+}
+
+public class AddNamespaceQualifierFix : UnknownSymbolFix, ICodeFix
+{
+	public AddNamespaceQualifierFix(TypeDefinitionBase type)
+	{
+		this.type = type;
+	}
+	
+	public string GetTitle(SyntaxToken token)
+	{
+		return type.parentSymbol.FullName + "." + token.text;
+	}
+	
+	public void Apply(FGTextEditor editor, SyntaxToken token)
+	{
+		var textSpan = editor.TextBuffer.GetTokenSpan(token.parent);
+		editor.SetCursorPosition(textSpan.line, textSpan.index);
+		editor.TextBuffer.InsertText(editor.caretPosition, type.parentSymbol.FullName + ".");
+		editor.TextBuffer.UpdateHighlighting(textSpan.line, textSpan.line);
+	}
 }
 
 public static class FGResolver
 {
+	private static List<IIssueProvider> issueProviders = new List<IIssueProvider>();
+	private static List<ICodeFixProvider> codeFixesProviders = new List<ICodeFixProvider>();
+	
+	public static void RegisterIssueProvider(IIssueProvider provider)
+	{
+		issueProviders.Add(provider);
+	}
+	
+	public static void RegisterCodeFixProvider(ICodeFixProvider fixProvider)
+	{
+		codeFixesProviders.Add(fixProvider);
+	}
+	
+	public static List<ICodeFix> GetFixes(FGTextBuffer textBuffer, SyntaxToken token)
+	{
+		var fixes = new List<ICodeFix>();
+		foreach (var issueProvider in issueProviders)
+		{
+			var issue = issueProvider.Check(textBuffer, token);
+			if (issue.kind == CodeIssue.Kind.None)
+				continue;
+			
+			foreach (var fixProvider in codeFixesProviders)
+				if (fixProvider.CanFix(issue, textBuffer, token))
+					fixes.AddRange(fixProvider.EnumFixes(issue, textBuffer, token));
+		}
+		return fixes;
+	}
+	
 	public static void GetCompletions(IdentifierCompletionsType completionTypes, ParseTree.BaseNode parseTreeNode, HashSet<SymbolDefinition> completionSymbols, string assetPath)
 	{
 #if false
@@ -11550,19 +12539,19 @@ public static class FGResolver
 				}
 			}
 			
-			if ((completionTypes & ~IdentifierCompletionsType.Member) == IdentifierCompletionsType.TypeName)
-			{
-				var allDefinitions = d;
-				d = new Dictionary<string, SymbolDefinition>();
-				foreach (var kv in allDefinitions)
-				{
-					var kind = kv.Value.kind;
-					if (kv.Value is TypeDefinitionBase || kind == SymbolKind.Namespace)
-					{
-						d[kv.Key] = kv.Value;
-					}
-				}
-			}
+			//if ((completionTypes & ~IdentifierCompletionsType.Member) == IdentifierCompletionsType.TypeName)
+			//{
+			//	var allDefinitions = d;
+			//	d = new Dictionary<string, SymbolDefinition>();
+			//	foreach (var kv in allDefinitions)
+			//	{
+			//		var kind = kv.Value.kind;
+			//		if (kv.Value is TypeDefinitionBase || kind == SymbolKind.Namespace)
+			//		{
+			//			d[kv.Key] = kv.Value;
+			//		}
+			//	}
+			//}
 	
 			completionSymbols.UnionWith(d.Values);
 		}
@@ -11590,7 +12579,7 @@ public static class FGResolver
 		if (leaf != null)
 		{
 			if (leaf.resolvedSymbol == null && leaf.parent != null)
-				ResolveNode(leaf.parent);
+				ResolveNodeInternal(leaf.parent);
 			return leaf.resolvedSymbol;
 		}
 
@@ -11631,7 +12620,7 @@ public static class FGResolver
 			case "accessIdentifier":
 				leaf = node.numValidNodes < 2 ? null : node.LeafAt(1);
 				if (leaf != null && leaf.resolvedSymbol == null)
-					FGResolver.ResolveNode(node);
+					FGResolver.ResolveNodeInternal(node);
 				return leaf != null ? leaf.resolvedSymbol : null;
 			case "predefinedType":
 			case "typeOrGeneric":
@@ -11773,6 +12762,23 @@ public static class FGResolver
 
 	public static ParseTree.Node ResolveNode(ParseTree.Node node)
 	{
+		var result = ResolveNodeInternal(node);
+		
+		if (MethodGroupDefinition.argumentTypesStack.Count != 0)
+			Debug.LogError("argumentTypesStack.Count == " + MethodGroupDefinition.argumentTypesStack.Count);
+		if (MethodGroupDefinition.resolvedArgumentsStack.Count != 0)
+			Debug.LogError("resolvedArgumentsStack.Count == " + MethodGroupDefinition.resolvedArgumentsStack.Count);
+		if (MethodGroupDefinition.modifiersStack.Count != 0)
+			Debug.LogError("modifiersStack.Count == " + MethodGroupDefinition.modifiersStack.Count);
+		
+		if (MethodGroupDefinition.methodCandidatesStack.Count != 0)
+			Debug.LogError("methodCandidatesStack.Count == " + MethodGroupDefinition.methodCandidatesStack.Count);
+		
+		return result;
+	}
+	
+	public static ParseTree.Node ResolveNodeInternal(ParseTree.Node node)
+	{
 		if (node == null)
 			return null;
 		
@@ -11846,6 +12852,10 @@ public static class FGResolver
 		catch (Exception e)
 		{
 			Debug.LogException(e);
+			MethodGroupDefinition.argumentTypesStack.Clear();
+			MethodGroupDefinition.resolvedArgumentsStack.Clear();
+			MethodGroupDefinition.modifiersStack.Clear();
+			MethodGroupDefinition.methodCandidatesStack.Clear();
 			return null;
 		}
 		

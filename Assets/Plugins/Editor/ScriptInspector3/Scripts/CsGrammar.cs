@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -342,7 +342,7 @@ public class CsGrammar : FGGrammar
 					new If(memberName - "(", methodDeclaration)
 					| new If(memberName - "{", propertyDeclaration)
 					| new If(typeName - "." - "this", typeName - "." - indexerDeclaration)
-					| new If(predefinedType - "." - "this", predefinedType - "." - indexerDeclaration)
+					//| new If(predefinedType - "." - "this", predefinedType - "." - indexerDeclaration)
 					| indexerDeclaration
 					| fieldDeclaration
 					| operatorDeclaration)
@@ -874,7 +874,7 @@ public class CsGrammar : FGGrammar
 		var removeAccessorDeclaration = new Id("removeAccessorDeclaration");
 
 		parser.Add(new Rule("eventDeclaration",
-			"event" - typeName - (
+			"event" - type - (
 				new If(memberName - "{",
 					eventWithAccessorsDeclaration)
 				| eventDeclarators - ";" )
@@ -1037,7 +1037,7 @@ public class CsGrammar : FGGrammar
 					new If(memberName - "(", methodDeclaration)
 					| new If(memberName - "{", propertyDeclaration)
 					| new If(memberName - "." - "this", typeName - "." - indexerDeclaration)
-					| new If(predefinedType - "." - "this", predefinedType - "." - indexerDeclaration)
+					//| new If(predefinedType - "." - "this", predefinedType - "." - indexerDeclaration)
 					| indexerDeclaration
 					| fieldDeclaration
 					| operatorDeclaration )
@@ -1347,7 +1347,8 @@ public class CsGrammar : FGGrammar
 			));
 
 		parser.Add(new Rule("qidStart",
-			predefinedType
+			//predefinedType |
+			new If(IDENTIFIER - typeArgumentList - ".", NAME - typeArgumentList)
 			| new If(IDENTIFIER - "<", NAME - typeParameterList)
 			| IDENTIFIER - new Opt("::" - IDENTIFIER)
 			));
@@ -1814,7 +1815,7 @@ public class CsGrammar : FGGrammar
 
 		//FGGramar.GoalDebugger.debug = new StringBuilder();
 
-		var scanner = new Scanner(this, lines, bufferName);
+		var scanner = Scanner.New(this, lines, bufferName);
 		try
 		{
 			/*ParseTree parseTree =*/ parser.ParseAll(scanner);
@@ -1825,6 +1826,7 @@ public class CsGrammar : FGGrammar
 			Debug.LogError("Parsing crashed at line: " + scanner.CurrentLine() + ", token " + scanner.CurrentTokenIndex() + " with:\n    " + e + " at " + e.StackTrace);
 			Debug.Log("Current token: " + scanner.Current.tokenKind + " '" + scanner.Current.text + "'");
 		}
+		scanner.Delete();
 
 	//	Debug.Log(FGGramar.GoalDebugger.debug.ToString());
 
@@ -2433,11 +2435,15 @@ public class CsGrammar : FGGrammar
 	private static Modifiers ParseModifiers(ParseTree.BaseNode node)
 	{
 		var root = node as ParseTree.Node;
-		if (root == null || root.Nodes == null)
+		if (root == null || root.numValidNodes == 0)
 			return Modifiers.None;
 		var mods = Modifiers.None;
-		foreach (var mod in root.Nodes)
-			switch (mod.Print())
+		for (var i = 0; i < root.numValidNodes; ++i)
+		{
+			var mod = root.LeafAt(i);
+			if (mod == null)
+				continue;
+			switch (mod.token.text)
 			{
 				case "public":
 					mods |= Modifiers.Public;
@@ -2493,6 +2499,7 @@ public class CsGrammar : FGGrammar
 				default:
 					return mods; // Cancelling...
 			}
+		}
 		return mods;
 	}
 
@@ -2528,31 +2535,55 @@ public class CsGrammar : FGGrammar
 
 	public class Scanner : IScanner
 	{
-		public readonly string fileName;
+		private static Stack<Scanner> pool = new Stack<Scanner>();
+		
+		public static Scanner New(CsGrammar grammar, FGTextBuffer.FormatedLine[] formatedLines, string fileName)
+		{
+			if (pool.Count == 0)
+				return new Scanner(grammar, formatedLines, fileName);
+			
+			var scanner = pool.Pop();
+			scanner.grammar = grammar;
+			scanner.lines = formatedLines;
+			scanner.fileName = fileName;
+			return scanner;
+		}
+		
+		public void Delete()
+		{
+			grammar = null;
+			lines = null;
+			tokens = null;
+			currentLine = -1;
+			currentTokenIndex = -1;
+			CurrentGrammarNode = null;
+			CurrentParseTreeNode = null;
+			ErrorToken = null;
+			ErrorMessage = null;
+			ErrorGrammarNode = null;
+			ErrorParseTreeNode = null;
+			Seeking = false;
+			currentTokenCache = null;
+		
+			pool.Push(this);
+		}
+		
+		string fileName;
 
-		readonly CsGrammar grammar;
-		readonly FGTextBuffer.FormatedLine[] lines;
+		CsGrammar grammar;
+		FGTextBuffer.FormatedLine[] lines;
 		List<SyntaxToken> tokens;
 
 		int currentLine = -1;
 		int currentTokenIndex = -1;
-	//	int nonTriviaTokenIndex = -1;
 
 		private static SyntaxToken EOF;
 
 		public FGGrammar.Node CurrentGrammarNode { get; set; }
-		private ParseTree.Node _currentPTN;
-		public ParseTree.Node CurrentParseTreeNode {
-			get { return _currentPTN; }
-			set {
-				//if (value == null && _currentPTN != null && _currentPTN.RuleName != "compilationUnit")
-				//	Debug.Log("Setting currentPTN to null!");
-				_currentPTN = value;
-			}
-		}
+		public ParseTree.Node CurrentParseTreeNode { get; set; }
 
 		public ParseTree.Leaf ErrorToken { get; set; }
-		public string ErrorMessage { get; set; }
+		public ErrorMessageProvider ErrorMessage { get; set; }
 		public FGGrammar.Node ErrorGrammarNode { get; set; }
 		public ParseTree.Node ErrorParseTreeNode { get; set; }
 
@@ -2568,7 +2599,7 @@ public class CsGrammar : FGGrammar
 		public int CurrentLine() { return currentLine + 1; }
 		public int CurrentTokenIndex() { return currentTokenIndex; }
 
-		public Scanner(CsGrammar grammar, FGTextBuffer.FormatedLine[] formatedLines, string fileName)
+		protected Scanner(CsGrammar grammar, FGTextBuffer.FormatedLine[] formatedLines, string fileName)
 		{
 			this.grammar = grammar;
 			this.fileName = fileName;
@@ -2580,21 +2611,17 @@ public class CsGrammar : FGGrammar
 
 		public IScanner Clone()
 		{
-			var clone = new Scanner(grammar, lines, fileName)
-			{
-				tokens = tokens,
-				currentLine = currentLine,
-				currentTokenIndex = currentTokenIndex,
-			//	nonTriviaTokenIndex = nonTriviaTokenIndex,
-				currentTokenCache = currentTokenCache,
-				CurrentGrammarNode = CurrentGrammarNode,
-				CurrentParseTreeNode = CurrentParseTreeNode,
-				ErrorToken = ErrorToken,
-				ErrorMessage = ErrorMessage,
-				ErrorGrammarNode = ErrorGrammarNode,
-				ErrorParseTreeNode = ErrorParseTreeNode,
-			};
-
+			var clone = New(grammar, lines, fileName);
+			clone.tokens = tokens;
+			clone.currentLine = currentLine;
+			clone.currentTokenIndex = currentTokenIndex;
+			clone.currentTokenCache = currentTokenCache;
+			clone.CurrentGrammarNode = CurrentGrammarNode;
+			clone.CurrentParseTreeNode = CurrentParseTreeNode;
+			clone.ErrorToken = ErrorToken;
+			clone.ErrorMessage = ErrorMessage;
+			clone.ErrorGrammarNode = ErrorGrammarNode;
+			clone.ErrorParseTreeNode = ErrorParseTreeNode;
 			return clone;
 		}
 
@@ -2608,8 +2635,8 @@ public class CsGrammar : FGGrammar
 			if (ErrorMessage != null)
 				return;
 
-			ErrorMessage = "Syntax error: Expected " + lookahead.ToString(grammar.GetParser);
-		//	Debug.LogError(message + "\nCurrentParseTreeNode:\n" + CurrentParseTreeNode);				ErrorMessage = message;
+			ErrorMessage = new MissingTokenErrorMessage(grammar.GetParser, lookahead);
+			//Debug.LogError(ErrorMessage + "\nCurrentParseTreeNode:\n" + CurrentParseTreeNode);
 			if (CurrentParseTreeNode != null && CurrentParseTreeNode.syntaxError == null)
 			{
 				CurrentParseTreeNode.syntaxError = ErrorMessage;
@@ -2619,9 +2646,9 @@ public class CsGrammar : FGGrammar
 			}
 		}
 
-		public bool CollectCompletions(TokenSet tokenSet)
+		public void CollectCompletions(TokenSet tokenSet)
 		{
-			var result = (CurrentGrammarNode ?? CsGrammar.instance.r_compilationUnit).CollectCompletions(tokenSet, this, grammar.tokenIdentifier);
+			/*var result =*/ (CurrentGrammarNode ?? CsGrammar.instance.r_compilationUnit).CollectCompletions(tokenSet, this, grammar.tokenIdentifier);
 			if (CurrentGrammarNode != null && tokenSet.Matches(Instance.tokenIdentifier))
 			{
 				currentTokenCache = new SyntaxToken(SyntaxToken.Kind.Identifier, "special");
@@ -2629,10 +2656,10 @@ public class CsGrammar : FGGrammar
 				Lookahead(CurrentGrammarNode, 1);
 				currentTokenCache = null;
 			}
-			return result;
+			return /*result*/;
 		}
 
-		public void InsertMissingToken(string errorMessage)
+		public void InsertMissingToken(ErrorMessageProvider errorMessage)
 		{
 			//Debug.Log("Missing at line " + (currentLine + 1) + "\n" + errorMessage);
 
@@ -2809,10 +2836,11 @@ public class CsGrammar : FGGrammar
 
 		//	numLookaheads = new Dictionary<Node, int>();
 		//	timeLookaheads = new Dictionary<Node, long>();
+			
+			var token = leaf.token;
+			currentLine = token != null ? token.formatedLine.index : 0;
+			tokens = lines[currentLine].tokens;
 
-			tokens = lines[leaf.line].tokens;
-
-			currentLine = leaf.line;
 			currentTokenIndex = leaf.tokenIndex;
 
 			//nonTriviaTokenIndex = leaf.tokenIndex;

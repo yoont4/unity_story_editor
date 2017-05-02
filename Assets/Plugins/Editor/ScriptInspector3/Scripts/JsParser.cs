@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -21,15 +21,20 @@ using Debug = UnityEngine.Debug;
 
 public class JsParser : FGParser
 {
-	public override string[] Keywords { get { return keywords; } }
-	public override string[] BuiltInLiterals { get { return scriptLiterals; } }
+	public override HashSet<string> Keywords { get { return keywords; } }
+	public override HashSet<string> BuiltInLiterals { get { return scriptLiterals; } }
 
 	public override bool IsBuiltInType(string word)
 	{
 		return Array.BinarySearch(builtInTypes, word, StringComparer.Ordinal) >= 0;
 	}
 
-	private static readonly string[] keywords = new string[] {
+	public override bool IsBuiltInLiteral(string word)
+	{
+		return word == "true" || word == "false" || word == "null";
+	}
+	
+	private static readonly HashSet<string> keywords = new HashSet<string> {
 		"abstract", "else", "instanceof", "super", "enum", "switch", "break", "static", "export",
 		"interface", "synchronized", "extends", "let", "this", "case", "with", "throw",
 		"catch", "final", "native", "throws", "finally", "new", "transient", "class",
@@ -61,8 +66,6 @@ public class JsParser : FGParser
 
 	static JsParser()
 	{
-		Array.Sort(keywords);
-
 		//var all = new HashSet<string>(jsKeywords);
 		//all.UnionWith(jsTypes);
 		//all.UnionWith(jsPunctsAndOps);
@@ -699,7 +702,7 @@ public class JsParser : FGParser
 
 	private bool IsKeyword(string word)
 	{
-		return Array.BinarySearch(Keywords, word, StringComparer.Ordinal) >= 0;
+		return keywords.Contains(word);
 	}
 
 	private bool IsOperator(string text)

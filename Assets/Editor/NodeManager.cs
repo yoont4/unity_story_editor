@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 /*
   NodeManager serves as an intermediate between individual Nodes and 
@@ -14,9 +15,6 @@ public static class NodeManager {
 	
 	public static StoryDialogueEditor mainEditor;
 	
-	// the global list of connections
-	public static List<Node> nodes;
-	
 	// all Nodes use these styles
 	public static GUIStyle nodeDefault;
 	public static GUIStyle nodeSelected;
@@ -26,45 +24,47 @@ public static class NodeManager {
 	public const int NODE_HEIGHT = 37;
 	
 	/*
-	  DrawNodes() draws all the nodes in the StoryDialogueEditor window.
+	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogueEditor window.
 	*/
 	public static void DrawNodes() {
-		if (nodes != null) {
-			for (int i = 0; i < nodes.Count; i++) {
-				nodes[i].Draw();
+		if (mainEditor.nodes != null) {
+			for (int i = 0; i < mainEditor.nodes.Count; i++) {
+				mainEditor.nodes[i].Draw();
 			}
 		}
 	}
 	
 	/*
-	  ProcessEvents() goes through all the nodes and processes their events.
+	  ProcessEvents() goes through all the mainEditor.nodes and processes their events.
 	*/
 	public static void ProcessEvents(Event e) {
-		if (nodes != null) {
-			// processed backwards because nodes on the top are rendered on top
-			for (int i = nodes.Count - 1; i >= 0; i--) {
-				nodes[i].ProcessEvent(e);
+		if (mainEditor.nodes != null) {
+			// processed backwards because mainEditor.nodes on the top are rendered on top
+			for (int i = mainEditor.nodes.Count - 1; i >= 0; i--) {
+				mainEditor.nodes[i].ProcessEvent(e);
 			}
 		}
 	}
 	
 	/*
-	  RemoveNode() removes the given Node from the global list of nodes, and 
+	  RemoveNode() removes the given Node from the global list of mainEditor.nodes, and 
 	  destroys any connections it was part of.
 	*/
 	public static void RemoveNode(Node node) {
-		if (ConnectionManager.connections != null) {
+		Undo.RecordObject(mainEditor, "removing node and associated connections...");
+		
+		if (mainEditor.connections != null) { 
 			// build the list of Connections to remove
 			List<Connection> connectionsToRemove = new List<Connection>();
-			for (int i = 0; i < ConnectionManager.connections.Count; i++) {
-				if (ConnectionManager.connections[i].inPoint == node.inPoint || ConnectionManager.connections[i].outPoint == node.outPoint) {
-					connectionsToRemove.Add(ConnectionManager.connections[i]);
+			for (int i = 0; i < mainEditor.connections.Count; i++) {
+				if (mainEditor.connections[i].inPoint == node.inPoint || mainEditor.connections[i].outPoint == node.outPoint) {
+					connectionsToRemove.Add(mainEditor.connections[i]);
 				}
 			}
 			
 			// remove all the connections from the global list of connections.
 			for (int i = 0; i < connectionsToRemove.Count; i++) {
-				ConnectionManager.connections.Remove(connectionsToRemove[i]);
+				mainEditor.connections.Remove(connectionsToRemove[i]);
 			}
 			
 			// free the reference for GC
@@ -72,25 +72,33 @@ public static class NodeManager {
 		}
 		
 		// remove the node from the global node list and the SelectionManager
-		nodes.Remove(node);
+		mainEditor.nodes.Remove(node);
 		SelectionManager.Deselect(node);
+		
+		Undo.FlushUndoRecordObjects();
 	}
 	
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
 	public static void AddNodeAt(Vector2 nodePosition) {
-		if (nodes == null) {
-			nodes = new List<Node>();
+		Undo.RecordObject(mainEditor, "adding node at...");
+		
+		if (mainEditor.nodes == null) {
+			mainEditor.nodes = new List<Node>();
 		}
 		
 		// add node as close to center as possible while staying on grid
 		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogueEditor.GRID_SIZE;
 		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogueEditor.GRID_SIZE;
-		nodes.Add(new Node(
+		Node newNode = ScriptableObject.CreateInstance<Node>();
+		newNode.Init(
 			nodePosition, NODE_WIDTH, NODE_HEIGHT, 
 			nodeDefault, nodeSelected, 
-			RemoveNode)
-		);
+			RemoveNode);
+		
+		mainEditor.nodes.Add(newNode);
+		
+		Undo.FlushUndoRecordObjects();
 	}
 }

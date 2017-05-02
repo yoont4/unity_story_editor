@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -147,7 +147,7 @@ public class ParseTree
 		public int childIndex;
 		public FGGrammar.Node grammarNode;
 		public bool missing;
-		public string syntaxError;
+		public FGGrammar.ErrorMessageProvider syntaxError;
 		public string semanticError;
 		
 		private uint _resolvedVersion = 1;
@@ -163,7 +163,9 @@ public class ParseTree
 			set {
 				if (_resolvedVersion == 0)
 				{
-					//Debug.LogWarning("Whoops!");
+#if SI3_WARNINGS
+					Debug.LogWarning("Whoops! " + _resolvedSymbol);
+#endif
 					return;
 				}
 				_resolvedVersion = resolverVersion;
@@ -413,7 +415,6 @@ public class ParseTree
 	{
 		protected List<BaseNode> nodes = new List<BaseNode>();
 		public int numValidNodes { get; protected set; }
-		public IEnumerable<BaseNode> Nodes { get { return nodes; } }
 
 		public Scope scope;
 		public SymbolDeclaration declaration;
@@ -464,8 +465,9 @@ public class ParseTree
 		{
 			if (visitor.VisitEnter(this))
 			{
-				foreach (var child in nodes)
-					if (!child.Accept(visitor))
+				var count = numValidNodes;
+				for (var i = 0; i < count; ++i)
+					if (!nodes[i].Accept(visitor))
 						break;
 			}
 			return visitor.VisitLeave(this);
@@ -565,11 +567,8 @@ public class ParseTree
 
 		public int InvalidateFrom(int index)
 		{
-			var numInvalidated = Mathf.Max(0, numValidNodes - index);
+			var numInvalidated = index >= numValidNodes ? 0 : numValidNodes - index;
 			numValidNodes -= numInvalidated;
-			//for (var i = index; i < nodes.Count; ++i)
-			//    nodes[i].parent = null;
-			//nodes.RemoveRange(index, nodes.Count - index);
 			return numInvalidated;
 		}
 
@@ -833,7 +832,7 @@ public class ParseTree
 					sb.Append("? ");
 				sb.AppendLine(id.Rule.GetNt());
 				if (syntaxError != null)
-					sb.Append(' ').AppendLine(syntaxError);
+					sb.Append(' ').AppendLine(syntaxError.GetErrorMessage());
 			}
 
 			++indent;
@@ -974,16 +973,18 @@ public class ParseTree
 					child.Dispose();
 			}
 			
-			if (declaration != null && declaration.scope != null)
+			if (declaration != null)// && declaration.scope != null)
 			{
 				//if (declaration.definition != null)
 				//	Debug.Log("Removing " + declaration.definition.ReflectionName);
 				//else
 				//	Debug.Log("Removing null declaration! " + declaration.kind);
-				declaration.scope.RemoveDeclaration(declaration);
+				if (declaration.scope != null)
+					declaration.scope.RemoveDeclaration(declaration);
 				++ParseTree.resolverVersion;
 				if (ParseTree.resolverVersion == 0)
 					++ParseTree.resolverVersion;
+				declaration = null;
 			}
 		}
 	}
@@ -1023,9 +1024,48 @@ public abstract class FGGrammar
 
 	public abstract IdentifierCompletionsType GetCompletionTypes(ParseTree.BaseNode afterNode);
 
+	public abstract class ErrorMessageProvider
+	{
+		protected TokenSet lookahead;
+		protected Parser parser;
+		
+		protected ErrorMessageProvider(Parser parser, TokenSet lookahead)
+		{
+			this.parser = parser;
+			this.lookahead = lookahead;
+		}
+		
+		public abstract string GetErrorMessage();
+	}
+	
+	public class MissingTokenErrorMessage : ErrorMessageProvider
+	{
+		public MissingTokenErrorMessage(Parser parser, TokenSet lookahead)
+			: base(parser, lookahead)
+		{}
+		
+		public override string GetErrorMessage()
+		{
+			return "Syntax error: Expected " + lookahead.ToString(parser);
+		}
+	}
+	
+	public class UnexpectedTokenErrorMessage : ErrorMessageProvider
+	{
+		public UnexpectedTokenErrorMessage(Parser parser, TokenSet lookahead)
+			: base(parser, lookahead)
+		{}
+		
+		public override string GetErrorMessage()
+		{
+			return "Unexpected token! Expected " + lookahead.ToString(parser);
+		}
+	}
+	
 	public interface IScanner : IEnumerator<SyntaxToken>
 	{
 		IScanner Clone();
+		void Delete();
 
 		bool Lookahead(Node node, int maxDistance = int.MaxValue);
 		SyntaxToken Lookahead(int offset, bool skipWhitespace = true);
@@ -1038,7 +1078,7 @@ public abstract class FGGrammar
 		ParseTree.Node CurrentParseTreeNode { get; set; }
 
 		ParseTree.Leaf ErrorToken { get; set; }
-		string ErrorMessage { get; set; }
+		ErrorMessageProvider ErrorMessage { get; set; }
 		FGGrammar.Node ErrorGrammarNode { get; set; }
 		ParseTree.Node ErrorParseTreeNode { get; set; }
 		
@@ -1046,9 +1086,9 @@ public abstract class FGGrammar
 
 		bool Seeking { get; }
 
-		void InsertMissingToken(string errorMessage);
+		void InsertMissingToken(ErrorMessageProvider errorMessage);
 
-		bool CollectCompletions(TokenSet tokenSet);
+		void CollectCompletions(TokenSet tokenSet);
 
 		void OnReduceSemanticNode(ParseTree.Node node);
 
@@ -1142,7 +1182,7 @@ public abstract class FGGrammar
 		
 		public abstract bool Scan(IScanner scanner);
 
-		public void SyntaxError(IScanner scanner, string errorMessage)
+		public void SyntaxError(IScanner scanner, ErrorMessageProvider errorMessage)
 		{
 			if (scanner.ErrorMessage != null)
 				return;
@@ -1247,78 +1287,19 @@ public abstract class FGGrammar
 			return parent != null ? parent.NextAfterChild(this, scanner) : null;
 		}
 
-		public bool CollectCompletions(TokenSet tokenSet, IScanner scanner, int identifierId)
+		public void CollectCompletions(TokenSet tokenSet, IScanner scanner, int identifierId)
 		{
 			var clone = scanner.Clone();
 
-		//	string debug = null;
-
-		//	var idTypes = IdentifierCompletionsType.None;
-			var hasName = false;
 			var current = this;
 			while (current != null && current.parent != null)
 			{
-				//if (clone.CurrentParseTreeNode.RuleName != debug)
-				//{
-				//    debug = clone.CurrentParseTreeNode.RuleName;
-				//    BitArray set;
-				//    current.lookahead.GetDataSet(out set);
-				////	UnityEngine.Debug.Log(debug + " LA:" + (set != null ? set.Count : 1));
-				//}
-
 				tokenSet.Add(current.lookahead);
-
-				if (current.lookahead.Matches(identifierId))
-				{
-					Rule currentRule = null;
-					var currentId = current as Id;
-					if (currentId == null)
-					{
-						var rule = current.parent;
-						while (rule != null && !(rule is Rule))
-							rule = rule.parent;
-						currentId = rule != null ? rule.parent as Id : null;
-						currentRule = rule as Rule;
-					}
-					
-				//	UnityEngine.Debug.Log("IDENTIFIER in " + (currentId ?? current));
-
-					if (currentId != null)
-					{
-						var peerAsRule = currentId.peer as Rule;
-						if (peerAsRule != null && peerAsRule.contextualKeyword)
-						{
-							Debug.Log(currentId.GetName());
-						}
-						else if (currentRule != null && currentRule.contextualKeyword)
-						{
-							Debug.Log("currentRule " + currentRule.GetNt());
-						}
-						else
-						{
-							var id = currentId.GetName();
-							if (id == "constantDeclarators" ||
-								id == "constantDeclarator")
-							{
-								hasName = true;
-							}
-						}
-					}
-
-				//    idTypes |= clone.GetCompletionIdentifierType();
-				}
-
 				if (!current.lookahead.MatchesEmpty())
 					break;
-
 				current = current.parent.NextAfterChild(current, clone);
 			}
 			tokenSet.RemoveEmpty();
-
-			//Debug.Log(tokenSet.ToString(FlipbookGames.ScriptInspector2.CsGrammar.Instance.GetParser));
-
-			//	UnityEngine.Debug.Log("Current node " + current.ToString());
-			return hasName;
 		}
 	}
 
@@ -1495,7 +1476,7 @@ public abstract class FGGrammar
 
 		public override string ToString()
 		{
-			return "\"" + body + "\"";
+			return body; //  "\"" + body + "\"";
 		}
 
 		public sealed override IEnumerable<Lit> EnumerateLitNodes()
@@ -1525,8 +1506,10 @@ public abstract class FGGrammar
 			var altNode = node as Alt;
 			if (altNode != null)
 			{
-				foreach (var n in altNode.nodes)
+				var count = altNode.nodes.Count;
+				for (var i = 0; i < count; ++i)
 				{
+					var n = altNode.nodes[i];
 					n.parent = this;
 					nodes.Add(n);
 				}
@@ -1553,8 +1536,9 @@ public abstract class FGGrammar
 			if (lookahead == null)
 			{
 				lookahead = new TokenSet();
-				foreach (var t in nodes)
+				for (var i = 0; i < nodes.Count; ++i)
 				{
+					var t = nodes[i];
 					if (t is If)
 						continue;
 					var set = t.SetLookahead(parser);
@@ -1565,8 +1549,9 @@ public abstract class FGGrammar
 					}
 					lookahead.Add(set);
 				}
-				foreach (var t in nodes)
+				for (var i = 0; i < nodes.Count; ++i)
 				{
+					var t = nodes[i];
 					if (t is If)
 					{
 						var set = t.SetLookahead(parser);
@@ -1583,27 +1568,39 @@ public abstract class FGGrammar
 		{
 			SetLookahead(parser);
 			follow = succ;
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				node.SetFollow(parser, succ);
+			}
 			return lookahead;
 		}
 
 		public override void CheckLL1(Parser parser)
 		{
 			base.CheckLL1(parser);
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				node.CheckLL1(parser);
+			}
 		}
    
 		public override bool Scan(IScanner scanner)
 		{
 			if (!scanner.KeepScanning)
 				return true;
-
-			foreach (var node in nodes)
+			
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				if (node.Matches(scanner))
 					return node.Scan(scanner);
-
+			}
+			
 			if (!lookahead.MatchesEmpty())
 				return false; // throw new Exception(scanner + ": syntax error in Alt");
 			return true;
@@ -1611,8 +1608,10 @@ public abstract class FGGrammar
 
 		public override Node Parse(IScanner scanner)
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
 			{
+				var node = nodes[i];
 				if (node.Matches(scanner))
 				{
 					return node.Parse(scanner);
@@ -1636,23 +1635,35 @@ public abstract class FGGrammar
 
 		public sealed override IEnumerable<Lit> EnumerateLitNodes()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateLitNodes())
 					yield return subnode;
+			}
 		}
 
 		public sealed override IEnumerable<Id> EnumerateIdNodes()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateIdNodes())
 					yield return subnode;
+			}
 		}
 
 		public override IEnumerable<T> EnumerateNodesOfType<T>()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateNodesOfType<T>())
 					yield return subnode;
+			}
 			base.EnumerateNodesOfType<T>();
 		}
 	}
@@ -2068,8 +2079,8 @@ public abstract class FGGrammar
 
 			var seqNode = node as Seq;
 			if (seqNode != null)
-				foreach (var n in seqNode.nodes)
-					Add(n);
+				for (var i = 0; i < seqNode.nodes.Count; ++i)
+					Add(seqNode.nodes[i]);
 			else
 			{
 				node.parent = this;
@@ -2136,14 +2147,20 @@ public abstract class FGGrammar
 		public override void CheckLL1(Parser parser)
 		{
 			base.CheckLL1(parser);
-			foreach (var t in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var t = nodes[i];
 				t.CheckLL1(parser);
+			}
 		}
 
 		public override bool Scan(IScanner scanner)
 		{
-			foreach (var t in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
 			{
+				var t = nodes[i];
 				if (!scanner.KeepScanning)
 					return true;
 				if (!t.Scan(scanner))
@@ -2176,23 +2193,35 @@ public abstract class FGGrammar
 
 		public sealed override IEnumerable<Lit> EnumerateLitNodes()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateLitNodes())
 					yield return subnode;
+			}
 		}
 
 		public sealed override IEnumerable<Id> EnumerateIdNodes()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateIdNodes())
 					yield return subnode;
+			}
 		}
 
 		public override IEnumerable<T> EnumerateNodesOfType<T>()
 		{
-			foreach (var node in nodes)
+			var count = nodes.Count;
+			for (var i = 0; i < count; ++i)
+			{
+				var node = nodes[i];
 				foreach (var subnode in node.EnumerateNodesOfType<T>())
 					yield return subnode;
+			}
 		}
 	}
 
@@ -2350,8 +2379,10 @@ public abstract class FGGrammar
 		
 		public override TokenSet SetLookahead(Parser parser)
 		{
-			foreach (var rule in rules)
+			var count = rules.Count;
+			for (var i = 0; i < count; ++i)
 			{
+				var rule = rules[i];
 				rule.SetLookahead(this);
 			}
 			return null;
@@ -2363,19 +2394,22 @@ public abstract class FGGrammar
 			bool followChanged;
 			do
 			{
-				foreach (var rule in rules)
-					rule.SetFollow(this);
+				var count = rules.Count;
+				for (var i = 0; i < count; ++i)
+					rules[i].SetFollow(this);
 				followChanged = false;
-				foreach (var rule in rules)
-					followChanged |= rule.FollowChanged();
+				count = rules.Count;
+				for (var i = 0; i < count; ++i)
+					followChanged |= rules[i].FollowChanged();
 			} while (followChanged);
 			return null;
 		}
 
 		public override void CheckLL1(Parser parser)
 		{
-			foreach (var rule in rules)
-				rule.CheckLL1(this);
+			var count = rules.Count;
+			for (var i = 0; i < count; ++i)
+				rules[i].CheckLL1(this);
 		}
 
 		public override bool Scan(IScanner scanner)
@@ -2504,7 +2538,7 @@ public abstract class FGGrammar
 					}
 					else
 					{
-						token.parent.syntaxError = "Unexpected token! Expected " + scanner.ErrorGrammarNode.lookahead.ToString(this);
+						token.parent.syntaxError = new UnexpectedTokenErrorMessage(this, scanner.ErrorGrammarNode.lookahead);
 						cachedErrorMessage = token.parent.syntaxError;
 						cachedErrorGrammarNode = scanner.ErrorGrammarNode;
 					}
@@ -2551,7 +2585,7 @@ public abstract class FGGrammar
 						}
 
 						scanner.InsertMissingToken(scanner.ErrorMessage
-							?? ("Expected " + missingGrammarNode.lookahead.ToString(this)));
+							?? new MissingTokenErrorMessage(this, missingGrammarNode.lookahead));
 
 						if (missingGrammarNode != null && missingParseTreeNode != null)
 						{
@@ -2570,7 +2604,7 @@ public abstract class FGGrammar
 			return true;
 		}
 
-		private static string cachedErrorMessage;
+		private static ErrorMessageProvider cachedErrorMessage;
 		private static Node cachedErrorGrammarNode;
 
 		public override string ToString()
@@ -2604,22 +2638,25 @@ public abstract class FGGrammar
 
 		public sealed override IEnumerable<Lit> EnumerateLitNodes()
 		{
-			foreach (var rule in rules)
-				foreach (var node in rule.EnumerateLitNodes())
+			var count = rules.Count;
+			for (var i = 0; i < count; ++i)
+				foreach (var node in rules[i].EnumerateLitNodes())
 					yield return node;
 		}
 
 		public sealed override IEnumerable<Id> EnumerateIdNodes()
 		{
-			foreach (var rule in rules)
-				foreach (var node in rule.EnumerateIdNodes())
+			var count = rules.Count;
+			for (var i = 0; i < count; ++i)
+				foreach (var node in rules[i].EnumerateIdNodes())
 					yield return node;
 		}
 
 		public override IEnumerable<T> EnumerateNodesOfType<T>()
 		{
-			foreach (var rule in rules)
-				foreach (var node in rule.EnumerateNodesOfType<T>())
+			var count = rules.Count;
+			for (var i = 0; i < count; ++i)
+				foreach (var node in rules[i].EnumerateNodesOfType<T>())
 					yield return node;
 			base.EnumerateNodesOfType<T>();
 		}

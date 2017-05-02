@@ -1,7 +1,7 @@
 -------------------------------------
 SCRIPT INSPECTOR 3
-version 3.0.17, December 2016
-Copyright © 2012-2016, Flipbook Games
+version 3.0.18, May 2017
+Copyright © 2012-2017, Flipbook Games
 -------------------------------------
 
 
@@ -19,6 +19,51 @@ Thank you @inventor2010 for being awesome!!! :)
 
 Script Inspector 3 - Version History
 =====================================
+
+New in version 3.0.18:
+- Critical fix for "Multiple Managers" error - thanks @ramroom4444
+- Massive optimizations - thanks @sngdan
+- Smarter suggestions in autocomplete list - thanks @JoeStrout
+- Added support for Spotlight Inspector - thanks @PedroGV
+- Color themes extracted to their own folder - thanks @Novack :)
+- Added code infrastructure for code refactoring
+- Code refactoring: Resolve type by adding using statement and namespace qualifier
+- Added folding button and count indicator to Si3's UnityEvent property drawer - thanks @JoeStrout
+- Autocomplete list shows up immediately now on OS X as well
+- Autocomplete list shows up now also when typing in middle of a word (or at its end)
+- Arguments tooltips now list all overload of a method, including overloads declared in base classes
+- Si3 now doesn't ask to save or keep changes in memory on hiding floating tabs
+- Si3 now respects implicit conversion operators
+- Improved smooth scrolling, ping animation, cursor blinking and everything else that used to rely on Time.realTimeSinceStartup and its lack of numeric precision
+- Improved incremental semantic code analysis
+- Improved resolving of symbols defined in partial types
+- Improved type inference of implicitly types lambda parameters
+- Improved resolving of method overloads
+- Improved Find All References
+- Improved script loading time
+- Prevented unintentional font size change on pressing Ctrl after using mouse-wheel with inertia
+- Allowed smooth scrolling on mouse-wheel
+- Better positioning of context menus on code
+- Fixed Si3 UnityEventsDrawer for private fields defined in a base class - thanks @thienhaflash
+- Fixed Shift+Space not working in other Unity tabs - thanks @gyltefors
+- Fixed opening scripts with Cmd-Down arrow on OS X - thanks @roberto_sc
+- Fixed scroll area getting stuck at the bottom on retina displays - thanks @sngdan
+- Fixed "Cut Line" command for empty lines on Windows - thanks @Victor_Kallai
+- Fixed compile error in Unity 4.3 - thanks @thienhaflash
+- Fixed displaying of conversion operators in the code navigation toolbar
+- Fixed refreshing Si3 tabs after compile
+- Fixed position of the code view inside the Inspector tab
+- Fixed C# grammar for event declarations and explicit implementations of generic interfaces
+- Fixed some missing Si3 tabs on Ctrl+Tab
+- Fixed Go to Definition for some generic symbols
+- Fixed resolving of attributes after adding their using statement
+- Fixed filtering of code completions to attributes
+- Fixed smart semicolon placement
+- Fixed completions for extensions methods declared in a parent namespace
+- Fixed combining of type modifiers on partial types
+- Fixed resolving cast expressions
+- Fixed base type of enum types
+- Reverted previously added filtering of code completions to types only
 
 New in version 3.0.17:
 - Si3 tabs auto-docking updated for Unity 5.5.0 - thanks @jrDev & @JoeStrout

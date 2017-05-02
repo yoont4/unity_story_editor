@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -12,6 +12,9 @@
  * Visit http://flipbookgames.com/ for more info.
  */
 
+namespace ScriptInspector
+{
+
 using System;
 using UnityEngine;
 using UnityEditor;
@@ -20,9 +23,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-
-namespace ScriptInspector
-{
 
 public class FGListPopup : FGPopupWindow
 {
@@ -70,6 +70,8 @@ public class FGListPopup : FGPopupWindow
 			return _recentCompletions;
 		}
 	}
+	
+	private static List<string> savedRecentItems;
 
 	private FGTextBuffer textBuffer;
 	private FGTextEditor textEditor;
@@ -112,6 +114,7 @@ public class FGListPopup : FGPopupWindow
 				return;
 			
 			bool hadSelection = currentItem >= 0;
+			bool fullNameMatch = false;
 			
 			value = SymbolDefinition.DecodeId(value);
 
@@ -165,7 +168,10 @@ public class FGListPopup : FGPopupWindow
 						bestMatches.Clear();
 						bestMatches.Add(name);
 						if (rank >= int.MaxValue - value.Length - 1)
+						{
+							fullNameMatch = true;
 							focused = null;
+						}
 					}
 					else if (rank == bestRank)
 						bestMatches.Add(name);
@@ -210,14 +216,15 @@ public class FGListPopup : FGPopupWindow
 					else
 					{
 						currentItem = bestMatch; // currentItem = filteredData.BinarySearch(tempSymbol, new SymbolDefinitionComparer());
-						focusRecent = bestMatches.Count > 1 || currentItem < 0 || topSuggestion != null;
+						focusRecent = !fullNameMatch &&
+							(filteredData.Count > 1 || currentItem < 0 || topSuggestion != null);
 					}
 				}
 			}
 			
-			if (focusRecent && (currentItem < 0 || typedInPart != filteredData[currentItem].name))
+			if (focusRecent && (currentItem < 0 || value != filteredData[currentItem].name))
 			{
-				if (topSuggestion != null)
+				if (topSuggestion != null && !fullNameMatch)
 				{
 					tempSymbol.name = topSuggestion;
 					var suggestedItemIndex = filteredData.BinarySearch(tempSymbol, symbolDefinitionComparer);
@@ -228,29 +235,37 @@ public class FGListPopup : FGPopupWindow
 					}
 				}
 				
-				if (focusRecent && bestMatches != null && bestMatches.Count > 1)
-				{
-					for (var i = recentCompletions.Count; i-- > 0; )
-					{
-						if (bestMatches.Contains(recentCompletions[i]))
-						{
-							tempSymbol.name = recentCompletions[i];
-							currentItem = filteredData.BinarySearch(tempSymbol, symbolDefinitionComparer);
-							focusRecent = currentItem < 0;
-							break;
-						}
-					}
-				}
-				
 				if (focusRecent)
 				{
-					for (var i = recentCompletions.Count; i-- > 0; )
+					for (var i = recentCompletions.Count; i --> 0; )
 					{
 						tempSymbol.name = recentCompletions[i];
 						var recentItemIndex = filteredData.BinarySearch(tempSymbol, symbolDefinitionComparer);
-						if (recentItemIndex >= 0 && (value == "" || value[0] == '@' || value[0] == '_' || char.IsLower(value[0]) || !char.IsLower(tempSymbol.name[0])))
+						if (recentItemIndex >= 0 &&
+							(value == "" || value[0] == '@' || value[0] == '_' || char.IsLower(value[0]) || !char.IsLower(tempSymbol.name[0])))
 						{
+							if (filteredData[recentItemIndex].name.StartsWith(filteredData[currentItem >= 0 ? currentItem : ~currentItem].name, StringComparison.OrdinalIgnoreCase))
+								break;
+							
+							//Debug.Log((currentItem >= 0 ? filteredData[currentItem].name : "...") + " -> " +
+							//	filteredData[recentItemIndex].name + " " + recentItemIndex);
+							
 							currentItem = recentItemIndex;
+							
+							var currentItemName = filteredData[currentItem].name;
+							while (recentItemIndex > 0)
+							{
+								--recentItemIndex;
+								var recentItemName = filteredData[recentItemIndex].name;
+								if (currentItemName.StartsWith(recentItemName, StringComparison.OrdinalIgnoreCase))
+								{
+									currentItem = recentItemIndex;
+									currentItemName = filteredData[currentItem].name;
+								}
+								if (char.ToLower(currentItemName[0]) != char.ToLower(recentItemName[0]))
+									break;
+							}
+							
 							break;
 						}
 					}
@@ -348,10 +363,12 @@ public class FGListPopup : FGPopupWindow
 		selectedListItem = FGTextEditor.LoadEditorResource<Texture2D>("selectedListItem.png");
 	}
 	
-	private static void LoadResources(FGTextEditor editor)
+	private static void LoadResources()
 	{
 		if (symbolIcons == null)
 			LoadSymbolIcons();
+		
+		var textColor = FGTextEditor.StylesCode.normalStyle.normal.textColor;
 		
 		listItemStyle = new GUIStyle
 		{
@@ -361,9 +378,9 @@ public class FGListPopup : FGPopupWindow
 			margin = new RectOffset(3, 3, 0, 0),
 			overflow = { left = -20 },
 
-			normal = { textColor = editor.styles.normalStyle.normal.textColor },
+			normal = { textColor = textColor },
 			onFocused = { background = selectedListItem },
-			onNormal = { background = inactiveListItem, textColor = editor.styles.normalStyle.normal.textColor },
+			onNormal = { background = inactiveListItem, textColor = textColor },
 		};
 	}
 
@@ -371,7 +388,7 @@ public class FGListPopup : FGPopupWindow
 	{
 		if (listItemStyle == null)
 		{
-			LoadResources(editor);
+			LoadResources();
 		}
 		listItemStyle.fontSize = SISettings.fontSizeDelta + 11;
 		listItemHeight = Mathf.Max(19f, listItemStyle.CalcHeight(new GUIContent(symbolIcons[0,0], "W"), 100f));
@@ -423,10 +440,10 @@ public class FGListPopup : FGPopupWindow
 		window.Flipped = flipped;
 		window.minSize = new Vector2(1f, 1f);
 		window.textEditor = editor;
-		window.textBuffer = editor.TextBuffer;
+		window.textBuffer = editor != null ? editor.TextBuffer : null;
 		window.owner = EditorWindow.focusedWindow;
-		startAtCharacterIndex = editor.caretPosition.characterIndex;
-		lineIndex = editor.caretPosition.line;
+		startAtCharacterIndex = editor != null ? editor.caretPosition.characterIndex : 0;
+		lineIndex = editor != null ? editor.caretPosition.line : 0;
 		//tokenLeft = null;
 
 		Vector2 screenPoint = GUIUtility.GUIToScreenPoint(
@@ -452,6 +469,8 @@ public class FGListPopup : FGPopupWindow
 
 	public void SetCompletionData(HashSet<SymbolDefinition> data)
 	{
+		savedRecentItems = new List<string>(recentCompletions);
+		
 		this.data = data.Where(s => !s.IsOperator).ToArray();
 		System.Array.Sort(this.data, symbolDefinitionComparer);
 		UpdateTypedInPart();
@@ -475,7 +494,7 @@ public class FGListPopup : FGPopupWindow
 					localSymbols.Add(new IndexNameTupple
 					{
 						name = nameOf,
-						index = recentIndex < 0 ? recentCompletions.Capacity : recentIndex
+						index = recentIndex < 0 ? -GetSymbolDeclarationLine(symbol) : recentIndex
 					});
 				}
 			}
@@ -483,14 +502,23 @@ public class FGListPopup : FGPopupWindow
 		if (localSymbols.Count > 0)
 		{
 			localSymbols.Sort((a, b) => a.index.CompareTo(b.index));
-			for (var i = 0; i < localSymbols.Count; ++i)
-				AddRecentCompletion(localSymbols[i].name);
+			for (var i = localSymbols.Count; i --> 0; )
+				AddRecentCompletion(recentCompletions, localSymbols[i].name);
 			bool hadSelection = currentItem >= 0;
 			currentItem = localSymbols[localSymbols.Count - 1].index;
 			if (!hadSelection && (defensiveMode || !SISettings.autoCompleteAggressively))
 				currentItem = ~currentItem;
 			TypedInPart = typedInPart;
 		}
+	}
+	
+	private static int GetSymbolDeclarationLine(SymbolDefinition symbol)
+	{
+		var firstDeclaration = symbol.declarations == null ? null : symbol.declarations.FirstOrDefault();
+		if (firstDeclaration == null)
+			return -1;
+		var firstLeaf = firstDeclaration.parseTreeNode == null ? null : firstDeclaration.parseTreeNode.GetFirstLeaf();
+		return firstLeaf == null ? -1 : symbol.declarations[0].parseTreeNode.GetFirstLeaf().line;
 	}
 	
 	public static void SetTopSuggestion(SymbolDefinition suggestion)
@@ -534,11 +562,11 @@ public class FGListPopup : FGPopupWindow
 		return icon;
 	}
 
-	private static void AddRecentCompletion(string completion)
+	private static void AddRecentCompletion(List<string> list, string completion)
 	{
-		if (!recentCompletions.Remove(completion) && recentCompletions.Count == recentCompletions.Capacity)
-			recentCompletions.RemoveAt(0);
-		recentCompletions.Add(completion);
+		if (!list.Remove(completion) && list.Count == list.Capacity)
+			list.RemoveAt(0);
+		list.Add(completion);
 	}
 
 	private static readonly object boxedFloat1 = 1f;
@@ -546,7 +574,12 @@ public class FGListPopup : FGPopupWindow
 
 	private void OnGUI()
 	{
-		if (data == null)
+		OnExternalGUI(Vector2.zero);
+	}
+	
+	public void OnExternalGUI(Vector2 offset)
+	{
+		if (data == null || filteredData.Count == 0)
 			return;
 		
 		if (Event.current.type == EventType.layout)
@@ -559,7 +592,7 @@ public class FGListPopup : FGPopupWindow
 			Event.current.Use();
 		}
 
-		scrollViewRect = new Rect(0f, 0f, position.width, position.height);
+		scrollViewRect = new Rect(offset.x, offset.y, position.width, position.height);
 		GUI.Label(scrollViewRect, GUIContent.none, textEditor.styles.listFrameStyle);
 
 		scrollViewRect.xMin++;
@@ -633,7 +666,7 @@ public class FGListPopup : FGPopupWindow
 			EditorGUIUtility.SetIconSize(new Vector2(16f, 16f));
 			
 			System.Text.StringBuilder sb = null;
-			for (var i = Mathf.Min(filteredData.Count, scrollPosition + maxListItems + 1); --i >= scrollPosition; )
+			for (var i = Mathf.Min(filteredData.Count, scrollPosition + maxListItems); --i >= scrollPosition; )
 			{
 				var rcItem = new Rect(2f, 1f + listItemHeight * (i - scrollPosition), position.width - 3f, listItemHeight);
 				if (filteredData.Count > maxListItems)
@@ -694,6 +727,8 @@ public class FGListPopup : FGPopupWindow
 				var itemContent = new GUIContent(displayString, icon);
 				if (filteredData[i].GetTypeParameters() != null)
 					itemContent.text += "<>";
+				rcItem.x += offset.x;
+				rcItem.y += offset.y;
 				listItemStyle.Draw(rcItem, itemContent, false, focus, focus, on);
 			}
 			
@@ -745,7 +780,8 @@ public class FGListPopup : FGPopupWindow
 				if (currentItem < 0)
 					currentItem = ~currentItem;
 				var completion = NameOf(filteredData[currentItem]);
-				AddRecentCompletion(completion);
+				_recentCompletions = savedRecentItems;
+				AddRecentCompletion(recentCompletions, completion);
 				var s = string.Join(",", recentCompletions.ToArray());
 				EditorPrefs.SetString("ScriptInspectorRecentCompletions", s);
 				return filteredData[currentItem];
@@ -1098,8 +1134,8 @@ class BacktrackingStringMatcher
 			}
 			i++;
 		}
-		cachedResult = null;
 		// clear cache
+		cachedResult = null;
 		return result;
 	}
 }

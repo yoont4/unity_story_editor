@@ -5,6 +5,16 @@ using UnityEditor;
 
 public class StoryDialogueEditor : EditorWindow {
 	
+	// The global list of nodes and connections. 
+	// NOTE: these must be in a non-static class, as Undo
+	// operations cannot record changes within static classes, because
+	// they must extend the UnityEngine.Object type.
+	public List<Node> nodes;
+	public List<Connection> connections;
+	
+	// the command log history text
+	public string commandHistory;
+	
 	public const int GRID_SIZE = 10;
 	
 	private Vector2 offset;
@@ -29,15 +39,26 @@ public class StoryDialogueEditor : EditorWindow {
 	}
 	
 	// TEST CODE: CLEARS THE CONSOLE
-	static void ClearConsole () {
+	private void ClearConsole () {
          // This simply does "LogEntries.Clear()" the long way:
 		var logEntries = System.Type.GetType("UnityEditorInternal.LogEntries,UnityEditor.dll");
 		var clearMethod = logEntries.GetMethod("Clear", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
 		clearMethod.Invoke(null,null);
 	}
 	
-	private void OnEnable() {
+	/*
+	  This wipes all global data from the scene.
+	
+	  Used only on script recompile.
+	*/
+	private void DestroyScene() {
 		ClearConsole();
+		nodes = null;
+		connections = null;
+	}
+	
+	private void OnEnable() {
+		DestroyScene();
 		
 		// initialize component managers
 		NodeManager.mainEditor = this;
@@ -109,7 +130,6 @@ public class StoryDialogueEditor : EditorWindow {
 		lostFocus = true;
 	}
 	
-	
 	private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor) {
 		int widthDivs = Mathf.CeilToInt(position.width / gridSpacing);
 		int heightDivs = Mathf.CeilToInt(position.height / gridSpacing);
@@ -137,10 +157,18 @@ public class StoryDialogueEditor : EditorWindow {
 	}
 	
 	/*
+	  DrawLog() prints the action history of the editor so the user can tell what has happened.
+	*/
+	private void DrawLog() {
+		Rect logRect = new Rect(0, 0, position.width, position.height/4f);
+		GUI.TextArea(logRect, commandHistory, TextAreaManager.textAreaStyle);
+	}
+	
+	/*
 	  DrawHelp() displays the hotkeys and basic use of the StoryDialogueEditor.
 	*/
 	private void DrawHelp() {
-		Rect helpRect = new Rect(position.xMax, position.yMax, HELP_WIDTH, HELP_HEIGHT);
+		Rect helpRect = new Rect(0, 0, HELP_WIDTH, HELP_HEIGHT);
 		helpRect.x = position.width - HELP_WIDTH - 5f;
 		helpRect.y = position.height - HELP_HEIGHT - 5f;
 		GUI.TextArea(helpRect, HELP_TEXT, TextAreaManager.textAreaStyle);
@@ -183,14 +211,14 @@ public class StoryDialogueEditor : EditorWindow {
 	private void ProcessKeyboardInput(KeyCode key) {
 		// 'C' center on node positions
 		if (key == KeyCode.C) {
-			if (NodeManager.nodes != null && NodeManager.nodes.Count > 0) { 
+			if (nodes != null && nodes.Count > 0) { 
 				Debug.Log("centering on nodes...");
 				// calculate current average
 				Vector2 avgPosition = new Vector2();
-				for (int i = 0; i < NodeManager.nodes.Count; i++) {
-					avgPosition += NodeManager.nodes[i].rect.center;
+				for (int i = 0; i < nodes.Count; i++) {
+					avgPosition += nodes[i].rect.center;
 				}
-				avgPosition /= NodeManager.nodes.Count;
+				avgPosition /= nodes.Count;
 				
 				// reshift everything by this new average, including window size
 				OnDrag(-avgPosition + (position.size/2));
@@ -199,9 +227,9 @@ public class StoryDialogueEditor : EditorWindow {
 			}
 		}
 		
-			// 'D' delete everything in the editor window
+			// 'D' delete the selected node
 		if (key == KeyCode.D) {
-			if (NodeManager.nodes != null && SelectionManager.SelectedComponent() != null) {
+			if (nodes != null && SelectionManager.SelectedComponent() != null) {
 				Debug.Log("deleting selected node...");
 				SDEComponent component = SelectionManager.SelectedComponent();
 				while (component != null) {
@@ -230,6 +258,14 @@ public class StoryDialogueEditor : EditorWindow {
 				drawHelp = true;
 			}
 		}
+		
+		// 'Q' print debug information
+		if (key == KeyCode.Q) {
+			string debugText = "";
+			if (nodes != null) debugText += "nodes.Count = " + nodes.Count + "\n";
+			if (connections != null) debugText += "connections.Count = " + connections.Count + "\n";
+			Debug.Log(debugText);
+		}
 	}
 	
 	private void ProcessContextMenu(Vector2 mousePosition) {
@@ -242,9 +278,9 @@ public class StoryDialogueEditor : EditorWindow {
 		if (FeatureManager.dragEnabled) {
 			drag = delta;
 			
-			if (NodeManager.nodes != null) {
-				for (int i = 0; i < NodeManager.nodes.Count; i++) {
-					NodeManager.nodes[i].Drag(delta);
+			if (nodes != null) {
+				for (int i = 0; i < nodes.Count; i++) {
+					nodes[i].Drag(delta);
 				}
 			}
 			

@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -22,15 +22,20 @@ namespace ScriptInspector
 	
 public class CsParser : FGParser
 {
-	public override string[] Keywords { get { return keywords; } }
-	public override string[] BuiltInLiterals { get { return scriptLiterals; } }
+	public override HashSet<string> Keywords { get { return keywords; } }
+	public override HashSet<string> BuiltInLiterals { get { return scriptLiterals; } }
 
 	public override bool IsBuiltInType(string word)
 	{
-		return Array.BinarySearch(builtInTypes, word, StringComparer.Ordinal) >= 0;
+		return builtInTypes.Contains(word);
 	}
 
-	private static readonly string[] keywords = new string[] {
+	public override bool IsBuiltInLiteral(string word)
+	{
+		return word == "true" || word == "false" || word == "null";
+	}
+
+	private static readonly HashSet<string> keywords = new HashSet<string> {
 		"abstract", "as", "base", "break", "case", "catch", "checked", "class", "const", "continue",
 		"default", "delegate", "do", "else", "enum", "event", "explicit", "extern", "finally",
 		"fixed", "for", "foreach", "goto", "if", "implicit", "in", "interface", "internal", "is",
@@ -57,13 +62,19 @@ public class CsParser : FGParser
 		"define", "elif", "else", "endif", "endregion", "error", "if", "line", "pragma", "region", "undef", "warning"
 	};
 
-	private static readonly string[] builtInTypes = new string[] {
+	private static readonly HashSet<string> builtInTypes = new HashSet<string> {
 		"bool", "byte", "char", "decimal", "double", "float", "int", "long", "object", "sbyte", "short",
 		"string", "uint", "ulong", "ushort", "void"
 	};
+	
+	private static readonly HashSet<string> keywordsAndBuiltInTypes;
 
 	static CsParser()
 	{
+		keywordsAndBuiltInTypes = new HashSet<string>();
+		keywordsAndBuiltInTypes.UnionWith(keywords);
+		keywordsAndBuiltInTypes.UnionWith(builtInTypes);
+		
 		//var all = new HashSet<string>(csKeywords);
 		//all.UnionWith(csTypes);
 		//all.UnionWith(csPunctsAndOps);
@@ -75,14 +86,18 @@ public class CsParser : FGParser
 
 	protected override void ParseAll(string bufferName)
 	{
-		var scanner = new CsGrammar.Scanner(CsGrammar.Instance, textBuffer.formatedLines, bufferName);
+		var scanner = CsGrammar.Scanner.New(CsGrammar.Instance, textBuffer.formatedLines, bufferName);
 		parseTree = CsGrammar.Instance.ParseAll(scanner);
+		scanner.Delete();
 	}
 
 	public override FGGrammar.IScanner MoveAfterLeaf(ParseTree.Leaf leaf)
 	{
-		var scanner = new CsGrammar.Scanner(CsGrammar.Instance, textBuffer.formatedLines, assetPath);
-		return leaf == null ? scanner : scanner.MoveAfterLeaf(leaf) ? scanner : null;
+		var scanner = CsGrammar.Scanner.New(CsGrammar.Instance, textBuffer.formatedLines, assetPath);
+		var result = leaf == null ? scanner : scanner.MoveAfterLeaf(leaf) ? scanner : null;
+		if (result == null)
+			scanner.Delete();
+		return result;
 	}
 
 	public override bool ParseLines(int fromLine, int toLineInclusive)
@@ -114,7 +129,7 @@ public class CsParser : FGParser
 			}
 		}
 
-		var scanner = new CsGrammar.Scanner(CsGrammar.Instance, formatedLines, assetPath);
+		var scanner = CsGrammar.Scanner.New(CsGrammar.Instance, formatedLines, assetPath);
 		//CsGrammar.Instance.ParseAll(scanner);
 		scanner.MoveToLine(fromLine, parseTree);
 //        if (scanner.CurrentGrammarNode == null)
@@ -151,6 +166,8 @@ public class CsParser : FGParser
 
 		if (canContinue && toLineInclusive == formatedLines.Length - 1)
 			canContinue = grammar.GetParser.ParseStep(scanner);
+		
+		scanner.Delete();
 
 		//Debug.Log("canContinue == " + canContinue);
 
@@ -301,8 +318,9 @@ public class CsParser : FGParser
 	
 	protected override void Tokenize(string line, FGTextBuffer.FormatedLine formatedLine)
 	{
-		var tokens = new List<SyntaxToken>();
+		var tokens = formatedLine.tokens ?? new List<SyntaxToken>();
 		formatedLine.tokens = tokens;
+		tokens.Clear();
 
 		int startAt = 0;
 		int length = line.Length;
@@ -772,14 +790,19 @@ public class CsParser : FGParser
 	private new SyntaxToken ScanIdentifierOrKeyword(string line, ref int startAt)
 	{
 		var token = FGParser.ScanIdentifierOrKeyword(line, ref startAt);
-		if (token != null && token.tokenKind == SyntaxToken.Kind.Keyword && !IsKeyword(token.text) && !IsBuiltInType(token.text))
+		if (token != null && token.tokenKind == SyntaxToken.Kind.Keyword && !IsKeywordOrBuiltInType(token.text))
 			token.tokenKind = SyntaxToken.Kind.Identifier;
 		return token;
 	}
 
 	private bool IsKeyword(string word)
 	{
-		return Array.BinarySearch(Keywords, word, StringComparer.Ordinal) >= 0;
+		return keywords.Contains(word);
+	}
+
+	private bool IsKeywordOrBuiltInType(string word)
+	{
+		return keywordsAndBuiltInTypes.Contains(word);
 	}
 
 	private bool IsOperator(string text)

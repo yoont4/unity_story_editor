@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -21,15 +21,21 @@ using Debug = UnityEngine.Debug;
 
 public class ShaderParser : FGParser
 {
-	public override string[] Keywords { get { return keywords; } }
-	public override string[] BuiltInLiterals { get { return builtInLiterals; } }
+	public override HashSet<string> Keywords { get { return keywords; } }
+	public override HashSet<string> BuiltInLiterals { get { return builtInLiterals; } }
 
 	public override bool IsBuiltInType(string word)
 	{
 		return Array.BinarySearch(builtInTypes, word, StringComparer.OrdinalIgnoreCase) >= 0;
 	}
-
-	private static readonly string[] keywords = new string[] {
+	
+	public override bool IsBuiltInLiteral(string word)
+	{
+		return Array.BinarySearch(builtInLiteralsArray, word, StringComparer.OrdinalIgnoreCase) >= 0;
+	}
+	
+	private static readonly HashSet<string> keywords = new HashSet<string>();
+	private static readonly string[] keywordsArray = {
 		"AlphaTest", "Ambient", "Bind", "BindChannels", "Blend", "BorderScale", "Category", "CGINCLUDE", "CGPROGRAM", "ColorMask",
 		"ColorMaterial", "Combine", "ConstantColor", "Cull", "Density", "Diffuse", "Emission", "ENDCG", "Fallback",
 		"Fog", "GLSLEND", "GLSLPROGRAM", "GrabPass", "Lerp", "Lighting", "LightmapMode", "LightMode", "LightTexCount",
@@ -55,7 +61,8 @@ public class ShaderParser : FGParser
 		"_SpecFalloff", "_SpecularLightColor", "_Time", "_World2Light", "_World2Object",
 	};
 	
-	protected static readonly string[] builtInLiterals = new string[] {
+	protected static readonly HashSet<string> builtInLiterals;
+	protected static readonly string[] builtInLiteralsArray = new string[] {
 		"A", "Always", "AmbientAndDiffuse", "AppDstAdd", "AppSrcAdd", "Back", "CubeNormal", "CubeReflect", "DstAlpha",
 		"DstColor", "Emission", "EyeLinear", "Exp", "Exp2", "Front", "GEqual", "Greater", "LEqual", "Less", "Linear",
 		"None", "Normal", "NotEqual", "ObjectLinear", "Off", "On", "One", "OneMinusDstAlpha", "OneMinusDstColor",
@@ -66,7 +73,8 @@ public class ShaderParser : FGParser
 	
 	static ShaderParser()
 	{
-		Array.Sort(keywords);
+		keywords = new HashSet<string>(keywordsArray);
+		builtInLiterals = new HashSet<string>(builtInLiteralsArray);
 	}
 
 	public override void LexLine(int currentLine, FGTextBuffer.FormatedLine formatedLine)
@@ -698,7 +706,7 @@ public class ShaderParser : FGParser
 
 	private bool IsKeyword(string word)
 	{
-		return Array.BinarySearch(Keywords, word, StringComparer.OrdinalIgnoreCase) >= 0;
+		return Array.BinarySearch(keywordsArray, word, StringComparer.OrdinalIgnoreCase) >= 0;
 	}
 
 	private bool IsOperator(string text)

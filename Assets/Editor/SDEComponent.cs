@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 
 public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea}
 
@@ -37,7 +38,7 @@ public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKIN
 	
 	public SDEComponent() {}
 	
-	public SDEComponent(SDEComponentType componentType, SDEComponent parent, Rect rect, GUIStyle style, GUIStyle defaultStyle, GUIStyle selectedStyle) {
+	public void Init(SDEComponentType componentType, SDEComponent parent, Rect rect, GUIStyle style, GUIStyle defaultStyle, GUIStyle selectedStyle) {
 		this.componentType = componentType;
 		this.parent = parent;
 		this.rect = rect;
@@ -59,9 +60,6 @@ public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKIN
 			if (e.button == 0) {
 				if (!SelectionManager.IsComponentSelectedOnEvent() && 
 				(clickRect.Contains(e.mousePosition) || rect.Contains(e.mousePosition))) {
-					// stop the selection event from propogating further.
-					SelectionManager.SelectComponent(this);
-					
 					// select the component.
 					Selected = true;
 				} else {
@@ -93,6 +91,9 @@ public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKIN
 	  selected GUIStyle before marking the GUI changed.
 	*/
 	private void Select() {
+		// stop the selection event from propogating further.
+		SelectionManager.SelectComponent(this);
+		
 		_isSelected = true;
 		style = selectedStyle;
 		GUI.changed = true;

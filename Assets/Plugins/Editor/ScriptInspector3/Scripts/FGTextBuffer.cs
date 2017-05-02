@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -140,6 +140,8 @@ public class FGTextBuffer : ScriptableObject
 	[SerializeField, HideInInspector]
 	public bool isShader = false;
 	
+	public static int tabSize = 4;
+	
 	[System.NonSerialized]
 	public FGTextEditor.Styles styles = null;
 
@@ -164,10 +166,12 @@ public class FGTextBuffer : ScriptableObject
 
 	public void AddEditor(FGTextEditor editor)
 	{
-		editors.Remove(editor);
-		editors.Add(editor);
-		if (!IsLoading && lines.Count > 0)
-			editor.ValidateCarets();
+		if (!editors.Contains(editor))
+		{
+			editors.Add(editor);
+			if (!IsLoading && lines.Count > 0)
+				editor.ValidateCarets();
+		}
 	}
 
 	public void RemoveEditor(FGTextEditor editor)
@@ -184,7 +188,7 @@ public class FGTextBuffer : ScriptableObject
 	{
 		EditorApplication.update -= CheckSaveOnUpdate;
 
-		if (!SISettings.alwaysKeepInMemory && IsModified && editors.Count == 0 && !IsAnyWindowMaximized())
+		if (!FGCodeWindow.hidingFloatingTabs && !SISettings.alwaysKeepInMemory && IsModified && editors.Count == 0 && !IsAnyWindowMaximized())
 		{
 			string path = AssetDatabase.GUIDToAssetPath(guid);
 
@@ -254,6 +258,11 @@ public class FGTextBuffer : ScriptableObject
 		public int characterIndex;
 		[SerializeField]
 		public int line;
+		
+		public override string ToString()
+		{
+			return "line: " + line + ", index: " + characterIndex + ", col: " + column + ", vc: " + virtualColumn;
+		}
 
 		public CaretPos Clone()
 		{
@@ -335,6 +344,8 @@ public class FGTextBuffer : ScriptableObject
 
 	public void InitializeWithCSharpCode(string content)
 	{
+		tabSize = SISettings.tabSize;
+		
 		assetPath = guid;
 		
 		isJsFile = false;
@@ -343,7 +354,7 @@ public class FGTextBuffer : ScriptableObject
 		isShader = false;
 		isText = false;
 		
-		styles = isText ? FGTextEditor.stylesText : FGTextEditor.stylesCode;
+		styles = isText ? FGTextEditor.StylesText : FGTextEditor.StylesCode;
 		
 		needsReload = false;
 		lastModifiedTime = new System.DateTime();
@@ -371,14 +382,13 @@ public class FGTextBuffer : ScriptableObject
 	
 	public void Initialize()
 	{
+		tabSize = SISettings.tabSize;
+		
 		var assetPathFromGuid = AssetDatabase.GUIDToAssetPath(guid);
 		if (string.IsNullOrEmpty(assetPathFromGuid))
 			return;
 		assetPath = assetPathFromGuid;
 			
-		if (!needsReload && initialized && numParsedLines > 0)
-			return;
-		
 		isJsFile = assetPath.EndsWith(".js", System.StringComparison.OrdinalIgnoreCase);
 		isCsFile = assetPath.EndsWith(".cs", System.StringComparison.OrdinalIgnoreCase);
 		isBooFile = assetPath.EndsWith(".boo", System.StringComparison.OrdinalIgnoreCase);
@@ -388,9 +398,12 @@ public class FGTextBuffer : ScriptableObject
 			assetPath.EndsWith(".hlsl", System.StringComparison.OrdinalIgnoreCase) ||
 			assetPath.EndsWith(".hlslinc", System.StringComparison.OrdinalIgnoreCase);
 		isText = !(isJsFile || isCsFile || isBooFile || isShader);
-			
-		styles = isText ? FGTextEditor.stylesText : FGTextEditor.stylesCode;
+		
+		styles = FGTextEditor.GetStyles(isText);
 
+		if (!needsReload && initialized && numParsedLines > 0)
+			return;
+		
 		if (needsReload || lines == null || lines.Count == 0)
 		{
 			try {
@@ -445,16 +458,24 @@ public class FGTextBuffer : ScriptableObject
 		{
 			initialized = true;
 		}
+		
+		if (IsLoading)
+			ProgressiveLoadOnUpdate();
 	}
 	
 	public void LoadImmediately()
 	{
-        EditorApplication.update -= ReloadOnNextUpdate;
-
-		Initialize();
-		while (IsLoading)
+		if (IsLoading)
+		{
+			EditorApplication.update -= ReloadOnNextUpdate;
+			EditorApplication.update -= ProgressiveLoadOnUpdate;
+			
+			if (streamReader == null)
+				Initialize();
+			while (IsLoading)
+				ProgressiveLoadOnUpdate();
 			ProgressiveLoadOnUpdate();
-		ProgressiveLoadOnUpdate();
+		}
     }
 
     public void Reload()
@@ -819,7 +840,7 @@ public class FGTextBuffer : ScriptableObject
 				editor.selectionStartPosition = null;
 			else
 				editor.selectionStartPosition = record.preSelectionPos.Clone();
-			editor.caretMoveTime = Time.realtimeSinceStartup;
+			editor.caretMoveTime = FGTextEditor.frameTime;
 			editor.scrollToCaret = true;
 		}
 		
@@ -910,7 +931,7 @@ public class FGTextBuffer : ScriptableObject
 				editor.selectionStartPosition = null;
 			else
 				editor.selectionStartPosition = record.postSelectionPos.Clone();
-			editor.caretMoveTime = Time.realtimeSinceStartup;
+			editor.caretMoveTime = FGTextEditor.frameTime;
 			editor.scrollToCaret = true;
 		}
 
@@ -927,7 +948,7 @@ public class FGTextBuffer : ScriptableObject
 
 	public int CharIndexToColumn(int charIndex, int line, int start)
 	{
-		if (lines.Count == 0 || line >= lines.Count)
+		if (line >= lines.Count)
 			return 0;
 		string s = lines[line];
 		if (s.Length < charIndex)
@@ -935,13 +956,13 @@ public class FGTextBuffer : ScriptableObject
 
 		int col = 0;
 		for (int i = start; i < charIndex; ++i)
-			col += s[i] != '\t' ? 1 : SISettings.tabSize - (col % SISettings.tabSize);
+			col += s[i] != '\t' ? 1 : tabSize - (col % tabSize);
 		return col;
 	}
 
 	public int CharIndexToColumn(int charIndex, int line)
 	{
-		if (lines.Count == 0 || line >= lines.Count)
+		if (line >= lines.Count)
 			return 0;
 		string s = lines[line];
 		if (s.Length < charIndex)
@@ -949,14 +970,12 @@ public class FGTextBuffer : ScriptableObject
 
 		int col = 0;
 		for (int i = 0; i < charIndex; ++i)
-			col += s[i] != '\t' ? 1 : SISettings.tabSize - (col % SISettings.tabSize);
+			col += s[i] != '\t' ? 1 : tabSize - (col % tabSize);
 		return col;
 	}
 
 	public int ColumnToCharIndex(ref int column, int line, int rowStart)
 	{
-		var tabSize = SISettings.tabSize;
-		
 		line = System.Math.Max(0, System.Math.Min(line, lines.Count - 1));
 		column = System.Math.Max(0, column);
 
@@ -997,8 +1016,6 @@ public class FGTextBuffer : ScriptableObject
 
 	public int ColumnToCharIndex(ref int column, int line)
 	{
-		var tabSize = SISettings.tabSize;
-		
 		line = System.Math.Max(0, System.Math.Min(line, numParsedLines - 1));
 		column = System.Math.Max(0, column);
 
@@ -1850,7 +1867,6 @@ public class FGTextBuffer : ScriptableObject
 		if (tabPos == -1)
 			return s;
 		
-		var tabSize = SISettings.tabSize.Value;
 		if (tabSize != cashedTabSize)
 		{
 			cashedTabSize = tabSize;
@@ -2008,7 +2024,7 @@ public class FGTextBuffer : ScriptableObject
 		return firstToken;
 	}
 	
-	private void GetFirstTokens(int line, out SyntaxToken firstToken, out SyntaxToken firstNonTrivia)
+	public void GetFirstTokens(int line, out SyntaxToken firstToken, out SyntaxToken firstNonTrivia)
 	{
 		firstToken = null;
 		firstNonTrivia = null;
@@ -2611,14 +2627,19 @@ public class FGTextBuffer : ScriptableObject
 			formatedLine = formatedLines[currentLine] = new FormatedLine { index = currentLine };
 			formatedLine.lastChange = currentChangeId;
 		}
-		else if (formatedLine.tokens != null)
+		else
 		{
-			foreach (var token in formatedLine.tokens)
+			var tokens = formatedLine.tokens;
+			if (tokens != null)
 			{
-				if (token.parent != null)
+				for (var i = tokens.Count; i --> 0; )
 				{
-					token.parent.token = null;
-					token.parent = null;
+					var token = tokens[i];
+					if (token.parent != null)
+					{
+						token.parent.token = null;
+						token.parent = null;
+					}
 				}
 			}
 		}

@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -58,6 +58,13 @@ public class FGTextBufferManager : ScriptableObject
 	[SerializeField]
 	public string fullLineCopied;
 	
+	[SerializeField]
+	private string symbolSearchText;
+	public static string SymbolSearchText {
+		get { return _instance.symbolSearchText; }
+		set { _instance.symbolSearchText = value; }
+	}
+	
 	private static bool reloadingAssemblies = false;
 	
 	public static bool IsReloadingAssemblies {
@@ -82,8 +89,28 @@ public class FGTextBufferManager : ScriptableObject
 	private void OnEnable()
 	{
 		hideFlags = HideFlags.HideAndDontSave;
+		
+		for (var i = allBuffers.Count; i --> 0; )
+		{
+			var buffer = allBuffers[i];
+			if (buffer == null || !buffer.CanUndo() && !buffer.CanRedo())
+			{
+				allBuffers.RemoveAt(i);
+				//Debug.Log("Removed buffer " + (buffer != null ? AssetDatabase.GUIDToAssetPath(buffer.guid) : "null"));
+				
+				if (buffer != null)
+					DestroyImmediate(buffer);
+			}
+		}
+		
 		if (_instance == null)
 		{
+			//Debug.Log("OnEnable " + allBuffers.Count);
+			//foreach (var buffer in allBuffers)
+			//{
+			//	Debug.Log("    " + AssetDatabase.GUIDToAssetPath(buffer.guid) + " " + buffer.undoPosition);
+			//}
+			
 			_instance = this;
 			foreach (var buffer in allBuffers)
 			{
@@ -97,7 +124,49 @@ public class FGTextBufferManager : ScriptableObject
 		}
 		else if (_instance != this)
 		{
-			Debug.LogError("Multiple Managers!!!");
+			Debug.LogWarning("Multiple Managers!!! Trying to resolve...");
+			
+			if (allBuffers.Count > 0)
+			{
+				//Debug.Log("this " + allBuffers.Count + " " + AssetDatabase.GUIDToAssetPath(allBuffers[0].guid));
+				//Debug.Log("instance " + this.allBuffers.Count + " " + AssetDatabase.GUIDToAssetPath(_instance.allBuffers[0].guid));
+				
+				//var all = Resources.FindObjectsOfTypeAll<FGTextBufferManager>();
+				//Debug.Log("    Count: " + all.Length);
+				//foreach (var item in all)
+				//{
+				//	Debug.Log(item.allBuffers.Count);
+				//	foreach (var buffer in item.allBuffers)
+				//	{
+				//		Debug.Log("    " + AssetDatabase.GUIDToAssetPath(buffer.guid) + " " + buffer.undoPosition);
+				//	}
+				//}
+				
+				for (var i = allBuffers.Count; i --> 0; )
+				{
+					var buffer = allBuffers[i];
+					var existingBuffer = _instance.allBuffers.Find(x => x != null && x.guid == buffer.guid);
+					if (existingBuffer == null)
+					{
+						_instance.allBuffers.Add(buffer);
+						allBuffers.RemoveAt(i);
+					}
+					else
+					{
+						// TODO: Find out what to do in this case!
+					}
+				}
+			}
+			
+			if (allBuffers.Count == 0)
+			{
+				Debug.Log("Multiple managers resolved successfully :)");
+				DestroyImmediate(this);
+			}
+			else
+			{
+				Debug.LogWarning("Failed to resolve 'multiple managers'. :(");
+			}
 		}
 	}
 
@@ -467,7 +536,17 @@ public class FGTextBufferManager : ScriptableObject
 	{
 		if (_instance == null)
 		{
-			_instance = ScriptableObject.CreateInstance<FGTextBufferManager>();
+			var allInstances = Resources.FindObjectsOfTypeAll(typeof(FGTextBufferManager)) as FGTextBufferManager[];
+			if (allInstances.Length > 0)
+			{
+				_instance = allInstances[0];
+				//Debug.LogWarning("Found existing instances - " + allInstances.Length);
+			}
+			else
+			{
+				_instance = ScriptableObject.CreateInstance<FGTextBufferManager>();
+				//Debug.LogWarning("Created a new instance!");
+			}
 			_instance.hideFlags = HideFlags.HideAndDontSave;
 		}
 		return _instance;
@@ -490,6 +569,8 @@ public class FGTextBufferManager : ScriptableObject
 	
 	public static FGTextBuffer GetBuffer(string guid)
 	{
+		//Debug.Log("GetBuffer " + AssetDatabase.GUIDToAssetPath(guid));
+		
 		List<FGTextBuffer> buffers = Instance().allBuffers.FindAll(x => x != null && guid == x.guid);
 		if (buffers.Count > 0)
 		{
@@ -499,12 +580,21 @@ public class FGTextBufferManager : ScriptableObject
 				for (int i = 1; i < buffers.Count; ++i)
 					Instance().allBuffers.Remove(buffers[i]);
 			}
+			
 			return buffers[0];
 		}
+		//Debug.Log("... not found ...");
 
 		FGTextBuffer buffer = CreateInstance<FGTextBuffer>();
-		Instance().allBuffers.Add(buffer);
 		buffer.guid = guid;
+		Instance().allBuffers.Add(buffer);
+		
+		//Debug.Log("    Count " + _instance.allBuffers.Count);
+		//foreach (var debug in _instance.allBuffers)
+		//{
+		//	Debug.Log("    " + AssetDatabase.GUIDToAssetPath(debug.guid) + " " + debug.undoPosition + " " + debug.guid);
+		//}
+		
 		return buffer;
 	}
 
@@ -573,6 +663,12 @@ public class FGTextBufferManager : ScriptableObject
 		
 		EditorApplication.update -= OnUpdate;
 		EditorApplication.update += OnUpdate;
+	}
+	
+	public static void ParseAllAsyncBuffers()
+	{
+		while (asyncParseBuffers.Count > 0)
+			OnUpdate();
 	}
 	
 	private static void OnUpdate()

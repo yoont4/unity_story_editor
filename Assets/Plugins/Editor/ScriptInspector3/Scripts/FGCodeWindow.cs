@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -447,13 +447,15 @@ public class FGCodeWindow : EditorWindow
 	[UnityEditor.Callbacks.OnOpenAssetAttribute(0)]
 	public static bool OnOpenAsset(int instanceID, int line)
 	{
-		if (openInExternalIDE || (EditorGUI.actionKey ? SISettings.handleOpenAssets : SISettings.dontOpenAssets))
+		var allowInvert = Event.current.keyCode != KeyCode.DownArrow;
+		
+		if (openInExternalIDE || (allowInvert && EditorGUI.actionKey ? SISettings.handleOpenAssets : SISettings.dontOpenAssets))
 		{
 			openInExternalIDE = false;
 			return false;
 		}
 		
-		if (EditorGUI.actionKey ? SISettings.dontOpenAssets : SISettings.handleOpenAssets)
+		if (allowInvert && EditorGUI.actionKey ? SISettings.dontOpenAssets : SISettings.handleOpenAssets)
 		{
 			var asset = EditorUtility.InstanceIDToObject(instanceID);
 			if (asset is MonoScript || asset is TextAsset || asset is Shader)
@@ -851,8 +853,6 @@ public class FGCodeWindow : EditorWindow
 		{
 			EditorApplication.update -= OnFirstUpdate;
 			EditorApplication.update += OnFirstUpdate;
-			
-			Repaint();
 		}
 	}
 	
@@ -861,6 +861,8 @@ public class FGCodeWindow : EditorWindow
 
 	public void OnFirstUpdate()
 	{
+		Repaint();
+		
 		EditorApplication.update -= OnFirstUpdate;
 		firstUpdateDone = true;
 
@@ -899,6 +901,9 @@ public class FGCodeWindow : EditorWindow
 			OnFirstUpdate();
 		
 		textEditor.OnEnable(targetAsset);
+		
+		if (this == focusedWindow)
+			EditorApplication.delayCall += textEditor.TextBuffer.LoadImmediately;
 	}
 
 	public static void CheckAssetRename(string guid)
@@ -938,7 +943,7 @@ public class FGCodeWindow : EditorWindow
 		}
 	}
 	
-	private EditorWindow tabToFocusOnUpdate = null;
+	private static EditorWindow tabToFocusOnUpdate = null;
 	
 	private void FocusNextTabOnUpdate()
 	{
@@ -1023,6 +1028,17 @@ public class FGCodeWindow : EditorWindow
 						result.Add(guid);
 					break;
 				}
+		}
+		foreach (var wnd in codeWindows)
+		{
+			if (wnd && !string.IsNullOrEmpty(wnd.targetAssetGuid) && !result.Contains(wnd.targetAssetGuid))
+			{
+				string path = AssetDatabase.GUIDToAssetPath(wnd.targetAssetGuid);
+				if (!string.IsNullOrEmpty(path))
+				{
+					result.Add(wnd.targetAssetGuid);
+				}
+			}
 		}
 		return result;
 	}
@@ -1117,21 +1133,6 @@ public class FGCodeWindow : EditorWindow
 		
 		var isOSX = Application.platform == RuntimePlatform.OSXEditor;
 		
-		//if (TabSwitcher.instance)
-		//{
-		//	/*if ((Event.current.modifiers & (isOSX ? EventModifiers.Alt : EventModifiers.Control)) == 0)
-		//	{
-		//		TabSwitcher.instance.Close();
-		//		addRecentLocationForNextAsset = true;
-		//		OpenAssetInTab(TabSwitcher.GetSelectedGUID());
-		//	}
-		//	else*/ if (Event.current.isKey)// || Event.current.isMouse)
-		//	{
-		//		TabSwitcher.instance.OnGUI();
-		//		return;
-		//	}
-		//}
-		
 		switch (Event.current.type)
 		{
 			case EventType.layout:
@@ -1140,19 +1141,6 @@ public class FGCodeWindow : EditorWindow
 				break;
 				
 			case EventType.KeyDown:
-				//if (!TabSwitcher.instance && Event.current.keyCode == KeyCode.Tab)
-				//{
-				//	if (isOSX ?
-				//		Event.current.alt && !EditorGUI.actionKey :
-				//		!Event.current.alt && EditorGUI.actionKey)
-				//	{
-				//		var isShift = Event.current.shift;
-				//		EditorApplication.delayCall += () =>
-				//		{
-				//			TabSwitcher.instance = TabSwitcher.Create(!isShift);
-				//		};
-				//	}
-				//}
 				if ((Event.current.modifiers & ~(EventModifiers.FunctionKey | EventModifiers.Numeric | EventModifiers.CapsLock)) == EventModifiers.Control &&
 					(Event.current.keyCode == KeyCode.PageUp || Event.current.keyCode == KeyCode.PageDown))
 				{
@@ -1338,8 +1326,13 @@ public class FGCodeWindow : EditorWindow
 		
 		if (!wantsMouseMove)
 			wantsMouseMove = true;
-		textEditor.OnWindowGUI(this, new RectOffset(0, 0, 19, 1));
+		if (rectOffset == null)
+			rectOffset = new RectOffset(0, 0, 18, 0);
+		textEditor.OnWindowGUI(this, rectOffset);
 	}
+	
+	[System.NonSerialized]
+	private static RectOffset rectOffset;
 	
 	private void UpdateWindowTitle()
 	{
@@ -1406,7 +1399,7 @@ public class FGCodeWindow : EditorWindow
 	static float hoverFraction;
 	static float hoverEffect;
 	static EditorWindow hoverWindow;
-	static float lastHoverChangeTime;
+	static System.DateTime lastHoverChangeTime;
 	static bool hoverMouseDown;
 	
 	private void ShowButton(Rect position)
@@ -1442,7 +1435,7 @@ public class FGCodeWindow : EditorWindow
 		var newHoverTabs = GUIUtility.hotControl == 0 && position.Contains(Event.current.mousePosition);// && mouseOverWindow == this);
 		if (newHoverTabs != hoverTabs)
 		{
-			lastHoverChangeTime = Time.realtimeSinceStartup;
+			lastHoverChangeTime = FGTextEditor.frameTime;
 			hoverTabs = newHoverTabs;
 			if (hoverTabs)
 			{
@@ -1460,7 +1453,7 @@ public class FGCodeWindow : EditorWindow
 		{
 			if (hoverEffect < 1f)
 			{
-				hoverEffect += 5f * (Time.realtimeSinceStartup - lastHoverChangeTime);
+				hoverEffect += 5f * (float) (FGTextEditor.frameTime - lastHoverChangeTime).TotalSeconds;
 				if (hoverEffect > 1f)
 					hoverEffect = 1f;
 			}
@@ -1469,7 +1462,7 @@ public class FGCodeWindow : EditorWindow
 		{
 			if (hoverEffect > 0f)
 			{
-				hoverEffect -= 1.5f * (Time.realtimeSinceStartup - lastHoverChangeTime);
+				hoverEffect -= 1.5f * (float) (FGTextEditor.frameTime - lastHoverChangeTime).TotalSeconds;
 				if (hoverEffect < 0f)
 				{
 					hoverEffect = 0f;
@@ -1480,7 +1473,7 @@ public class FGCodeWindow : EditorWindow
 		
 		if (hoverTabs || hoverEffect > 0f)
 		{
-			lastHoverChangeTime = Time.realtimeSinceStartup;
+			lastHoverChangeTime = FGTextEditor.frameTime;
 			
 			List<EditorWindow> panes = GetTabsInDockArea();
 			if (panes == null)
@@ -1741,6 +1734,8 @@ public class FGCodeWindow : EditorWindow
 		return false;
 	}
 	
+	public static bool hidingFloatingTabs;
+	
 #if UNITY_EDITOR_OSX
 	[MenuItem("Window/Script Inspector 3/Toggle Floating Tabs _%#t", false, 810)] // Shift-Cmd-T
 #else
@@ -1814,10 +1809,12 @@ public class FGCodeWindow : EditorWindow
 				}
 				else
 				{
-					//	tab.position = rc;
 					tab.Repaint();
 				}
 			}
+			
+			hidingFloatingTabs = true;
+			EditorApplication.delayCall += () => hidingFloatingTabs = false;
 			
 			var toggleSi3Tabs = floatingSi3Tabs.ToArray();
 			UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(toggleSi3Tabs, path, true);

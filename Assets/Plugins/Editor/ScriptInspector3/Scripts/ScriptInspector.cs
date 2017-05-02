@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -15,6 +15,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
+using System.Linq;
 
 namespace ScriptInspector
 {
@@ -30,9 +31,9 @@ public class ScriptInspector : Editor
 
 	public static string GetVersionString()
 	{
-		return "3.0.17, December 2016";
+		return "3.0.18, May 2017";
 	}
-
+	
 	public void OnDisable()
 	{
 		textEditor.onRepaint = null;
@@ -72,32 +73,60 @@ public class ScriptInspector : Editor
 	protected virtual void DoGUI()
 	{
 		var currentInspector = GetCurrentInspector();
-		textEditor.OnInspectorGUI(true, new RectOffset(0, -4, 0, 0), currentInspector);
+		textEditor.OnInspectorGUI(true, new RectOffset(0, -6, -4, 0), currentInspector);
 	}
 	
-	private static System.Type inspectorWindowType;
+	private static System.Type spotlightWindowType;
 	private static FieldInfo currentInspectorWindowField;
-	protected static EditorWindow GetCurrentInspector()
+	private static PropertyInfo currentSpotlightWindowProperty;
+	
+	public static bool IsFocused()
 	{
-		//EditorWindow wnd = EditorWindow.focusedWindow;
-		//if (wnd == null)
-		//	return null;
-
-		if (inspectorWindowType == null)
-			inspectorWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow");
-		if (inspectorWindowType != null)
+		var windowType = EditorWindow.focusedWindow.GetType();
+		return
+			windowType.ToString() == "UnityEditor.InspectorWindow" ||
+			spotlightWindowType != null && windowType == spotlightWindowType;
+	}
+ 
+	static ScriptInspector()
+	{
+		var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+		
+		var spotlightAssembly = assemblies.FirstOrDefault(a => a.FullName.StartsWith("Spotlight,"));
+		if (spotlightAssembly == null)
 		{
-			if (currentInspectorWindowField == null)
-				currentInspectorWindowField = inspectorWindowType.GetField("s_CurrentInspectorWindow",
-					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-			if (currentInspectorWindowField != null)
+			spotlightAssembly = assemblies.FirstOrDefault(a => a.FullName.StartsWith("Assembly-CSharp-Editor,"));
+		}
+		
+		if (spotlightAssembly != null)
+		{
+			spotlightWindowType = spotlightAssembly.GetType("TakionStudios.Spotlight.Helper");
+			if (spotlightWindowType != null)
 			{
-				var currentInspector = currentInspectorWindowField.GetValue(null) as EditorWindow;
-				//if (currentInspector == wnd)
-				//	return wnd;
-				return currentInspector;
+				currentSpotlightWindowProperty = spotlightWindowType.GetProperty("CurrentWindow",
+					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 			}
 		}
+		
+		var inspectorWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow");
+		if (inspectorWindowType != null)
+		{
+			currentInspectorWindowField = inspectorWindowType.GetField("s_CurrentInspectorWindow",
+				BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+		}
+	}
+	
+	protected static EditorWindow GetCurrentInspector()
+	{
+		if (currentSpotlightWindowProperty != null)
+		{
+			var currentInspector = currentSpotlightWindowProperty.GetValue(null, null) as EditorWindow;
+			if (currentInspector != null)
+				return currentInspector;
+		}
+		
+		if (currentInspectorWindowField != null)
+			return currentInspectorWindowField.GetValue(null) as EditorWindow;
 		
 		return null;
 	}

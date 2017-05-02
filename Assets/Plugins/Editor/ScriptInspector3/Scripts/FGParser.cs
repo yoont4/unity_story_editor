@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -29,6 +29,8 @@ using Debug = UnityEngine.Debug;
 
 public struct TextPosition
 {
+	public static TextPosition invalid = new TextPosition(-1, -1);
+	
 	public int line;
 	public int index;
 
@@ -287,6 +289,8 @@ public class SyntaxToken //: IComparable<SyntaxToken>
 		ContextualKeyword,
 		EOF,
 	}
+	
+	public static readonly SyntaxToken Missing = new SyntaxToken(SyntaxToken.Kind.Missing, string.Empty);
 
 	public Kind tokenKind;
 	public GUIStyle style;
@@ -300,18 +304,11 @@ public class SyntaxToken //: IComparable<SyntaxToken>
 	public int Line { get { return formatedLine.index; } }
 	public int TokenIndex { get { return formatedLine.tokens.IndexOf(this); } }
 
-	public static SyntaxToken CreateMissing()
-	{
-		return new SyntaxToken(Kind.Missing, string.Empty) { parent = null };
-	}
-
 	public SyntaxToken(Kind kind, string text)
 	{
-		parent = null;
 		tokenKind = kind;
-		this.text = string.Intern(text);
+		this.text = text;
 		tokenId = -1;
-		style = null;
 	}
 
 	public bool IsMissing()
@@ -391,12 +388,12 @@ public abstract class FGParser
 				foreach (var type in assemblyTypes)
 				{
 					var name = type.Name;
-					var index = name.IndexOf('`');
+					var index = name.IndexOf("`", StringComparison.Ordinal);
 					if (index >= 0)
 						name = name.Remove(index);
 					unityTypes.Add(name);
 					if (type.IsSubclassOf(typeof(Attribute)) && name.EndsWith("Attribute", StringComparison.Ordinal))
-						unityTypes.Add(type.Name.Substring(0, type.Name.Length - "Attribute".Length));
+						unityTypes.Add(name.Substring(0, name.Length - "Attribute".Length));
 				}
 			}
 			catch (ReflectionTypeLoadException)
@@ -453,18 +450,14 @@ public abstract class FGParser
 		parserThread = null;
 
 		string textLine = textBuffer.lines[currentLine];
-		var lineTokens = new List<SyntaxToken>();
+		var lineTokens = formatedLine.tokens ?? new List<SyntaxToken>();
+		lineTokens.Clear();
+		formatedLine.tokens = lineTokens;
 
-		if (textLine.Length == 0)
-		{
-			formatedLine.tokens = lineTokens;
-		}
-		else
+		if (!string.IsNullOrEmpty(textLine))
 		{
 			//Tokenize(lineTokens, textLine, ref formatedLine.blockState);
 			lineTokens.Add(new SyntaxToken(SyntaxToken.Kind.Comment, textLine) { style = textBuffer.styles.normalStyle, formatedLine = formatedLine });
-
-			formatedLine.tokens = lineTokens;
 
 			var lineWidth = textBuffer.CharIndexToColumn(textLine.Length, currentLine);
 			if (lineWidth > textBuffer.longestLine)
@@ -588,23 +581,20 @@ public abstract class FGParser
 //		ArrayUtility.Insert(ref textBuffer.hyperlinks, -1 - index, address);
 //}
 
-	private string[] emptyStringArray = new string[0];
-	public virtual string[] Keywords { get { return emptyStringArray; } }
-	public virtual string[] BuiltInLiterals { get { return emptyStringArray; } }
+	private HashSet<string> emptyStringSet = new HashSet<string>();
+	public virtual HashSet<string> Keywords { get { return emptyStringSet; } }
+	public virtual HashSet<string> BuiltInLiterals { get { return emptyStringSet; } }
 	
-	protected static readonly string[] scriptLiterals = new string[] { "false", "null", "true", };
+	protected static HashSet<string> scriptLiterals = new HashSet<string> { "false", "null", "true", };
 
 	protected static HashSet<string> unityTypes;
 
-	public bool IsBuiltInLiteral(string word)
-	{
-		return Array.BinarySearch(BuiltInLiterals, word, textBuffer.isShader ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal) >= 0;
-	}
-	
 	public virtual bool IsBuiltInType(string word)
 	{
 		return false;
 	}
+	
+	public abstract bool IsBuiltInLiteral(string word);
 
 	protected bool IsUnityType(string word)
 	{
@@ -666,7 +656,8 @@ public abstract class FGParser
 	protected static SyntaxToken ScanWhitespace(string line, ref int startAt)
 	{
 		int i = startAt;
-		while (i < line.Length && (line[i] == ' ' || line[i] == '\t'))
+		int length = line.Length;
+		while (i < length && (line[i] == ' ' || line[i] == '\t'))
 			++i;
 		if (i == startAt)
 			return null;
@@ -960,7 +951,8 @@ public abstract class FGParser
 	{
 		bool identifier = false;
 		int i = startAt;
-		if (i >= line.Length)
+		int lineLength = line.Length;
+		if (i >= lineLength)
 			return null;
 		
 		char c = line[i];
@@ -969,7 +961,7 @@ public abstract class FGParser
 			identifier = true;
 			++i;
 		}
-		if (i < line.Length)
+		if (i < lineLength)
 		{
 			c = line[i];
 			if (char.IsLetter(c) || c == '_')
@@ -1302,6 +1294,10 @@ public abstract class FGParser
 
 internal class TextParser : FGParser
 {
+	public override bool IsBuiltInLiteral(string word)
+	{
+		return false;
+	}
 }
 
 }

@@ -1,7 +1,7 @@
 -------------------------------------
 SCRIPT INSPECTOR 3
-version 3.0.17, December 2016
-Copyright © 2012-2016, Flipbook Games
+version 3.0.18, May 2017
+Copyright © 2012-2017, Flipbook Games
 -------------------------------------
 
 

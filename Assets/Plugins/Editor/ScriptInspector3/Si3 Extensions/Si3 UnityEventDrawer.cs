@@ -1,6 +1,6 @@
 ﻿/* SCRIPT INSPECTOR 3
- * version 3.0.17, December 2016
- * Copyright © 2012-2016, Flipbook Games
+ * version 3.0.18, May 2017
+ * Copyright © 2012-2017, Flipbook Games
  * 
  * Unity's legendary editor for C#, UnityScript, Boo, Shaders, and text,
  * now transformed into an advanced C# IDE!!!
@@ -12,10 +12,8 @@
  * Visit http://flipbookgames.com/ for more info.
  */
 
-#if !UNITY3_5 && !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2 && !UNITY_4_4 && !UNITY_4_5
+#if !UNITY3_5 && !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2 && !UNITY_4_3 && !UNITY_4_5
 
-
-using ScriptInspector;
 
 namespace ScriptInspector.Extensions.FlipbookGames
 {
@@ -106,7 +104,8 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 	[System.NonSerialized]
 	private SerializedProperty listenersArray;
 	[System.NonSerialized]
-	private UnityEventBase dummyEvent;
+	private UnityEventBase currentEvent;
+	private FieldInfo targetField;
 	[System.NonSerialized]
 	private object persistentCallGroup;
 	private System.Type persistentCallType;
@@ -118,16 +117,56 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 	private MethodInfo restoreStateMethod;
 	private FieldInfo reorderableListField;
 	private MethodInfo rebuildMethod;
+	private FieldInfo dummyEventField;
+	private FieldInfo textField;
 	
 	private readonly char[] propertyPathSeparators = { '.', '[', ']' };
 	private static readonly GUIContent tempContent = new GUIContent();
+	private readonly GUIStyle headerBackground = (GUIStyle) "RL Header";
 	
-	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+	[System.NonSerialized]
+	private bool expanded;
+	
+	protected override void DrawEventHeader(Rect headerRect)
+	{
+		var indentLevel = EditorGUI.indentLevel;
+		EditorGUI.indentLevel = 0;
+		
+		headerRect.xMin += 10f;
+		if (currentEvent != null)
+		{
+			if (currentEvent.GetType().ToString() == "UnityEngine.EventSystems.EventTrigger+TriggerEvent")
+				headerRect.xMax -= 20f;
+			
+			tempContent.text = "";
+			tempContent.tooltip = "";
+			expanded = EditorGUI.Foldout(headerRect, expanded, tempContent, true);
+			
+			var count = currentEvent.GetPersistentEventCount();
+			tempContent.text = count.ToString();
+			var size = EditorStyles.label.CalcSize(tempContent);
+			var rc = headerRect;
+			headerRect.xMax -= size.x + 4f;
+			if (Event.current.type == EventType.Repaint)
+			{
+				rc.xMin = rc.xMax - size.x;
+				EditorStyles.label.Draw(rc, tempContent, false, false, false, false);
+			}
+		}
+		base.DrawEventHeader(headerRect);
+		
+		EditorGUI.indentLevel = indentLevel;
+	}
+	
+	protected bool InitializeForProperty(SerializedProperty property)
 	{
 		if (restoreStateMethod == null)
 		{
 			restoreStateMethod = typeof(UnityEventDrawer).GetMethod("RestoreState", instanceFlags);
 			reorderableListField = typeof(UnityEventDrawer).GetField("m_ReorderableList", instanceFlags);
+			
+			dummyEventField = typeof(UnityEventDrawer).GetField("m_DummyEvent", instanceFlags);
+			textField = typeof(UnityEventDrawer).GetField("m_Text", instanceFlags);
 			
 			persistentCallType = System.Type.GetType("UnityEngine.Events.PersistentCall,UnityEngine");
 			if (persistentCallType != null)
@@ -147,17 +186,17 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 			getListenerMethod == null || persistentCallsField == null || listenersArrayField == null ||
 			rebuildMethod == null)
 		{
-			base.OnGUI(position, property, label);
-			return;
+			return false;
 		}
+		
+		expanded = property.isExpanded;
 		
 		restoreStateMethod.Invoke(this, new object[]{ property });
 		
 		var reorderableList = reorderableListField.GetValue(this) as UnityEditorInternal.ReorderableList;
 		if (reorderableList == null)
 		{
-			base.OnGUI(position, property, label);
-			return;
+			return false;
 		}
 		
 		if (originalCallback == null || originalCallback.Target == null)
@@ -176,7 +215,7 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 		}
 		
 		object targetObject = property.serializedObject.targetObject;
-		FieldInfo targetField = null;
+		targetField = null;
 		var fieldNames = property.propertyPath.Split(propertyPathSeparators, System.StringSplitOptions.RemoveEmptyEntries);
 		for (var i = 0; targetObject != null && i < fieldNames.Length; ++i)
 		{
@@ -194,7 +233,12 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 			}
 			else
 			{
-				targetField = targetObject.GetType().GetField(fieldNames[i], instanceFlags);
+				for (var type = targetObject.GetType(); type != typeof(object); type = type.BaseType)
+				{
+					targetField = type.GetField(fieldNames[i], instanceFlags | BindingFlags.DeclaredOnly);
+					if (targetField != null)
+						break;
+				}
 				if (targetField == null)
 				{
 					Debug.LogWarning("Could not find field #" + i + " in type " + targetObject.GetType().FullName + "\n" + string.Join(", ", fieldNames));
@@ -204,9 +248,56 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 				targetObject = targetField.GetValue(targetObject);
 			}
 		}
-		dummyEvent = targetObject as UnityEventBase;
+		currentEvent = targetObject as UnityEventBase;
 		
-		base.OnGUI(position, property, label);
+		return true;
+	}
+		
+	public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+	{
+		if (!InitializeForProperty(property))
+			return base.GetPropertyHeight(property, label);
+		
+		var height = base.GetPropertyHeight(property, label);
+		return property.isExpanded ? height : 16f;
+	}
+	
+	public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+	{
+		if (!InitializeForProperty(property))
+		{
+			base.OnGUI(position, property, label);
+			return;
+		}
+		
+		expanded = property.isExpanded;
+		if (!expanded)
+			position.height = 16f;
+		
+		if (expanded || dummyEventField == null || textField == null)
+		{
+			base.OnGUI(position, property, label);
+		}
+		else
+		{
+			if (currentEvent != null)
+			{
+				if (Event.current.type == EventType.Repaint)
+					headerBackground.Draw(position, false, false, false, false);
+				
+				dummyEventField.SetValue(this, currentEvent);
+				textField.SetValue(this, label.text);
+				
+				var rc = position;
+				rc.xMin += 6f;
+				rc.xMax -= 6f;
+				rc.height -= 2f;
+				rc.y++;
+				DrawEventHeader(rc);
+			}
+		}
+		
+		property.isExpanded = expanded;
 		
 		if (targetField != null)
 		{
@@ -216,6 +307,7 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 				if (attribute.tooltip != "")
 				{
 					position.height = 18f;
+					tempContent.text = "";
 					tempContent.tooltip = attribute.tooltip;
 					GUI.Label(position, tempContent);
 				}
@@ -230,15 +322,15 @@ public class Si3UnityEventDrawer : UnityEventDrawer
 		bool isDefined = !string.IsNullOrEmpty(propertyMethodName.stringValue);
 		
 		MethodInfo method = null;
-		if (isDefined && dummyEvent != null)
+		if (isDefined && currentEvent != null)
 		{
 			try
 			{
-				rebuildMethod.Invoke(dummyEvent, null);
+				rebuildMethod.Invoke(currentEvent, null);
 			} catch {}
-			persistentCallGroup = persistentCallsField.GetValue(dummyEvent);
+			persistentCallGroup = persistentCallsField.GetValue(currentEvent);
 			var persistentCall = getListenerMethod.Invoke(persistentCallGroup, new object[] { index });
-			method = findMethodMethod.Invoke(dummyEvent, new [] { persistentCall }) as MethodInfo;
+			method = findMethodMethod.Invoke(currentEvent, new [] { persistentCall }) as MethodInfo;
 			
 			isDefined = false;
 			if (method != null)
