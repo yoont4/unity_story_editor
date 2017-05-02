@@ -19,8 +19,8 @@ public class ConnectionPoint : SDEComponent {
 	
 	public ConnectionPoint() {}
 	
-	public void Init(Node node, ConnectionPointType connectionType) {
-		base.Init(SDEComponentType.ConnectionPoint, node, 
+	public void Init(SDEComponent parent, ConnectionPointType connectionType) {
+		base.Init(SDEComponentType.ConnectionPoint, parent, 
 			new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
 			ConnectionManager.connectionPointDefault, 
 			ConnectionManager.connectionPointDefault, 
@@ -44,18 +44,26 @@ public class ConnectionPoint : SDEComponent {
 			throw new UnityException("ConnectionPoint was drawn without a parent Node!");
 		}
 		
+		// the parent rect to reference the ConnectionPoint position from
+		Rect refRect;
+		if (parent.clickRect.width > 0f) {
+			refRect = parent.clickRect;
+		} else {
+			refRect = parent.rect;
+		}
+		
 		// draw the ConnectionPoint midway to the parent
-		rect.y = parent.rect.y + (parent.rect.height * 0.5f) - rect.height * 0.5f;
+		rect.y = refRect.y + (refRect.height * 0.5f) - (rect.height * 0.5f);
 		
 		// draw either on the left or right of the parent, depending on 
 		// the ConnectionPoint type.
 		switch (connectionType) {
 			case ConnectionPointType.In:
-				rect.x = parent.rect.x - rect.width + 3f;
+				rect.x = refRect.x - rect.width + 3f;
 				break;
 			
 			case ConnectionPointType.Out:
-				rect.x = parent.rect.x + parent.rect.width - 3f;
+				rect.x = refRect.x + refRect.width - 3f;
 				break;
 		}
 		

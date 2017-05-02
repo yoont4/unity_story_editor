@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum NodeType {Dialog, Decision, LocalFlag, GlobalFlag}
+public enum NodeType {Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag}
 
 /*
   Nodes are the master SDEComponent type in the StoryDialogueEditor, and serve
@@ -34,10 +34,6 @@ public class Node : SDEComponent {
 	private Vector2 offset;
 	private Vector2 gridOffset;
 	
-	// used to check if Node was dragged or not for Undo stack
-	private bool dragged = false;
-	
-	
 	public Node() {}
 	
 	public void Init(
@@ -53,8 +49,6 @@ public class Node : SDEComponent {
 		
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
-		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		this.outPoint.Init(this, ConnectionPointType.Out);
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, "");
 		this.OnRemoveNode = OnRemoveNode;
@@ -87,9 +81,22 @@ public class Node : SDEComponent {
 	*/
 	public void Draw() {
 		inPoint.Draw();
-		outPoint.Draw();
-		dialogArea.Draw();
+		//dialogArea.Draw();
+		
+		DrawStartOptions();
 		GUI.Box(rect, title, style);
+	}
+	
+	/*
+	  DrawStartOptions() draws the options for newly created Nodes
+	*/
+	public void DrawStartOptions() {
+		GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "test");
+		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "test");
+		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "test");
+		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "test");
+		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "test");
+		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "test");
 	}
 	
 	/*
@@ -98,12 +105,11 @@ public class Node : SDEComponent {
 	  note: Processes child events first.
 	*/
 	public override void ProcessEvent(Event e) {
-		base.ProcessEvent(e);
-		
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		outPoint.ProcessEvent(e);
-		dialogArea.ProcessEvent(e);
+		//dialogArea.ProcessEvent(e);
+		
+		base.ProcessEvent(e);
 		
 		switch(e.type) {
 		case EventType.MouseDown:
@@ -126,7 +132,7 @@ public class Node : SDEComponent {
 		
 		case EventType.MouseDrag:
 			// handle Node moving
-			if (e.button == 0 && isDragged) {
+			if (e.button == 0 && Selected) {
 				HandleDrag(e);
 			}
 			break;
@@ -154,17 +160,16 @@ public class Node : SDEComponent {
 	}
 	
 	private void HandleDragStart(Event e) {
-		Undo.RegisterFullObjectHierarchyUndo(this, "Node moved...");
-		
-		isDragged = true;
 		offset = e.mousePosition - rect.position;
 		gridOffset = new Vector2(rect.position.x % StoryDialogueEditor.GRID_SIZE, rect.position.y % StoryDialogueEditor.GRID_SIZE);
 	}
 	
 	private void HandleDrag(Event e) {
 		// only register a Node being dragged once
-		if (!dragged) {
-			dragged = true;
+		if (!isDragged) {
+			Undo.RegisterFullObjectHierarchyUndo(this, "Node moved...");
+			
+			isDragged = true;
 		}
 		
 		Move(e.mousePosition);
@@ -175,13 +180,10 @@ public class Node : SDEComponent {
 	private void HandleDragEnd() {
 		// if the object was actually moved, register the undo
 		// otherwise, revert the stored undo.
-		if (dragged) {
+		if (isDragged) {
 			Undo.FlushUndoRecordObjects();
-		} else if (isDragged) {
-			Undo.RevertAllInCurrentGroup();
 		}
 		
 		isDragged = false;
-		dragged = false;
 	}
 }
