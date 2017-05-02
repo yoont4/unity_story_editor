@@ -108,7 +108,8 @@ public class Node : SDEComponent {
 		switch(e.type) {
 		case EventType.MouseDown:
 			// handle the start of a drag
-			if (e.button == 0 && rect.Contains(e.mousePosition)) {
+			if (SelectionManager.SelectedComponent() == this &&
+				e.button == 0 && rect.Contains(e.mousePosition)) {
 				HandleDragStart(e);
 			}
 			
