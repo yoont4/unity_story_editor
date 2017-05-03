@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum NodeType {Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag}
+public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag}
 
 /*
   Nodes are the master SDEComponent type in the StoryDialogueEditor, and serve
@@ -16,7 +16,7 @@ public class Node : SDEComponent {
 	public string title;
 	
 	// the specific type of the node
-	public NodeType nodeType;
+	public NodeType nodeType = NodeType.Nothing;
 	
 	public bool isDragged;
 	
@@ -81,9 +81,11 @@ public class Node : SDEComponent {
 	*/
 	public void Draw() {
 		inPoint.Draw();
-		//dialogArea.Draw();
 		
-		DrawStartOptions();
+		if (nodeType == NodeType.Nothing) {
+			DrawStartOptions();
+		}
+		
 		GUI.Box(rect, title, style);
 	}
 	
