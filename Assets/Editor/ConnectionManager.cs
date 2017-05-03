@@ -5,15 +5,15 @@ using UnityEditor;
 
 /*
   ConnectionManager serves as an intermediate between individual Connections
-  and the StoryDialogueEditor.
+  and the StoryDialogEditor.
   
   This allows the organization of Action<Connection> to be removed from the
-  StoryDialogueEditor itself, without cloning a copy of the main editor into 
+  StoryDialogEditor itself, without cloning a copy of the main editor into 
   every single Connection object.
 */
 public static class ConnectionManager {
 	
-	public static StoryDialogueEditor mainEditor;
+	public static StoryDialogEditor mainEditor;
 	
 	// all ConnectionPoints use these styles
 	public static GUIStyle connectionPointDefault;

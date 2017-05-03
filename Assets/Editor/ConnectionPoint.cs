@@ -39,7 +39,7 @@ public class ConnectionPoint : SDEComponent {
 	/*
 	  Draw() draws the connection point relative to its parent Node.
 	*/ 
-	public void Draw() {
+	public override void Draw() {
 		if (parent == null) {
 			throw new UnityException("ConnectionPoint was drawn without a parent Node!");
 		}

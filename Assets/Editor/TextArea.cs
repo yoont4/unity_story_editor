@@ -41,7 +41,7 @@ public class TextArea : SDEComponent {
 	  i.e. if a Node is 200px wide, the bounding box would be 200px, and
 	  the TextArea itself would be 192px.
 	*/
-	public void Draw() {
+	public override void Draw() {
 		if (outPoint != null) {
 			outPoint.Draw();
 		}

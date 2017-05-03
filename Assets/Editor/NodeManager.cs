@@ -5,15 +5,15 @@ using UnityEditor;
 
 /*
   NodeManager serves as an intermediate between individual Nodes and 
-  the StoryDialogueEditor.
+  the StoryDialogEditor.
   
   This allows the organization of Action<Node> to be removed from the 
-  StoryDialogueEditor itself, without cloning a copy of the main editor
+  StoryDialogEditor itself, without cloning a copy of the main editor
   into every single Node object.
 */
 public static class NodeManager {
 	
-	public static StoryDialogueEditor mainEditor;
+	public static StoryDialogEditor mainEditor;
 	
 	// all Nodes use these styles
 	public static GUIStyle nodeDefault;
@@ -24,7 +24,7 @@ public static class NodeManager {
 	public const int NODE_HEIGHT = 37;
 	
 	/*
-	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogueEditor window.
+	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogEditor window.
 	*/
 	public static void DrawNodes() {
 		if (mainEditor.nodes != null) {
@@ -89,8 +89,8 @@ public static class NodeManager {
 		}
 		
 		// add node as close to center as possible while staying on grid
-		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogueEditor.GRID_SIZE;
-		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogueEditor.GRID_SIZE;
+		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogEditor.GRID_SIZE;
+		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogEditor.GRID_SIZE;
 		Node newNode = ScriptableObject.CreateInstance<Node>();
 		newNode.Init(
 			nodePosition, NODE_WIDTH, NODE_HEIGHT, 

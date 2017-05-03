@@ -4,12 +4,12 @@ using UnityEditor;
 public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea}
 
 /*
-  SDEComponent is the parent class of all components spawned in the StoryDialogueEditor.
+  SDEComponent is the parent class of all components spawned in the StoryDialogEditor.
   
   This handles all of the selection, positioning, and click frame definitions of a specific
   component.
 */
-public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKING UNDO
+public abstract class SDEComponent : ScriptableObject {
 	
 	// determines what component type it is (Node, ConnectionPoint, etc.)
 	public SDEComponentType componentType;
@@ -46,6 +46,8 @@ public class SDEComponent : ScriptableObject {	// TODO: FIGURE OUT HOW TO FUCKIN
 		this.defaultStyle = defaultStyle;
 		this.selectedStyle = selectedStyle;
 	}
+	
+	public abstract void Draw();
 	
 	/*
 	   ProcessEvent handles Events run over this Component.

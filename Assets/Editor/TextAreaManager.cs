@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class TextAreaManager{
-	public static StoryDialogueEditor mainEditor;
+	public static StoryDialogEditor mainEditor;
 	
 	public static GUIStyle textAreaStyle;
 	public static GUIStyle textBoxDefault;

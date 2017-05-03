@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class StoryDialogueEditor : EditorWindow {
+public class StoryDialogEditor : EditorWindow {
 	
 	// The global list of nodes and connections. 
 	// NOTE: these must be in a non-static class, as Undo
@@ -32,10 +32,10 @@ public class StoryDialogueEditor : EditorWindow {
 	"C: Center on all Nodes\n" +
 	"D: Delete the selected Node\n";
 	
-	[MenuItem("Window/Story & Dialogue Editor")]
+	[MenuItem("Window/Story & Dialog Editor")]
 	public static void OpenWindow() {
-		StoryDialogueEditor window = GetWindow<StoryDialogueEditor>();
-		window.titleContent = new GUIContent("Story & Dialogue Editor");
+		StoryDialogEditor window = GetWindow<StoryDialogEditor>();
+		window.titleContent = new GUIContent("Story & Dialog Editor");
 	}
 	
 	// TEST CODE: CLEARS THE CONSOLE
@@ -165,7 +165,7 @@ public class StoryDialogueEditor : EditorWindow {
 	}
 	
 	/*
-	  DrawHelp() displays the hotkeys and basic use of the StoryDialogueEditor.
+	  DrawHelp() displays the hotkeys and basic use of the StoryDialogEditor.
 	*/
 	private void DrawHelp() {
 		Rect helpRect = new Rect(0, 0, HELP_WIDTH, HELP_HEIGHT);

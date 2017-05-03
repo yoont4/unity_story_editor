@@ -7,7 +7,7 @@ using UnityEditor;
 public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag}
 
 /*
-  Nodes are the master SDEComponent type in the StoryDialogueEditor, and serve
+  Nodes are the master SDEComponent type in the StoryDialogEditor, and serve
   as the anchor/parent of all subcomponents.
 */
 public class Node : SDEComponent {
@@ -25,7 +25,7 @@ public class Node : SDEComponent {
 	public ConnectionPoint outPoint;
 	
 	// the dialog associated with the node
-	public TextArea dialogArea;
+	public SDEComponent childComponent;
 	
 	// the delegate for handling node removal
 	private Action<Node> OnRemoveNode;
@@ -49,8 +49,8 @@ public class Node : SDEComponent {
 		
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
-		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
-		this.dialogArea.Init(this, "");
+		this.childComponent = ScriptableObject.CreateInstance<TextArea>();
+		((TextArea)this.childComponent).Init(this, "");
 		this.OnRemoveNode = OnRemoveNode;
 	}
 	
@@ -71,7 +71,7 @@ public class Node : SDEComponent {
 	*/
 	public void Move(Vector2 destination) {
 		destination -= offset;
-		destination -= new Vector2(destination.x % StoryDialogueEditor.GRID_SIZE, destination.y % StoryDialogueEditor.GRID_SIZE);
+		destination -= new Vector2(destination.x % StoryDialogEditor.GRID_SIZE, destination.y % StoryDialogEditor.GRID_SIZE);
 		destination += gridOffset;
 		rect.position = destination;
 	}
@@ -79,11 +79,13 @@ public class Node : SDEComponent {
 	/*
 	  Draw() draws the Node in the window, and all child components.
 	*/
-	public void Draw() {
+	public override void Draw() {
 		inPoint.Draw();
 		
 		if (nodeType == NodeType.Nothing) {
 			DrawStartOptions();
+		} else {
+			childComponent.Draw();
 		}
 		
 		GUI.Box(rect, title, style);
@@ -93,12 +95,14 @@ public class Node : SDEComponent {
 	  DrawStartOptions() draws the options for newly created Nodes
 	*/
 	public void DrawStartOptions() {
-		GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "test");
-		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "test");
-		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "test");
-		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "test");
-		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "test");
-		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "test");
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "Text")) {
+			nodeType = NodeType.Dialog;
+		}
+		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "Dec");
+		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "SLV");
+		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "GLV");
+		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "SGV");
+		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "GGV");
 	}
 	
 	/*
@@ -109,7 +113,9 @@ public class Node : SDEComponent {
 	public override void ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		//dialogArea.ProcessEvent(e);
+		if (nodeType != NodeType.Nothing) {
+			childComponent.ProcessEvent(e);
+		}
 		
 		base.ProcessEvent(e);
 		
@@ -163,7 +169,7 @@ public class Node : SDEComponent {
 	
 	private void HandleDragStart(Event e) {
 		offset = e.mousePosition - rect.position;
-		gridOffset = new Vector2(rect.position.x % StoryDialogueEditor.GRID_SIZE, rect.position.y % StoryDialogueEditor.GRID_SIZE);
+		gridOffset = new Vector2(rect.position.x % StoryDialogEditor.GRID_SIZE, rect.position.y % StoryDialogEditor.GRID_SIZE);
 	}
 	
 	private void HandleDrag(Event e) {
