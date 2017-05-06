@@ -8,23 +8,37 @@ using UnityEngine;
 public static class ClickManager {
 	
 	public static float lastClickTime;
+	public static SDEComponentType lastClickType;
 	
 	// somewhere between 0.2 and 0.4 is good
 	public static float doubleClickFrame = 0.2f;
+	
+	// when this hits 2, 2 consecutive proper clicks have been made
+	private static int clickCount = 0;
 	
 	/*
 	  IsDoubleClick() takes the given time of a click, and determines 
 	  if it was a double click or not. 
 	
-	  Timing defined by doubleClickFrame.
+	  Timing defined by doubleClickFrame. Both clicks must be on the background
+	  for it to register.
 	*/
-	public static bool IsDoubleClick(float clickTime) {
+	public static bool IsDoubleClick(float clickTime, SDEComponentType componentType) {
+		bool ret = false;
+		
 		if (clickTime-lastClickTime < doubleClickFrame) {
+			if (lastClickType == componentType &&
+				SelectionManager.SelectedComponentType() == componentType) {
+				ret = true;
+			}
+			
 			lastClickTime = clickTime;
-			return true;
+			lastClickType = SelectionManager.SelectedComponentType();
 		} else {
 			lastClickTime = clickTime;
-			return false;
+			lastClickType = SelectionManager.SelectedComponentType();
 		}
+		
+		return ret;
 	}
 }

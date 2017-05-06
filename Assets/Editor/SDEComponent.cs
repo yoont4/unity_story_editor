@@ -17,6 +17,9 @@ public abstract class SDEComponent : ScriptableObject {
 	// if this is null, then this a parent component.
 	public SDEComponent parent;
 	
+	// if this is null, then this is the childest(?) component.
+	public SDEComponent child;
+	
 	// this defines the position and size of the component.
 	public Rect rect;
 	
@@ -25,8 +28,8 @@ public abstract class SDEComponent : ScriptableObject {
 	public Rect clickRect;
 	
 	// denotes the width and height difference between rect and clickRect
-	public float widthPad;
-	public float heightPad;
+	public float widthPad = 0f;
+	public float heightPad = 0f;
 	
 	// all Components are selectable, and have a default and selected
 	// style at minimum. More styles can be given to individual components.
@@ -42,6 +45,10 @@ public abstract class SDEComponent : ScriptableObject {
 		this.componentType = componentType;
 		this.parent = parent;
 		this.rect = rect;
+		
+		// default click rect to be the same as the rect, but only specific component types
+		// will continuously update the clickRect position.
+		this.clickRect = rect;
 		this.style = style;
 		this.defaultStyle = defaultStyle;
 		this.selectedStyle = selectedStyle;
@@ -123,7 +130,6 @@ public abstract class SDEComponent : ScriptableObject {
 		clickRect.height = rect.height + 2 * heightPad;
 		clickRect.x = rect.x - widthPad;
 		clickRect.y = rect.y - heightPad;
-		
 	}
 	
 }

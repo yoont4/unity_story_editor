@@ -46,7 +46,7 @@ public class ConnectionPoint : SDEComponent {
 		
 		// the parent rect to reference the ConnectionPoint position from
 		Rect refRect;
-		if (parent.clickRect.width > 0f) {
+		if (parent.widthPad != 0f || parent.heightPad != 0f) {
 			refRect = parent.clickRect;
 		} else {
 			refRect = parent.rect;

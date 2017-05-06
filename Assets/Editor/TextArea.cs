@@ -11,17 +11,14 @@ public class TextArea : SDEComponent {
 	
 	public GUIStyle textAreaStyle;
 	
-	// this allows for cascading TextAreas with a reference to a single parent TextArea
-	public TextArea childText;
-	
 	// this links to either another node or the interrupt split
 	public ConnectionPoint outPoint;
 	
 	public TextArea() {}
 	
-	public void Init(Node node, string text) {
-		Init(SDEComponentType.TextArea, node, 
-			new Rect(0, 0, node.rect.width-2*TextAreaManager.X_PAD, 0), 
+	public void Init(SDEComponent parent, string text) {
+		Init(SDEComponentType.TextArea, parent, 
+			new Rect(0, 0, parent.clickRect.width-2*TextAreaManager.X_PAD, 0), 
 			TextAreaManager.textBoxDefault, 
 			TextAreaManager.textBoxDefault, 
 			TextAreaManager.textBoxSelected);
@@ -46,6 +43,11 @@ public class TextArea : SDEComponent {
 			outPoint.Draw();
 		}
 		
+		// NOTE: child should always be of type TextArea
+		if (child != null) {
+			child.Draw();
+		}
+		
 		// GUI.TextArea sucks so I need to draw a box around it and 
 		// then make a smaller TextArea inside because .padding breaks
 		// the formatting while editing.
@@ -56,8 +58,8 @@ public class TextArea : SDEComponent {
 		clickRect.height = contentHeight + 2*TextAreaManager.Y_PAD;
 		
 		// calculate position based off of parent Node
-		clickRect.x = parent.rect.x;
-		clickRect.y = parent.rect.y + parent.rect.height;
+		clickRect.x = parent.rect.x - parent.widthPad;
+		clickRect.y = parent.rect.y - parent.heightPad + parent.clickRect.height;
 		rect.x = clickRect.x + widthPad;
 		rect.y = clickRect.y + heightPad;
 		
@@ -69,6 +71,10 @@ public class TextArea : SDEComponent {
 		// process child component events first
 		if (outPoint != null) {
 			outPoint.ProcessEvent(e);
+		}
+		
+		if (child != null) {
+			child.ProcessEvent(e);
 		}
 		
 		base.ProcessEvent(e);

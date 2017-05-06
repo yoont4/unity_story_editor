@@ -27,6 +27,8 @@ public static class StyleManager {
 	private static RectOffset controlPointBorder;
 	private static RectOffset textAreaBorder;
 	
+	private static RectOffset nodePadding;
+	
 	
 	public static GUIStyle LoadStyle(Style style) {
 		returnStyle = null;
@@ -71,6 +73,8 @@ public static class StyleManager {
 		controlPointBorder = new RectOffset(6, 5, 5, 5);
 		textAreaBorder = nodeBorder;
 		
+		nodePadding = new RectOffset(5, 5, 5, 5);
+		
 		initialized = true;
 	}
 	
@@ -83,6 +87,12 @@ public static class StyleManager {
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeHoverBG.png") as Texture2D;
 		style.border = nodeBorder;
+		style.padding = nodePadding;
+		
+		style.normal.textColor = Color.white;
+		style.hover.textColor = Color.white;
+		style.fontSize = 14;
+		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}
 	
@@ -90,6 +100,11 @@ public static class StyleManager {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeSelectedBG.png") as Texture2D;
 		style.border = nodeBorder;
+		style.padding = nodePadding;
+		
+		style.normal.textColor = Color.white;
+		style.fontSize = 14;
+		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}
 	

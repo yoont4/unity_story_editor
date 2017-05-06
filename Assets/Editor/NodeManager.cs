@@ -21,7 +21,7 @@ public static class NodeManager {
 	
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
-	public const int NODE_HEIGHT = 37;
+	public const int NODE_HEIGHT = 27;
 	
 	/*
 	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogEditor window.

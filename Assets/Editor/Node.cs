@@ -24,9 +24,6 @@ public class Node : SDEComponent {
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
 	
-	// the dialog associated with the node
-	public SDEComponent childComponent;
-	
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
 	
@@ -53,8 +50,8 @@ public class Node : SDEComponent {
 		
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
-		this.childComponent = ScriptableObject.CreateInstance<TextArea>();
-		((TextArea)this.childComponent).Init(this, "");
+		this.child = ScriptableObject.CreateInstance<TextArea>();
+		((TextArea)this.child).Init(this, "");
 		this.OnRemoveNode = OnRemoveNode;
 		
 		OnDrawNodeChild = DrawStartOptions;
@@ -101,22 +98,55 @@ public class Node : SDEComponent {
 		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "Text")) {
 			nodeType = NodeType.Dialog;
 			OnDrawNodeChild = DrawDialog;
+			title = "DIALOG";
 		}
+		
 		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "Dec");
 		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "SLV");
 		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "GLV");
 		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "SGV");
 		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "GGV");
-	}
+	} 
 	
 	/*
 	  DrawDialog() is used when the Node Type is Dialog, and draws a dialog entry menu.
 	*/
 	private void DrawDialog() {
-		childComponent.Draw();
+		child.Draw();
 		
-		// TODO: implement the rest of this to draw the '+' box below the last dialog box.
-		// '+' box should spawn new TextArea child to the last dialog box.
+		SDEComponent childComponent = child;
+		float childHeight = 0f;
+		while(true) {
+			childHeight += childComponent.clickRect.height;
+			
+			if (childComponent.child == null) {
+				break;
+			}
+			
+			childComponent  = childComponent.child;
+		}
+		
+		if (GUI.Button(new Rect(rect.xMax-33, rect.y + rect.height + childHeight, 16, 16), "-")) {
+			Undo.RecordObject(childComponent.parent, "removing child text area");
+			
+			Debug.Log("TEST: removing child component");
+			if (childComponent.parent != this) {
+				childComponent.parent.child = null;
+			}
+			
+			Undo.FlushUndoRecordObjects();
+		}
+		
+		if (GUI.Button(new Rect(rect.xMax-16, rect.y + rect.height + childHeight, 16, 16), "+")) {
+			Undo.RecordObject(childComponent, "adding child text area");
+			
+			Debug.Log("TEST: adding child component");
+			
+			childComponent.child = ScriptableObject.CreateInstance<TextArea>();
+			((TextArea)childComponent.child).Init(childComponent, "");
+			
+			Undo.FlushUndoRecordObjects();
+		}
 	}
 	
 	/*
@@ -127,8 +157,8 @@ public class Node : SDEComponent {
 	public override void ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		if (nodeType != NodeType.Nothing) {
-			childComponent.ProcessEvent(e);
+		if (child != null) {
+			child.ProcessEvent(e);
 		}
 		
 		base.ProcessEvent(e);
