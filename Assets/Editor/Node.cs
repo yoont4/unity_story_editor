@@ -112,12 +112,14 @@ public class Node : SDEComponent {
 	  DrawDialog() is used when the Node Type is Dialog, and draws a dialog entry menu.
 	*/
 	private void DrawDialog() {
+		// NOTE: this should be a TextArea
 		child.Draw();
 		
+		// calculate the y position of the dialog buttons
 		SDEComponent childComponent = child;
-		float childHeight = 0f;
+		float buttonY = rect.y + rect.height;
 		while(true) {
-			childHeight += childComponent.clickRect.height;
+			buttonY += childComponent.clickRect.height;
 			
 			if (childComponent.child == null) {
 				break;
@@ -126,7 +128,7 @@ public class Node : SDEComponent {
 			childComponent  = childComponent.child;
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-33, rect.y + rect.height + childHeight, 16, 16), "-")) {
+		if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-")) {
 			Undo.RecordObject(childComponent.parent, "removing child text area");
 			
 			Debug.Log("TEST: removing child component");
@@ -137,7 +139,7 @@ public class Node : SDEComponent {
 			Undo.FlushUndoRecordObjects();
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-16, rect.y + rect.height + childHeight, 16, 16), "+")) {
+		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+")) {
 			Undo.RecordObject(childComponent, "adding child text area");
 			
 			Debug.Log("TEST: adding child component");
