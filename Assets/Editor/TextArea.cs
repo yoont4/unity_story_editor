@@ -46,8 +46,8 @@ public class TextArea : SDEComponent {
 			outPoint.Draw();
 		}
 		
-		// GUI.TextArea fucking sucks so I need to draw a box around it
-		// and then make a smaller TextArea inside because .padding breaks
+		// GUI.TextArea sucks so I need to draw a box around it and 
+		// then make a smaller TextArea inside because .padding breaks
 		// the formatting while editing.
 		
 		textContent = new GUIContent(text);

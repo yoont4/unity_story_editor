@@ -27,8 +27,12 @@ public class Node : SDEComponent {
 	// the dialog associated with the node
 	public SDEComponent childComponent;
 	
-	// the delegate for handling node removal
+	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
+	
+	// the action for handling how to draw the child node.
+	// NOTE: an action is used to replace the need for a switch statement.
+	private Action OnDrawNodeChild;
 	
 	// variables to maintain mouse offset and grid positioning on Move() 
 	private Vector2 offset;
@@ -52,6 +56,8 @@ public class Node : SDEComponent {
 		this.childComponent = ScriptableObject.CreateInstance<TextArea>();
 		((TextArea)this.childComponent).Init(this, "");
 		this.OnRemoveNode = OnRemoveNode;
+		
+		OnDrawNodeChild = DrawStartOptions;
 	}
 	
 	/*
@@ -81,12 +87,7 @@ public class Node : SDEComponent {
 	*/
 	public override void Draw() {
 		inPoint.Draw();
-		
-		if (nodeType == NodeType.Nothing) {
-			DrawStartOptions();
-		} else {
-			childComponent.Draw();
-		}
+		CallOnDrawNodeChild();
 		
 		GUI.Box(rect, title, style);
 	}
@@ -95,14 +96,27 @@ public class Node : SDEComponent {
 	  DrawStartOptions() draws the options for newly created Nodes
 	*/
 	public void DrawStartOptions() {
+		// TODO: finalize the buttons and use the correct GUI styles.
+		
 		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "Text")) {
 			nodeType = NodeType.Dialog;
+			OnDrawNodeChild = DrawDialog;
 		}
 		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "Dec");
 		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "SLV");
 		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "GLV");
 		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "SGV");
 		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "GGV");
+	}
+	
+	/*
+	  DrawDialog() is used when the Node Type is Dialog, and draws a dialog entry menu.
+	*/
+	private void DrawDialog() {
+		childComponent.Draw();
+		
+		// TODO: implement the rest of this to draw the '+' box below the last dialog box.
+		// '+' box should spawn new TextArea child to the last dialog box.
 	}
 	
 	/*
@@ -164,6 +178,17 @@ public class Node : SDEComponent {
 			OnRemoveNode(this);
 		} else {
 			throw new UnityException("Tried to call OnRemoveNode when null!");
+		}
+	}
+	
+	/*
+	  CallOnDrawNodeChild() activates the OnDrawNodeChild actions for this Node
+	*/
+	private void CallOnDrawNodeChild() {
+		if (OnDrawNodeChild != null) {
+			OnDrawNodeChild();
+		} else {
+			throw new UnityException("Tried to call OnDrawNodeChild when null!");
 		}
 	}
 	
