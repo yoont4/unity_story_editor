@@ -128,15 +128,11 @@ public class Node : SDEComponent {
 			childComponent  = childComponent.child;
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-")) {
-			Undo.RecordObject(childComponent.parent, "removing child text area");
-			
-			Debug.Log("TEST: removing child component");
-			if (childComponent.parent != this) {
-				childComponent.parent.child = null;
+		// only draw the remove TextArea button if there are multiple TextAreas
+		if (childComponent.parent != this) {
+			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-")) {
+				TextAreaManager.RemoveTextArea((TextArea)childComponent);
 			}
-			
-			Undo.FlushUndoRecordObjects();
 		}
 		
 		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+")) {

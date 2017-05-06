@@ -53,23 +53,16 @@ public static class NodeManager {
 	public static void RemoveNode(Node node) {
 		Undo.RecordObject(mainEditor, "removing node and associated connections...");
 		
-		if (mainEditor.connections != null) { 
-			// build the list of Connections to remove
-			List<Connection> connectionsToRemove = new List<Connection>();
-			for (int i = 0; i < mainEditor.connections.Count; i++) {
-				if (mainEditor.connections[i].inPoint == node.inPoint || mainEditor.connections[i].outPoint == node.outPoint) {
-					connectionsToRemove.Add(mainEditor.connections[i]);
-				}
-			}
-			
-			// remove all the connections from the global list of connections.
-			for (int i = 0; i < connectionsToRemove.Count; i++) {
-				mainEditor.connections.Remove(connectionsToRemove[i]);
-			}
-			
-			// free the reference for GC
-			connectionsToRemove = null;
+		// build the list of Connections to remove
+		List<Connection> connectionsToRemove = ConnectionManager.GetConnections(node.inPoint);
+		
+		// remove all the connections from the global list of connections.
+		for (int i = 0; i < connectionsToRemove.Count; i++) {
+			mainEditor.connections.Remove(connectionsToRemove[i]);
 		}
+		
+		// free the reference for GC
+		connectionsToRemove = null;
 		
 		// remove the node from the global node list and the SelectionManager
 		mainEditor.nodes.Remove(node);

@@ -146,4 +146,31 @@ public static class ConnectionManager {
 		
 		Undo.FlushUndoRecordObjects();
 	}
+	
+	/*
+	  GetConnections() returns a lsit of all connections associated with the
+	  given ConnectionPoint.
+	*/
+	public static List<Connection> GetConnections(ConnectionPoint connectionPoint) {
+		// build the list of Connections to remove
+		List<Connection> connectionsToRemove = new List<Connection>();
+		
+		if (mainEditor.connections != null) {
+			if (connectionPoint.connectionType == ConnectionPointType.In) {
+				for (int i = 0; i < mainEditor.connections.Count; i++) {
+					if (mainEditor.connections[i].inPoint == connectionPoint) {
+						connectionsToRemove.Add(mainEditor.connections[i]);
+					}
+				}
+			} else {
+				for (int i = 0; i < mainEditor.connections.Count; i++) {
+					if (mainEditor.connections[i].outPoint == connectionPoint) {
+						connectionsToRemove.Add(mainEditor.connections[i]);
+					}
+				}
+			}
+		}
+		
+		return connectionsToRemove;
+	}
 }

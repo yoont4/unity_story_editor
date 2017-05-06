@@ -63,6 +63,7 @@ public class StoryDialogEditor : EditorWindow {
 		// initialize component managers
 		NodeManager.mainEditor = this;
 		ConnectionManager.mainEditor = this;
+		TextAreaManager.mainEditor = this;
 		
 		// load GUI styles
 		StyleManager.Initialize();
