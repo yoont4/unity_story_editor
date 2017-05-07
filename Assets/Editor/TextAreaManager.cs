@@ -22,7 +22,9 @@ public static class TextAreaManager{
 		// the parent, child, text area itself, and mainEditor all get modified
 		Undo.RecordObject(textArea.parent, "removing text area...");
 		Undo.RecordObject(textArea, "removing text area...");
-		Undo.RecordObject(textArea.child, "removing text area...");
+		if (textArea.child != null) {
+			Undo.RecordObject(textArea.child, "removing text area...");
+		}
 		Undo.RecordObject(mainEditor, "removing ConnectionPoint connections...");
 		
 		// stitch the parent to the child

@@ -161,14 +161,6 @@ public class StoryDialogEditor : EditorWindow {
 	}
 	
 	/*
-	  DrawLog() prints the action history of the editor so the user can tell what has happened.
-	*/
-	private void DrawLog() {
-		Rect logRect = new Rect(0, 0, position.width, position.height/4f);
-		GUI.TextArea(logRect, commandHistory, TextAreaManager.textAreaStyle);
-	}
-	
-	/*
 	  DrawHelp() displays the hotkeys and basic use of the StoryDialogEditor.
 	*/
 	private void DrawHelp() {
