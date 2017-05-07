@@ -181,7 +181,7 @@ public class StoryDialogEditor : EditorWindow {
 		switch (e.type) {
 		// check for selection or context menu
 		case EventType.MouseDown:
-			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup, SDEComponentType.Nothing)) {
+			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup, e.mousePosition, SDEComponentType.Nothing)) {
 				Vector2 creationOffset = new Vector2(
 					e.mousePosition.x % GRID_SIZE - offset.x % GRID_SIZE,
 					e.mousePosition.y % GRID_SIZE - offset.y % GRID_SIZE);

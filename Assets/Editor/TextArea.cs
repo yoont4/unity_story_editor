@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class TextArea : SDEComponent {
 	
@@ -81,12 +83,18 @@ public class TextArea : SDEComponent {
 		
 		switch(e.type) {
 		case EventType.MouseDown:
+			// handle selection
 			if (e.button == 0) {
 				if (clickRect.Contains(e.mousePosition)) {
 					FeatureManager.dragEnabled = false;
 				} else {
 					GUIUtility.keyboardControl = 0;
 				}
+			}
+			
+			if (e.button == 1 && Selected && clickRect.Contains(e.mousePosition)) {
+				ProcessContextMenu();
+				e.Use();
 			}
 			break;
 			
@@ -96,5 +104,22 @@ public class TextArea : SDEComponent {
 			}
 			break;
 		}
+	}
+	
+	/*
+	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
+	*/
+	private void ProcessContextMenu() {
+		GenericMenu genericMenu = new GenericMenu();
+		genericMenu.AddItem(new GUIContent("Remove TextArea"), false, Remove);
+		genericMenu.ShowAsContext();
+	}
+	
+	/*
+	  Just a wrapper for the TextAreaManager's RemoveTextArea function, so it can be passed
+	  to the ContextMenu's menu function argument.
+	*/
+	private void Remove() {
+		TextAreaManager.RemoveTextArea(this);
 	}
 }
