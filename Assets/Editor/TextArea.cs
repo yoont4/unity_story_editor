@@ -8,6 +8,9 @@ public class TextArea : SDEComponent {
 	
 	public string text;
 	
+	// used for keyboard focus controls
+	public int textID;
+	
 	private GUIContent textContent;
 	private float contentHeight;
 	
@@ -75,6 +78,9 @@ public class TextArea : SDEComponent {
 		}
 		
 		GUI.Box(clickRect, "", style);
+		
+		// get the Keyboard focusable ControlID of the TextArea before it's drawn
+		textID = GUIUtility.GetControlID(FocusType.Keyboard);
 		text = GUI.TextArea(rect, text, textAreaStyle);
 	}
 	
@@ -112,6 +118,90 @@ public class TextArea : SDEComponent {
 				FeatureManager.dragEnabled = true;
 			}
 			break;
+			
+		case EventType.ValidateCommand:
+			if (ValidateKeyboardCommand(e.commandName)) {
+				e.Use();
+			}
+			break;
+			
+		case EventType.ExecuteCommand:
+			ProcessKeyboardCommand(e.commandName);
+			break;
+			
+		case EventType.KeyDown:
+			// check for TextArea cycling
+			if (e.keyCode == KeyCode.Tab && Selected) {
+				if (child != null) {
+					// transfer selection state
+					this.Selected = false;
+					child.Selected = true;
+					
+					// pass keyboard control
+					GUIUtility.keyboardControl = ((TextArea)child).textID;
+					e.Use();
+				} else if (parent != null && parent.componentType == SDEComponentType.TextArea) {
+					// if at the bottom of the TextArea stack, jump back to the top
+					SDEComponent newFocusedText = this;
+					while(newFocusedText.parent != null && newFocusedText.parent.componentType == SDEComponentType.TextArea) {
+						newFocusedText = newFocusedText.parent;
+					}
+					
+					// transfer selection state
+					this.Selected = false;
+					newFocusedText.Selected = true;
+					
+					// pass keyboard control
+					GUIUtility.keyboardControl = ((TextArea)newFocusedText).textID;
+					e.Use();
+				}
+			}
+			break;
+		}
+	}
+	
+	/*
+	  ProcessKeyboardInput() listens for modified key code events.
+	
+	  i.e. ctrl+<key>, ctrl+shift+<key>, etc.
+	*/
+	private void ProcessKeyboardCommand(string command) {
+		switch (command) {
+		case "SelectAll":
+			TextEditor t = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+			t.SelectAll();
+			break;
+			
+		case "Copy":
+			Debug.Log("TextArea: 'Copy' command not implemented yet");
+			break;
+			
+		case "Paste":
+			Debug.Log("TextArea: 'Paste' command not implemented yet");
+			break;
+			
+		default:
+			Debug.Log("no supported keyboard input for this key");
+			break;
+		}
+	}
+	
+	/*
+	  ValidateKeyboardCommand() validates a set number of commands for TextAreas.
+	*/
+	private bool ValidateKeyboardCommand(string command) {
+		switch (command) {
+		case "SelectAll":
+			return true;
+			
+		case "Copy":
+			return true;
+			
+		case "Paste":
+			return true;
+			
+		default:
+			return false;
 		}
 	}
 	

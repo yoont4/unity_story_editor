@@ -114,6 +114,8 @@ public abstract class SDEComponent : ScriptableObject {
 	  default GUIStyle before marking the GUI changed.
 	*/
 	private void Deselect() {
+		SelectionManager.Deselect(this);
+		
 		_isSelected = false;
 		style = defaultStyle;
 		GUI.changed = true;

@@ -52,6 +52,9 @@ public static class SelectionManager {
 		_selectedComponent = null;
 	}
 	
+	/*
+	  SelectComponent() gives selection awareness of the given component.
+	*/
 	public static void SelectComponent(SDEComponent component) {
 		_selectedComponent = component;
 		componentSelectedOnEvent = true;
