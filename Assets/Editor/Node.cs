@@ -13,7 +13,7 @@ public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, Ch
 public class Node : SDEComponent {
 	
 	// the display title of the node
-	public string title;
+	public string title = "SELECT TYPE";
 	
 	// the specific type of the node
 	public NodeType nodeType = NodeType.Nothing;
@@ -95,17 +95,17 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 32, 32), "Text")) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 33), "Text")) {
 			nodeType = NodeType.Dialog;
 			OnDrawNodeChild = DrawDialog;
 			title = "DIALOG";
 		}
 		
-		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 32, 32), "Dec");
-		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 32, 32), "SLV");
-		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 32, 32), "GLV");
-		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 32, 32), "SGV");
-		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 32, 32), "GGV");
+		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 33), "Dec");
+		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 33, 33), "SLV");
+		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 33, 33), "GLV");
+		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 33, 33), "SGV");
+		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 33, 33), "GGV");
 	} 
 	
 	/*
@@ -117,7 +117,7 @@ public class Node : SDEComponent {
 		
 		// calculate the y position of the dialog buttons
 		SDEComponent childComponent = child;
-		float buttonY = rect.y + rect.height;
+		float buttonY = rect.y + rect.height + 2;
 		while(true) {
 			buttonY += childComponent.clickRect.height;
 			

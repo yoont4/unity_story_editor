@@ -70,10 +70,11 @@ public class StoryDialogEditor : EditorWindow {
 		NodeManager.nodeDefault = StyleManager.LoadStyle(Style.NodeDefault);
 		NodeManager.nodeSelected = StyleManager.LoadStyle(Style.NodeSelected);
 		
-		ConnectionManager.connectionPointDefault = StyleManager.LoadStyle(Style.ControlPointDefault);
-		ConnectionManager.connectionPointSelected = StyleManager.LoadStyle(Style.ControlPointSelected);
+		ConnectionManager.connectionPointDefault = StyleManager.LoadStyle(Style.ConnectionPointDefault);
+		ConnectionManager.connectionPointSelected = StyleManager.LoadStyle(Style.ConnectionPointSelected);
 		
 		TextAreaManager.textAreaStyle = StyleManager.LoadStyle(Style.TextAreaDefault);
+		TextAreaManager.textAreaButtonStyle = StyleManager.LoadStyle(Style.TextAreaButtonDefault);
 		TextAreaManager.textBoxDefault = StyleManager.LoadStyle(Style.TextBoxDefault);
 		TextAreaManager.textBoxSelected = StyleManager.LoadStyle(Style.TextBoxSelected);
 	}
@@ -81,6 +82,8 @@ public class StoryDialogEditor : EditorWindow {
 
 	
 	private void OnGUI() {
+		GUI.skin.button = TextAreaManager.textAreaButtonStyle;
+		
 		// draw bg color first
 		GUI.color = new Color(0.3f, 0.3f, 0.3f, 1);
 		windowRect.Set(0, 0, position.width, position.height);
@@ -106,10 +109,10 @@ public class StoryDialogEditor : EditorWindow {
 		ProcessEvents(Event.current);
 		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
-		// draw nodes on top of background
-		NodeManager.DrawNodes();
 		// draw the connections between nodes
 		ConnectionManager.DrawConnections();
+		// draw nodes on top of background
+		NodeManager.DrawNodes();
 		// draw the current connection as it's being selected
 		ConnectionManager.DrawConnectionHandle(Event.current);
 		

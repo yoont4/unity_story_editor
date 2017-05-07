@@ -7,6 +7,7 @@ public static class TextAreaManager{
 	public static StoryDialogEditor mainEditor;
 	
 	public static GUIStyle textAreaStyle;
+	public static GUIStyle textAreaButtonStyle;
 	public static GUIStyle textBoxDefault;
 	public static GUIStyle textBoxSelected;
 	

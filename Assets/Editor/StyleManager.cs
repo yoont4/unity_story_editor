@@ -6,11 +6,12 @@ using UnityEditor;
 public enum Style {
 	NodeDefault,
 	NodeSelected,
-	ControlPointDefault,
-	ControlPointSelected,
+	ConnectionPointDefault,
+	ConnectionPointSelected,
 	TextAreaDefault,
 	TextBoxDefault,
-	TextBoxSelected
+	TextBoxSelected,
+	TextAreaButtonDefault
 }
 
 /*
@@ -23,11 +24,24 @@ public static class StyleManager {
 	private static GUIStyle returnStyle;
 	private static bool initialized = false;
 	
+	// borders
 	private static RectOffset nodeBorder;
 	private static RectOffset controlPointBorder;
 	private static RectOffset textAreaBorder;
 	
+	// padding
 	private static RectOffset nodePadding;
+	
+	// file paths
+	private const string NODE_DEFALT = "Assets/Editor/Resources/TestNodeBG.png";
+	private const string NODE_HOVER = "Assets/Editor/Resources/TestNodeHoverBG.png";
+	private const string NODE_SELECT = "Assets/Editor/Resources/TestNodeSelectedBG.png";
+	
+	private const string CONNECTIONPOINT_DEFAULT = "Assets/Editor/Resources/TestConnectionPointBG.png";
+	private const string CONNECTIONPOINT_HOVER = "Assets/Editor/Resources/TestConnectionPointHoverBG.png";
+	private const string CONNECTIONPOINT_SELECT = "Assets/Editor/Resources/TestConnectionPointSelectedBG.png";
+	
+	
 	
 	
 	public static GUIStyle LoadStyle(Style style) {
@@ -45,11 +59,11 @@ public static class StyleManager {
 		case Style.NodeSelected:
 			returnStyle = NodeSelectedStyle();
 			break;
-		case Style.ControlPointDefault:
-			returnStyle = ControlPointDefaultStyle();
+		case Style.ConnectionPointDefault:
+			returnStyle = ConnectionPointDefaultStyle();
 			break;
-		case Style.ControlPointSelected:
-			returnStyle = ControlPointSelectedStyle();
+		case Style.ConnectionPointSelected:
+			returnStyle = ConnectionPointSelectedStyle();
 			break;
 		case Style.TextAreaDefault:
 			returnStyle = TextAreaDefaultStyle();
@@ -59,6 +73,9 @@ public static class StyleManager {
 			break;
 		case Style.TextBoxSelected:
 			returnStyle = TextBoxSelectedStyle();
+			break;
+		case Style.TextAreaButtonDefault:
+			returnStyle = TextAreaButtonDefaultStyle();
 			break;
 		}
 		
@@ -84,8 +101,8 @@ public static class StyleManager {
 	
 	private static GUIStyle NodeDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeHoverBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -98,7 +115,7 @@ public static class StyleManager {
 	
 	private static GUIStyle NodeSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeSelectedBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -108,17 +125,17 @@ public static class StyleManager {
 		return style;
 	}
 	
-	private static GUIStyle ControlPointDefaultStyle() {
+	private static GUIStyle ConnectionPointDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointBG.png") as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointHoverBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_DEFAULT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_HOVER) as Texture2D;
 		style.border = controlPointBorder;
 		return style;
 	}
 	
-	private static GUIStyle ControlPointSelectedStyle() {
+	private static GUIStyle ConnectionPointSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestControlPointSelectedBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_SELECT) as Texture2D;
 		style.border = controlPointBorder;
 		return style;
 	}
@@ -133,16 +150,31 @@ public static class StyleManager {
 	
 	private static GUIStyle TextBoxDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeBG.png") as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeHoverBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
 		style.border = textAreaBorder;
 		return style;
 	}
 	
 	private static GUIStyle TextBoxSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon("Assets/Editor/Resources/TestNodeSelectedBG.png") as Texture2D;
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
 		style.border = textAreaBorder;
+		return style;
+	}
+	
+	private static GUIStyle TextAreaButtonDefaultStyle() {
+		GUIStyle style = new GUIStyle();
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
+		style.active.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
+		style.border = nodeBorder;
+		
+		style.fontSize = 10;
+		style.normal.textColor = Color.white;
+		style.hover.textColor = Color.yellow;
+		style.active.textColor = Color.green;
+		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}
 }

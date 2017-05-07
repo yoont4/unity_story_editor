@@ -30,6 +30,7 @@ public abstract class SDEComponent : ScriptableObject {
 	// denotes the width and height difference between rect and clickRect
 	public float widthPad = 0f;
 	public float heightPad = 0f;
+	public bool padded = false;
 	
 	// all Components are selectable, and have a default and selected
 	// style at minimum. More styles can be given to individual components.
@@ -68,7 +69,7 @@ public abstract class SDEComponent : ScriptableObject {
 		// handle selection clicks
 			if (e.button == 0) {
 				if (!SelectionManager.IsComponentSelectedOnEvent() && 
-				(clickRect.Contains(e.mousePosition) || rect.Contains(e.mousePosition))) {
+				((padded && clickRect.Contains(e.mousePosition)) || rect.Contains(e.mousePosition))) {
 					// select the component.
 					Selected = true;
 				} else {
@@ -125,6 +126,7 @@ public abstract class SDEComponent : ScriptableObject {
 	public void ExtendClickBound(Vector2 modifier) {
 		widthPad = modifier.x;
 		heightPad = modifier.y;
+		padded = true;
 		
 		clickRect.width = rect.width + 2 * widthPad;
 		clickRect.height = rect.height + 2 * heightPad;

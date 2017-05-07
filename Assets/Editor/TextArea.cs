@@ -12,6 +12,7 @@ public class TextArea : SDEComponent {
 	private float contentHeight;
 	
 	public GUIStyle textAreaStyle;
+	public GUIStyle textAreaButtonStyle;
 	
 	// this links to either another node or the interrupt split
 	public ConnectionPoint outPoint;
@@ -29,6 +30,7 @@ public class TextArea : SDEComponent {
 		// clickRect is used to define the TextArea's BG Box
 		this.ExtendClickBound(new Vector2(TextAreaManager.X_PAD, TextAreaManager.Y_PAD));
 		this.textAreaStyle = TextAreaManager.textAreaStyle;
+		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
 		this.text = text; 
 		
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
@@ -64,6 +66,13 @@ public class TextArea : SDEComponent {
 		clickRect.y = parent.rect.y - parent.heightPad + parent.clickRect.height;
 		rect.x = clickRect.x + widthPad;
 		rect.y = clickRect.y + heightPad;
+		
+		// don't draw the remove button if its the only child of a Node
+		if (child != null || parent.componentType != SDEComponentType.Node) {
+			if (GUI.Button(new Rect(clickRect.x-11, clickRect.y + clickRect.height/2 - 6, 12, 12), "-", textAreaButtonStyle)) {
+				Remove();
+			}
+		}
 		
 		GUI.Box(clickRect, "", style);
 		text = GUI.TextArea(rect, text, textAreaStyle);
