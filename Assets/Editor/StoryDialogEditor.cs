@@ -64,6 +64,7 @@ public class StoryDialogEditor : EditorWindow {
 		NodeManager.mainEditor = this;
 		ConnectionManager.mainEditor = this;
 		TextAreaManager.mainEditor = this;
+		DialogBoxManager.mainEditor = this;
 		
 		// load GUI styles
 		StyleManager.Initialize();
@@ -82,8 +83,6 @@ public class StoryDialogEditor : EditorWindow {
 
 	
 	private void OnGUI() {
-		GUI.skin.button = TextAreaManager.textAreaButtonStyle;
-		
 		// draw bg color first
 		GUI.color = new Color(0.3f, 0.3f, 0.3f, 1);
 		windowRect.Set(0, 0, position.width, position.height);
