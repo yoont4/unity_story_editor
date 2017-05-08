@@ -29,6 +29,21 @@ public class TextArea : SDEComponent {
 			TextAreaManager.textBoxDefault, 
 			TextAreaManager.textBoxSelected);
 		
+		Init(text);
+	}
+	
+	public void Init(SDEContainer container, string text, float width) {
+		Init(SDEComponentType.TextArea, null, 
+			new Rect(0, 0, width-2*TextAreaManager.X_PAD, 0), 
+			TextAreaManager.textBoxDefault, 
+			TextAreaManager.textBoxDefault, 
+			TextAreaManager.textBoxSelected,
+			container);
+		
+		Init(text);
+	}
+	
+	private void Init(string text) {
 		// make the clickRect 4 pixels bigger on each side.
 		// clickRect is used to define the TextArea's BG Box
 		this.ExtendClickBound(new Vector2(TextAreaManager.X_PAD, TextAreaManager.Y_PAD));

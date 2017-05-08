@@ -22,8 +22,8 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void Init(string text) {
-		//this.dialog = ScriptableObject.CreateInstance<TextArea>();
-		//this.dialog.Init(this, text);
+		this.dialog = ScriptableObject.CreateInstance<TextArea>();
+		this.dialog.Init(this, text, NodeManager.NODE_WIDTH);
 		
 		// make the outpoint a child of the dialog, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
@@ -64,6 +64,7 @@ public class DialogBox : SDEContainer {
 	}
 	
 	public override void ProcessEvent(Event e) {
+		// check for Tab & Shift+Tab cycling
 		// TODO: implement this
 	}
 }

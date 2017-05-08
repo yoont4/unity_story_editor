@@ -14,7 +14,10 @@ public abstract class SDEComponent : ScriptableObject {
 	// determines what component type it is (Node, ConnectionPoint, etc.)
 	public SDEComponentType componentType;
 	
-	// if this is null, then this a parent component.
+	// if this is null, then this isn't bound to a component.
+	public SDEContainer container;
+	
+	// if this is null, then this a root component.
 	public SDEComponent parent;
 	
 	// if this is null, then this is the childest(?) component.
@@ -42,9 +45,10 @@ public abstract class SDEComponent : ScriptableObject {
 	
 	public SDEComponent() {}
 	
-	public void Init(SDEComponentType componentType, SDEComponent parent, Rect rect, GUIStyle style, GUIStyle defaultStyle, GUIStyle selectedStyle) {
+	public void Init(SDEComponentType componentType, SDEComponent parent, Rect rect, GUIStyle style, GUIStyle defaultStyle, GUIStyle selectedStyle, SDEContainer container=null) {
 		this.componentType = componentType;
 		this.parent = parent;
+		this.container = container;
 		this.rect = rect;
 		
 		// default click rect to be the same as the rect, but only specific component types
