@@ -51,7 +51,7 @@ public class Node : SDEComponent {
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
 		this.child = ScriptableObject.CreateInstance<TextArea>();
-		((TextArea)this.child).Init(this, "");
+		((TextArea)this.child).Init(this, "", NodeManager.NODE_WIDTH);
 		this.OnRemoveNode = OnRemoveNode;
 		
 		OnDrawNodeChild = DrawStartOptions;
@@ -141,7 +141,7 @@ public class Node : SDEComponent {
 			Debug.Log("TEST: adding child component");
 			
 			childComponent.child = ScriptableObject.CreateInstance<TextArea>();
-			((TextArea)childComponent.child).Init(childComponent, "");
+			((TextArea)childComponent.child).Init(childComponent, "", NodeManager.NODE_WIDTH);
 			
 			Undo.FlushUndoRecordObjects();
 		}

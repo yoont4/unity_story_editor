@@ -22,9 +22,9 @@ public class TextArea : SDEComponent {
 	
 	public TextArea() {}
 	
-	public void Init(SDEComponent parent, string text) {
+	public void Init(SDEComponent parent, string text, float width) {
 		Init(SDEComponentType.TextArea, parent, 
-			new Rect(0, 0, parent.clickRect.width-2*TextAreaManager.X_PAD, 0), 
+			new Rect(0, 0, width-2*TextAreaManager.X_PAD, 0), 
 			TextAreaManager.textBoxDefault, 
 			TextAreaManager.textBoxDefault, 
 			TextAreaManager.textBoxSelected);
