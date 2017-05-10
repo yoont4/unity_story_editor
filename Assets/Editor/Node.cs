@@ -53,11 +53,11 @@ public class Node : SDEComponent {
 		
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
-		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
-		((DialogBox)this.childContainer).Init(this, "");
-		this.OnRemoveNode = OnRemoveNode;
 		
-		OnDrawNodeChild = DrawStartOptions;
+
+		
+		this.OnRemoveNode = OnRemoveNode;
+		this.OnDrawNodeChild = DrawStartOptions;
 	}
 	
 	/*
@@ -98,17 +98,26 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 33), "Text")) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 24), "Text", TextAreaManager.textAreaButtonStyle)) {
+			// create a child DialogBox
+			this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
+			((DialogBox)this.childContainer).Init(this, "");
+			
 			nodeType = NodeType.Dialog;
 			OnDrawNodeChild = DrawDialog;
 			title = "DIALOG";
 		}
 		
-		GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 33), "Dec");
-		GUI.Button(new Rect(rect.x+66, rect.y + rect.height, 33, 33), "SLV");
-		GUI.Button(new Rect(rect.x+99, rect.y + rect.height, 33, 33), "GLV");
-		GUI.Button(new Rect(rect.x+132, rect.y + rect.height, 33, 33), "SGV");
-		GUI.Button(new Rect(rect.x+165, rect.y + rect.height, 33, 33), "GGV");
+		if(GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 24), "Dec", TextAreaManager.textAreaButtonStyle)) {
+			nodeType = NodeType.Decision;
+			OnDrawNodeChild = DrawDecision;
+			title = "DECISION";
+		}
+		
+		GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", TextAreaManager.textAreaButtonStyle);
+		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", TextAreaManager.textAreaButtonStyle);
+		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", TextAreaManager.textAreaButtonStyle);
+		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "GGV", TextAreaManager.textAreaButtonStyle);
 	} 
 	
 	/*
@@ -132,12 +141,12 @@ public class Node : SDEComponent {
 		
 		// only draw the remove TextArea button if there are multiple TextAreas
 		if (childComponent.parentNode != this) {
-			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-")) {
+			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
 				DialogBoxManager.RemoveDialogBox((DialogBox)childComponent);
 			}
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+")) {
+		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
 			Undo.RecordObject(childComponent, "adding child text area");
 			
 			Debug.Log("TEST: adding child component");
@@ -147,6 +156,10 @@ public class Node : SDEComponent {
 			
 			Undo.FlushUndoRecordObjects();
 		}
+	}
+	
+	private void DrawDecision() {
+		// TOOD: implement this
 	}
 	
 	/*

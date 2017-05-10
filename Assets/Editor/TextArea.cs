@@ -73,7 +73,7 @@ public class TextArea : SDEComponent {
 			rect.x = clickRect.x + widthPad;
 			rect.y = clickRect.y + heightPad;
 		} else if (parent != null) {
-			// TODO: figire out if this can be removed (all TextAreas are currently
+			// TODO: figure out if this can be removed (all TextAreas are currently
 			// bound to a container, not another Component).
 			// calculate position based off of parent Node
 			clickRect.x = parent.rect.x - parent.widthPad;
@@ -87,7 +87,7 @@ public class TextArea : SDEComponent {
 		GUI.Box(clickRect, "", style);
 		
 		// get the Keyboard focusable ControlID of the TextArea before it's drawn
-		textID = GUIUtility.GetControlID(FocusType.Keyboard);
+		textID = GUIUtility.GetControlID(FocusType.Keyboard) + 1;
 		text = GUI.TextArea(rect, text, textAreaStyle);
 	}
 	
@@ -103,12 +103,6 @@ public class TextArea : SDEComponent {
 				} else {
 					GUIUtility.keyboardControl = 0;
 				}
-			}
-			
-			if (e.button == 1 && Selected && clickRect.Contains(e.mousePosition)) {
-				// TODO: transfer this to the DialogBox
-				//ProcessContextMenu();
-				//e.Use();
 			}
 			break;
 			

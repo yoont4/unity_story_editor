@@ -22,7 +22,9 @@ public class StoryDialogEditor : EditorWindow {
 	private Rect windowRect;
 	
 	private bool lostFocus;
+	
 	private bool drawHelp;
+	private bool drawDebug;
 	
 	// Help menu constants
 	private const float HELP_WIDTH = 200f;
@@ -31,6 +33,11 @@ public class StoryDialogEditor : EditorWindow {
 	"H: Hide/Show Help Menu\n" +
 	"C: Center on all Nodes\n" +
 	"D: Delete the selected Node\n";
+	
+	// Debug menu constants
+	private const float DEBUG_WIDTH = 300f;
+	private const float DEBUG_HEIGHT = 500f;
+	private string debugText;
 	
 	[MenuItem("Window/Story & Dialog Editor")]
 	public static void OpenWindow() {
@@ -115,10 +122,9 @@ public class StoryDialogEditor : EditorWindow {
 		// draw the current connection as it's being selected
 		ConnectionManager.DrawConnectionHandle(Event.current);
 		
-		// draw the help menu
-		if (drawHelp) {
-			DrawHelp();
-		}
+		// draw additional information
+		if (drawHelp) DrawHelp();
+		if (drawDebug) DrawDebug();
 		
 		if (GUI.changed) Repaint();
 	}
@@ -166,7 +172,18 @@ public class StoryDialogEditor : EditorWindow {
 		Rect helpRect = new Rect(0, 0, HELP_WIDTH, HELP_HEIGHT);
 		helpRect.x = position.width - HELP_WIDTH - 5f;
 		helpRect.y = position.height - HELP_HEIGHT - 5f;
-		GUI.TextArea(helpRect, HELP_TEXT, TextAreaManager.textAreaStyle);
+		GUI.Box(helpRect, HELP_TEXT, TextAreaManager.textAreaStyle);
+	}
+	
+	/*
+	  DrawDebug() displays some information about the story editor for debug use
+	*/
+	private void DrawDebug() {
+		Rect debugRect = new Rect(5f, 5f, DEBUG_WIDTH, DEBUG_HEIGHT);
+		debugText = "Current Keyboard Control ID: " + GUIUtility.keyboardControl;
+		debugText += "\nNumber of Nodes: " + (nodes != null ? nodes.Count.ToString() : "null");
+		debugText += "\nNumber of Connections: " + (connections != null ? connections.Count.ToString() : "null");
+		GUI.Box(debugRect, debugText, TextAreaManager.textAreaStyle);
 	}
 
 	private void ProcessEvents(Event e) {
@@ -196,6 +213,10 @@ public class StoryDialogEditor : EditorWindow {
 			
 		// listen for key commands
 		case EventType.KeyDown:
+			// NOTE: Unity editor is broken, so both a tab KeyCode AND a '\t' character
+			// gets parsed on key press. The '\t' character is what the editor uses
+			// internally for it's default tab cycling (which we want to override).
+			if (e.character == '\t') {e.Use();} //eat the input			
 			if (SelectionManager.SelectedComponentType() != SDEComponentType.TextArea) {
 				ProcessKeyboardInput(e.keyCode);
 			}
@@ -254,12 +275,15 @@ public class StoryDialogEditor : EditorWindow {
 			}
 		}
 		
-		// 'Q' print debug information
+		// 'Q' show/hide debug information
 		if (key == KeyCode.Q) {
-			string debugText = "";
-			if (nodes != null) debugText += "nodes.Count = " + nodes.Count + "\n";
-			if (connections != null) debugText += "connections.Count = " + connections.Count + "\n";
-			Debug.Log(debugText);
+			if (drawDebug) {
+				Debug.Log("Hiding Debug info");
+				drawDebug = false;
+			} else {
+				Debug.Log("Displaying Debug info");
+				drawDebug = true;
+			}
 		}
 	}
 	

@@ -66,13 +66,14 @@ public class DialogBox : SDEContainer {
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// process component events
-		dialogArea.ProcessEvent(e);
-		outPoint.ProcessEvent(e);
-		
+		// process children first
 		if (child != null) {
 			child.ProcessEvent(e);
 		}
+		
+		// process component events
+		dialogArea.ProcessEvent(e);
+		outPoint.ProcessEvent(e);
 		
 		switch(e.type) {
 		case EventType.MouseDown:
@@ -85,8 +86,13 @@ public class DialogBox : SDEContainer {
 			
 		case EventType.KeyDown:
 			// check for Tab & Shift+Tab cycling
+						
 			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
-				CycleFocus();
+				if (e.shift) {
+					CycleFocusUp();
+				} else {
+					CycleFocusDown();
+				}
 				e.Use();
 			}
 			break;
@@ -102,29 +108,46 @@ public class DialogBox : SDEContainer {
 		genericMenu.ShowAsContext();
 	}
 	
-	private void CycleFocus() {
+	private void CycleFocusDown() {
+		Debug.Log("DialogBox: cycling down");
+		SDEContainer newFocusedDialogBox = this;
+		
 		if (child != null) {
-			Debug.Log("cycling");
-			// transfer selection state
-			dialogArea.Selected = false;
-			((DialogBox)child).dialogArea.Selected = true;
-	
-			// pass keyboard control
-			GUIUtility.keyboardControl = ((DialogBox)child).dialogArea.textID;
+			newFocusedDialogBox = child;
 		} else if (parent != null) {
 			// if at the bottom of the TextArea stack, jump back to the top
-			SDEContainer newFocusedDialogBox = this;
 			while(newFocusedDialogBox.parent != null) {
 				newFocusedDialogBox = newFocusedDialogBox.parent;
 			}
-			
-			// transfer selection state
-			dialogArea.Selected = false;
-			((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
-			
-			// pass keyboard control
-			GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
 		}
+		
+		// transfer selection state
+		dialogArea.Selected = false;
+		((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
+
+		// pass keyboard control
+		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+	}
+	
+	private void CycleFocusUp() {
+		Debug.Log("DialogBox: cycling up");
+		SDEContainer newFocusedDialogBox = this;
+		
+		if (parent != null) {
+			newFocusedDialogBox = parent;
+		} else if (child != null) {
+			// if at the top of the DialogBox stack, jump back to the bottom
+			while (newFocusedDialogBox.child != null) {
+				newFocusedDialogBox = newFocusedDialogBox.child;
+			}
+		}
+		
+		// transfer Selection state
+		dialogArea.Selected = false;
+		((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
+		
+		// pass keyboard control
+		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
 	}
 	
 	/*

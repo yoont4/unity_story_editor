@@ -25,9 +25,6 @@ public static class DialogBoxManager {
 		Undo.RecordObject(dialogBox, "removing text area...");
 		Undo.RecordObject(mainEditor, "removing ConnectionPoint connections...");
 		
-		
-		
-		// TODO: implement this properly
 		// stitch the parent to the child
 		Node parentNode = dialogBox.parentNode;
 		SDEContainer parent = dialogBox.parent;
