@@ -14,14 +14,11 @@ public abstract class SDEComponent : ScriptableObject {
 	// determines what component type it is (Node, ConnectionPoint, etc.)
 	public SDEComponentType componentType;
 	
-	// if this is null, then this isn't bound to a component.
+	// if this is null, then this isn't bound to a container.
 	public SDEContainer container;
 	
 	// if this is null, then this a root component.
 	public SDEComponent parent;
-	
-	// if this is null, then this is the childest(?) component.
-	public SDEComponent child;
 	
 	// this defines the position and size of the component.
 	public Rect rect;

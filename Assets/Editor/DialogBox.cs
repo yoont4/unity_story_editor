@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class DialogBox : SDEContainer {
 	
-	// TODO: hook these up
-	public TextArea dialog;
+	public TextArea dialogArea;
 	public ConnectionPoint outPoint;
 	
 	public GUIStyle textAreaButtonStyle;
@@ -22,12 +21,12 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void Init(string text) {
-		this.dialog = ScriptableObject.CreateInstance<TextArea>();
-		this.dialog.Init(this, text, NodeManager.NODE_WIDTH);
+		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
+		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
 		
-		// make the outpoint a child of the dialog, so it's bound to that field.
+		// make the outpoint a child of the dialogArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		this.outPoint.Init(this.dialog, ConnectionPointType.Out);
+		this.outPoint.Init(this.dialogArea, ConnectionPointType.Out);
 		
 		// set the button styles
 		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
@@ -46,25 +45,75 @@ public class DialogBox : SDEContainer {
 		rect.y = refRect.y + refRect.height;
 		
 		// draw children
-		dialog.Draw();
+		dialogArea.Draw();
 		outPoint.Draw();
+		if (child != null) {
+			child.Draw();
+		}
 		
 		// update container size
-		rect.width = dialog.clickRect.width + outPoint.rect.width;
-		rect.height = dialog.clickRect.height;
+		rect.width = dialogArea.clickRect.width + outPoint.rect.width;
+		rect.height = dialogArea.clickRect.height;
 		
 		// draw remove button
 		// don't draw the remove button if its the only child of a Node
-		if (child != null || parentNode != null) {
+		if (child != null || parent != null) {
 			if (GUI.Button(new Rect(rect.x-11, rect.y + rect.height/2 - 6, 12, 12), "-", textAreaButtonStyle)) {
-				// TODO: implement this
-				//Remove();
+				Remove();
 			}
 		}
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// check for Tab & Shift+Tab cycling
-		// TODO: implement this
+		// process component events
+		dialogArea.ProcessEvent(e);
+		outPoint.ProcessEvent(e);
+		
+		if (child != null) {
+			child.ProcessEvent(e);
+		}
+		
+		switch(e.type) {
+		case EventType.KeyDown:
+			// check for Tab & Shift+Tab cycling
+			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
+				CycleFocus();
+				e.Use();
+			}
+			break;
+		}
+	}
+	
+	private void CycleFocus() {
+		if (child != null) {
+			Debug.Log("cycling");
+			// transfer selection state
+			dialogArea.Selected = false;
+			((DialogBox)child).dialogArea.Selected = true;
+	
+			// pass keyboard control
+			GUIUtility.keyboardControl = ((DialogBox)child).dialogArea.textID;
+		} else if (parent != null) {
+			// if at the bottom of the TextArea stack, jump back to the top
+			SDEContainer newFocusedDialogBox = this;
+			while(newFocusedDialogBox.parent != null) {
+				newFocusedDialogBox = newFocusedDialogBox.parent;
+			}
+			
+			// transfer selection state
+			dialogArea.Selected = false;
+			((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
+			
+			// pass keyboard control
+			GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+		}
+	}
+	
+	/*
+	  Remove() is a wrapper for the DialogBoxManager's RemoveDialogBox function, so it
+	  can be passed to the ContextMenu's menu function argument.
+	*/
+	private void Remove() {
+		DialogBoxManager.RemoveDialogBox(this);
 	}
 }

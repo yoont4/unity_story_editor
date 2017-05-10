@@ -18,6 +18,9 @@ public class Node : SDEComponent {
 	// the specific type of the node
 	public NodeType nodeType = NodeType.Nothing;
 	
+	// the child Container that starts the cascading Container display
+	public SDEContainer childContainer;
+	
 	public bool isDragged;
 	
 	// the in/out connection points
@@ -50,8 +53,8 @@ public class Node : SDEComponent {
 		
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
-		this.child = ScriptableObject.CreateInstance<TextArea>();
-		((TextArea)this.child).Init(this, "", NodeManager.NODE_WIDTH);
+		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
+		((DialogBox)this.childContainer).Init(this, "");
 		this.OnRemoveNode = OnRemoveNode;
 		
 		OnDrawNodeChild = DrawStartOptions;
@@ -112,14 +115,13 @@ public class Node : SDEComponent {
 	  DrawDialog() is used when the Node Type is Dialog, and draws a dialog entry menu.
 	*/
 	private void DrawDialog() {
-		// NOTE: this should be a TextArea
-		child.Draw();
+		childContainer.Draw();
 		
 		// calculate the y position of the dialog buttons
-		SDEComponent childComponent = child;
+		SDEContainer childComponent = childContainer;
 		float buttonY = rect.y + rect.height + 2;
 		while(true) {
-			buttonY += childComponent.clickRect.height;
+			buttonY += childComponent.rect.height;
 			
 			if (childComponent.child == null) {
 				break;
@@ -129,9 +131,9 @@ public class Node : SDEComponent {
 		}
 		
 		// only draw the remove TextArea button if there are multiple TextAreas
-		if (childComponent.parent != this) {
+		if (childComponent.parentNode != this) {
 			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-")) {
-				TextAreaManager.RemoveTextArea((TextArea)childComponent);
+				DialogBoxManager.RemoveDialogBox((DialogBox)childComponent);
 			}
 		}
 		
@@ -140,8 +142,8 @@ public class Node : SDEComponent {
 			
 			Debug.Log("TEST: adding child component");
 			
-			childComponent.child = ScriptableObject.CreateInstance<TextArea>();
-			((TextArea)childComponent.child).Init(childComponent, "", NodeManager.NODE_WIDTH);
+			childComponent.child = ScriptableObject.CreateInstance<DialogBox>();
+			((DialogBox)childComponent.child).Init(childComponent, "");
 			
 			Undo.FlushUndoRecordObjects();
 		}
@@ -155,8 +157,12 @@ public class Node : SDEComponent {
 	public override void ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		if (child != null) {
-			child.ProcessEvent(e);
+		//if (child != null) {
+		//	child.ProcessEvent(e);
+		//}
+		
+		if (childContainer != null) {
+			childContainer.ProcessEvent(e);
 		}
 		
 		base.ProcessEvent(e);

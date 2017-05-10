@@ -8,7 +8,7 @@ public static class DialogBoxManager {
 	public static StoryDialogEditor mainEditor;
 	
 	/*
-	  RemoveTextArea() removes the given TextArea from its Node, and stitches
+	  RemoveDialogBox() removes the given DialogBox from its Node, and stitches
 	  the parent and child components together, removing any old connections.
 	*/
 	public static void RemoveDialogBox(DialogBox dialogBox) {
@@ -25,28 +25,48 @@ public static class DialogBoxManager {
 		Undo.RecordObject(dialogBox, "removing text area...");
 		Undo.RecordObject(mainEditor, "removing ConnectionPoint connections...");
 		
+		
+		
 		// TODO: implement this properly
-		//// stitch the parent to the child
-		//SDEComponent parent = dialogBox.parent;
-		//SDEComponent child = dialogBox.child;
-		//if (parent != null && child != null) {
-		//	parent.child = child;
-		//	child.parent = parent;
-		//} else if(parent != null && parent.componentType != SDEComponentType.Node) {
-		//	parent.child = null;
-		//} else {
-		//	throw new UnityException("Tried to remove TextArea with erroneous parent/child!");
-		//}
+		// stitch the parent to the child
+		Node parentNode = dialogBox.parentNode;
+		SDEContainer parent = dialogBox.parent;
+		SDEContainer child = dialogBox.child;
 		
-		//// remove all associated connections
-		//List<Connection> connectionsToRemove = ConnectionManager.GetConnections(dialogBox.outPoint);
-		//for (int i = 0; i < connectionsToRemove.Count; i++) {
-		//	mainEditor.connections.Remove(connectionsToRemove[i]);
-		//}
-		//connectionsToRemove = null;
+		if (parentNode != null) {
+			if (child != null) {
+				// stitch the Node and the DialogBox child together
+				parentNode.childContainer = child;
+				
+				child.parentNode = parentNode;
+				child.parent = null;
+			} else {
+				// tried to remove last DialogBox of the Node!
+				throw new UnityException("Can't remove last DialogBox of a Node!");
+			}
+		} else {
+			if (parent != null && child != null) {
+				// switch the parent and child DialogBox together
+				parent.child = child;
+				child.parent = parent;
+			} else if (parent != null && child == null) {
+				// removing the last DialogBox of the Node
+				parent.child = null;
+			} else {
+				// something bad happened!
+				throw new UnityException("Tried to RemoveDialogBox with erroneous parent/child!");
+			}
+		}
 		
-		//// free the dialogBox itself
-		//dialogBox = null;
+		// remove all associated connections
+		List<Connection> connectionsToRemove = ConnectionManager.GetConnections(dialogBox.outPoint);
+		for (int i = 0; i < connectionsToRemove.Count; i++) {
+			mainEditor.connections.Remove(connectionsToRemove[i]);
+		}
+		connectionsToRemove = null;
+		
+		// free the dialogBox itself
+		dialogBox = null;
 		
 		Undo.FlushUndoRecordObjects();
 	}

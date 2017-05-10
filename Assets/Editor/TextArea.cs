@@ -18,7 +18,7 @@ public class TextArea : SDEComponent {
 	public GUIStyle textAreaButtonStyle;
 	
 	// this links to either another node or the interrupt split
-	public ConnectionPoint outPoint;
+	//public ConnectionPoint outPoint;
 	
 	public TextArea() {}
 	
@@ -50,9 +50,6 @@ public class TextArea : SDEComponent {
 		this.textAreaStyle = TextAreaManager.textAreaStyle;
 		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
 		this.text = text; 
-		
-		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		this.outPoint.Init(this, ConnectionPointType.Out);
 	}
 	
 	/*
@@ -61,15 +58,6 @@ public class TextArea : SDEComponent {
 	  the TextArea itself would be 192px.
 	*/
 	public override void Draw() {
-		if (outPoint != null) {
-			outPoint.Draw();
-		}
-		
-		// NOTE: child should always be of type TextArea
-		if (child != null) {
-			child.Draw();
-		}
-		
 		// GUI.TextArea sucks so I need to draw a box around it and 
 		// then make a smaller TextArea inside because .padding breaks
 		// the formatting while editing.
@@ -79,17 +67,24 @@ public class TextArea : SDEComponent {
 		rect.height = contentHeight;
 		clickRect.height = contentHeight + 2*TextAreaManager.Y_PAD;
 		
-		// calculate position based off of parent Node
-		clickRect.x = parent.rect.x - parent.widthPad;
-		clickRect.y = parent.rect.y - parent.heightPad + parent.clickRect.height;
-		rect.x = clickRect.x + widthPad;
-		rect.y = clickRect.y + heightPad;
-		
-		// don't draw the remove button if its the only child of a Node
-		if (child != null || parent.componentType != SDEComponentType.Node) {
-			if (GUI.Button(new Rect(clickRect.x-11, clickRect.y + clickRect.height/2 - 6, 12, 12), "-", textAreaButtonStyle)) {
-				Remove();
-			}
+		if (container != null) {
+			// calculate position based off of container
+			// NOTE: do not need to account for parent/container size, because the
+			// container manages the offset relative to other containers
+			clickRect.x = container.rect.x;
+			clickRect.y = container.rect.y;
+			rect.x = clickRect.x + widthPad;
+			rect.y = clickRect.y + heightPad;
+		} else if (parent != null) {
+			// TODO: figire out if this can be removed (all TextAreas are currently
+			// bound to a container, not another Component).
+			// calculate position based off of parent Node
+			clickRect.x = parent.rect.x - parent.widthPad;
+			clickRect.y = parent.rect.y - parent.heightPad + parent.clickRect.height;
+			rect.x = clickRect.x + widthPad;
+			rect.y = clickRect.y + heightPad;
+		} else {
+			throw new UnityException("Tried to draw TextArea without container or parent!");
 		}
 		
 		GUI.Box(clickRect, "", style);
@@ -100,15 +95,6 @@ public class TextArea : SDEComponent {
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// process child component events first
-		if (outPoint != null) {
-			outPoint.ProcessEvent(e);
-		}
-		
-		if (child != null) {
-			child.ProcessEvent(e);
-		}
-		
 		base.ProcessEvent(e);
 		
 		switch(e.type) {
@@ -123,8 +109,9 @@ public class TextArea : SDEComponent {
 			}
 			
 			if (e.button == 1 && Selected && clickRect.Contains(e.mousePosition)) {
-				ProcessContextMenu();
-				e.Use();
+				// TODO: transfer this to the DialogBox
+				//ProcessContextMenu();
+				//e.Use();
 			}
 			break;
 			
@@ -142,35 +129,6 @@ public class TextArea : SDEComponent {
 			
 		case EventType.ExecuteCommand:
 			ProcessKeyboardCommand(e.commandName);
-			break;
-			
-		case EventType.KeyDown:
-			// check for TextArea cycling
-			if (e.keyCode == KeyCode.Tab && Selected) {
-				if (child != null) {
-					// transfer selection state
-					this.Selected = false;
-					child.Selected = true;
-					
-					// pass keyboard control
-					GUIUtility.keyboardControl = ((TextArea)child).textID;
-					e.Use();
-				} else if (parent != null && parent.componentType == SDEComponentType.TextArea) {
-					// if at the bottom of the TextArea stack, jump back to the top
-					SDEComponent newFocusedText = this;
-					while(newFocusedText.parent != null && newFocusedText.parent.componentType == SDEComponentType.TextArea) {
-						newFocusedText = newFocusedText.parent;
-					}
-					
-					// transfer selection state
-					this.Selected = false;
-					newFocusedText.Selected = true;
-					
-					// pass keyboard control
-					GUIUtility.keyboardControl = ((TextArea)newFocusedText).textID;
-					e.Use();
-				}
-			}
 			break;
 		}
 	}
@@ -220,20 +178,20 @@ public class TextArea : SDEComponent {
 		}
 	}
 	
-	/*
-	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
-	*/
-	private void ProcessContextMenu() {
-		GenericMenu genericMenu = new GenericMenu();
-		genericMenu.AddItem(new GUIContent("Remove TextArea"), false, Remove);
-		genericMenu.ShowAsContext();
-	}
+	///*
+	//  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
+	//*/
+	//private void ProcessContextMenu() {
+	//	GenericMenu genericMenu = new GenericMenu();
+	//	genericMenu.AddItem(new GUIContent("Remove TextArea"), false, Remove);
+	//	genericMenu.ShowAsContext();
+	//}
 	
-	/*
-	  Just a wrapper for the TextAreaManager's RemoveTextArea function, so it can be passed
-	  to the ContextMenu's menu function argument.
-	*/
-	private void Remove() {
-		TextAreaManager.RemoveTextArea(this);
-	}
+	///*
+	//  Just a wrapper for the TextAreaManager's RemoveTextArea function, so it can be passed
+	//  to the ContextMenu's menu function argument.
+	//*/
+	//private void Remove() {
+	//	TextAreaManager.RemoveTextArea(this);
+	//}
 }
