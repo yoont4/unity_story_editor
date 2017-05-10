@@ -5,7 +5,6 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 /Assets/Plugins*
-/Assets/Plugins.meta
 
 # Visual Studio 2015 cache directory
 /.vs/
