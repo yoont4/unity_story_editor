@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class DialogBox : SDEContainer {
 	
@@ -74,6 +75,14 @@ public class DialogBox : SDEContainer {
 		}
 		
 		switch(e.type) {
+		case EventType.MouseDown:
+			// check for context menu
+			if (e.button == 1 && rect.Contains(e.mousePosition)) {
+				ProcessContextMenu();
+				e.Use();
+			}
+			break;
+			
 		case EventType.KeyDown:
 			// check for Tab & Shift+Tab cycling
 			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
@@ -82,6 +91,15 @@ public class DialogBox : SDEContainer {
 			}
 			break;
 		}
+	}
+	
+	/*
+	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
+	*/
+	private void ProcessContextMenu() {
+		GenericMenu genericMenu = new GenericMenu();
+		genericMenu.AddItem(new GUIContent("Remove Dialog"), false, Remove);
+		genericMenu.ShowAsContext();
 	}
 	
 	private void CycleFocus() {

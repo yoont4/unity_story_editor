@@ -17,9 +17,6 @@ public class TextArea : SDEComponent {
 	public GUIStyle textAreaStyle;
 	public GUIStyle textAreaButtonStyle;
 	
-	// this links to either another node or the interrupt split
-	//public ConnectionPoint outPoint;
-	
 	public TextArea() {}
 	
 	public void Init(SDEComponent parent, string text, float width) {
@@ -177,21 +174,4 @@ public class TextArea : SDEComponent {
 			return false;
 		}
 	}
-	
-	///*
-	//  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
-	//*/
-	//private void ProcessContextMenu() {
-	//	GenericMenu genericMenu = new GenericMenu();
-	//	genericMenu.AddItem(new GUIContent("Remove TextArea"), false, Remove);
-	//	genericMenu.ShowAsContext();
-	//}
-	
-	///*
-	//  Just a wrapper for the TextAreaManager's RemoveTextArea function, so it can be passed
-	//  to the ContextMenu's menu function argument.
-	//*/
-	//private void Remove() {
-	//	TextAreaManager.RemoveTextArea(this);
-	//}
 }
