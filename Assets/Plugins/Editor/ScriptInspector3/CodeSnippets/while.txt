@@ -1,5 +1,0 @@
-$ValidAsStatement$
-while ($end$)
-{
-	
-}

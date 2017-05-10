@@ -1,5 +1,0 @@
-$ValidAsNamespaceMember$
-namespace $end$
-{
-	
-}

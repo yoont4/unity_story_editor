@@ -1,4 +1,0 @@
-$ValidIfKeywordExpected$
-finally {
-	$end$
-}

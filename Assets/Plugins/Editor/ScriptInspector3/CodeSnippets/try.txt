@@ -1,4 +1,0 @@
-$ValidAsStatement$
-try {
-	$end$
-}

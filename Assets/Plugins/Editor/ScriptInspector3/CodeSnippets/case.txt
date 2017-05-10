@@ -1,3 +1,0 @@
-$ValidIfKeywordExpected$
-case $end$:
-	break;

@@ -1,2 +1,0 @@
-$ValidAsStatement$
-Debug.Log($end$);
