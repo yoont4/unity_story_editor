@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor;
 
 public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea}
@@ -36,6 +37,9 @@ public abstract class SDEComponent : ScriptableObject {
 	// style at minimum. More styles can be given to individual components.
 	private bool _isSelected;
 	
+	public Action<SDEComponent> OnSelect;
+	public Action<SDEComponent> OnDeselect;
+	
 	public GUIStyle style;
 	public GUIStyle defaultStyle;
 	public GUIStyle selectedStyle;
@@ -72,10 +76,14 @@ public abstract class SDEComponent : ScriptableObject {
 				if (!SelectionManager.IsComponentSelectedOnEvent() && 
 				((padded && clickRect.Contains(e.mousePosition)) || rect.Contains(e.mousePosition))) {
 					// select the component.
-					Selected = true;
+					if (!Selected) {
+						Selected = true;
+					}
 				} else {
 					// deselect the component.
-					Selected = false;
+					if (Selected) {
+						Selected = false;
+					}
 				}
 			}
 			break;
@@ -108,6 +116,7 @@ public abstract class SDEComponent : ScriptableObject {
 		_isSelected = true;
 		style = selectedStyle;
 		GUI.changed = true;
+		CallOnSelect();
 	}
 	
 	/*
@@ -120,6 +129,19 @@ public abstract class SDEComponent : ScriptableObject {
 		_isSelected = false;
 		style = defaultStyle;
 		GUI.changed = true;
+		CallOnDeselect();
+	}
+	
+	private void CallOnSelect() {
+		if (OnSelect != null) {
+			OnSelect(this);
+		}
+	}
+	
+	private void CallOnDeselect() {
+		if (OnDeselect != null) {
+			OnDeselect(this);
+		}
 	}
 	
 	/*

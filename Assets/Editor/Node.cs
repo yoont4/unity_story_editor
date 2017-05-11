@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag}
+public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag, Interrupt}
 
 /*
   Nodes are the master SDEComponent type in the StoryDialogEditor, and serve
@@ -160,6 +160,10 @@ public class Node : SDEComponent {
 	
 	private void DrawDecision() {
 		// TOOD: implement this
+	}
+	
+	private void DrawInterrupt() {
+		// TODO: Implement this
 	}
 	
 	/*

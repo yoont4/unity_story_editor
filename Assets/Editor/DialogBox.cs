@@ -5,6 +5,7 @@ using UnityEditor;
 
 public class DialogBox : SDEContainer {
 	
+	// components of the DialogBox
 	public TextArea dialogArea;
 	public ConnectionPoint outPoint;
 	
@@ -24,6 +25,7 @@ public class DialogBox : SDEContainer {
 	private void Init(string text) {
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
+		this.dialogArea.OnDeselect = UpdateInterrupts;
 		
 		// make the outpoint a child of the dialogArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
@@ -127,6 +129,27 @@ public class DialogBox : SDEContainer {
 
 		// pass keyboard control
 		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+	}
+	
+	private void UpdateInterrupts(SDEComponent textArea) {
+		Debug.Log("DialogBox: Updating interrupt options...");
+		return;
+		
+		string text = ((TextArea)textArea).text;
+		
+		// parse the text for interrupts flags
+		List<string> flags = new List<string>();
+		// TODO: implement the rest
+		
+		// find an Interrupt Node that's connected to this
+		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
+		if (interruptNode == null) {
+			// create a new Interrupt Node and connect them
+			// TODO: implement this
+		}
+		
+		// update the Interrupt Node
+		// TODO: implement this
 	}
 	
 	private void CycleFocusUp() {

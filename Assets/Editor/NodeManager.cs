@@ -22,6 +22,9 @@ public static class NodeManager {
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 27;
+	public const int INTERRUPT_WIDTH = 100;
+	public const int INTERRUPT_HEIGHT = 27;
+	
 	
 	/*
 	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogEditor window.
@@ -74,7 +77,7 @@ public static class NodeManager {
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
-	public static void AddNodeAt(Vector2 nodePosition) {
+	public static void AddNodeAt(Vector2 nodePosition, NodeType type) {
 		Undo.RecordObject(mainEditor, "adding node at...");
 		
 		if (mainEditor.nodes == null) {
@@ -84,9 +87,23 @@ public static class NodeManager {
 		// add node as close to center as possible while staying on grid
 		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogEditor.GRID_SIZE;
 		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogEditor.GRID_SIZE;
+		
+		float width;
+		float height;
+		switch(type) {
+		case NodeType.Interrupt:
+			width = INTERRUPT_WIDTH;
+			height = INTERRUPT_HEIGHT;
+			break;
+		default:
+			width = NODE_WIDTH;
+			height = NODE_HEIGHT;
+			break;
+		}
+		
 		Node newNode = ScriptableObject.CreateInstance<Node>();
 		newNode.Init(
-			nodePosition, NODE_WIDTH, NODE_HEIGHT, 
+			nodePosition, width, height, 
 			nodeDefault, nodeSelected, 
 			RemoveNode);
 		

@@ -91,7 +91,6 @@ public static class SelectionManager {
 	
 	public static void EndSelectionEventProcessing(Event e) {
 		if (e.type == EventType.MouseDown) {
-			Debug.Log(SelectedComponentType());
 			eventSelectionStarted = false;
 			
 			componentSelectedOnEvent = false;

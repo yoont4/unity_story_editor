@@ -180,7 +180,9 @@ public class StoryDialogEditor : EditorWindow {
 	*/
 	private void DrawDebug() {
 		Rect debugRect = new Rect(5f, 5f, DEBUG_WIDTH, DEBUG_HEIGHT);
-		debugText = "Current Keyboard Control ID: " + GUIUtility.keyboardControl;
+		debugText = "";
+		debugText += "Selected Component Type: " + SelectionManager.SelectedComponentType();
+		debugText += "\nCurrent Keyboard Control ID: " + GUIUtility.keyboardControl;
 		debugText += "\nNumber of Nodes: " + (nodes != null ? nodes.Count.ToString() : "null");
 		debugText += "\nNumber of Connections: " + (connections != null ? connections.Count.ToString() : "null");
 		GUI.Box(debugRect, debugText, TextAreaManager.textAreaStyle);
@@ -196,7 +198,7 @@ public class StoryDialogEditor : EditorWindow {
 				Vector2 creationOffset = new Vector2(
 					e.mousePosition.x % GRID_SIZE - offset.x % GRID_SIZE,
 					e.mousePosition.y % GRID_SIZE - offset.y % GRID_SIZE);
-				NodeManager.AddNodeAt(e.mousePosition - creationOffset);
+				NodeManager.AddNodeAt(e.mousePosition - creationOffset, NodeType.Nothing);
 			} 
 			
 			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
@@ -289,7 +291,7 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private void ProcessContextMenu(Vector2 mousePosition) {
 		GenericMenu genericMenu = new GenericMenu();
-		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>NodeManager.AddNodeAt(mousePosition));
+		genericMenu.AddItem(new GUIContent("Add Node"), false, ()=>NodeManager.AddNodeAt(mousePosition, NodeType.Nothing));
 		genericMenu.ShowAsContext();
 	}
 	

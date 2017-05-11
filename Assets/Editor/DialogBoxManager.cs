@@ -7,6 +7,33 @@ public static class DialogBoxManager {
 	
 	public static StoryDialogEditor mainEditor;
 	
+	public static Node GetInterruptNode(ConnectionPoint point) {
+		// there can't be an associated interrupt node if there are no nodes or connections
+		if (mainEditor.nodes == null || mainEditor.connections == null) {
+			return null;
+		}
+		
+		Node node;
+		for (int i = 0; i < mainEditor.nodes.Count; i++) {
+			node = mainEditor.nodes[i];
+			if (node.nodeType == NodeType.Interrupt) {
+				// look for a connection that matches the node with
+				// the given connection point
+				for (int j = 0; j < mainEditor.connections.Count; j++) {
+					if (node.inPoint == mainEditor.connections[j].inPoint) {
+						if (mainEditor.connections[j].outPoint == point) {
+							return node;
+						}
+					}
+				}
+				
+			}
+		}
+		
+		// couldn't find a connected Interrupt Node
+		return null;
+	}
+	
 	/*
 	  RemoveDialogBox() removes the given DialogBox from its Node, and stitches
 	  the parent and child components together, removing any old connections.
