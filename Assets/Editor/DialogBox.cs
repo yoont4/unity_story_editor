@@ -133,6 +133,7 @@ public class DialogBox : SDEContainer {
 	
 	private void UpdateInterrupts(SDEComponent textArea) {
 		Debug.Log("DialogBox: Updating interrupt options...");
+		Debug.Log("<<<NOT FULLY IMPLEMENTED YET>>>");
 		return;
 		
 		string text = ((TextArea)textArea).text;
