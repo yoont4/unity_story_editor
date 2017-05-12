@@ -61,6 +61,45 @@ public static class NodeManager {
 		// build the list of Connections to remove
 		List<Connection> connectionsToRemove = ConnectionManager.GetConnections(node.inPoint);
 		
+		// remove any associated Interrupt Nodes and Connections
+		if (node.nodeType == NodeType.Dialog) {
+			// get all the associated connections to clear
+			SDEContainer tempContainer = node.childContainer;
+			
+			while (tempContainer != null) {
+				connectionsToRemove.AddRange(ConnectionManager.GetConnections(tempContainer.outPoint));
+				tempContainer = tempContainer.child;
+			}
+			
+			// get any connected nodes
+			List<Node> nodesToRemove = new List<Node>();
+			Node tempNode;
+			
+			for (int i = 0; i < mainEditor.nodes.Count; i++) {
+				tempNode = mainEditor.nodes[i];
+				if (tempNode.nodeType == NodeType.Interrupt) {
+					for (int j = 0; j < connectionsToRemove.Count; j++) {
+						if (connectionsToRemove[j].inPoint == tempNode.inPoint) {
+							Debug.Log("wow");
+							nodesToRemove.Add(tempNode);
+						}
+					}
+				}
+			}
+			
+			// get any connections of the associated interrupt nodes
+			for (int i = 0; i < nodesToRemove.Count; i++) {
+				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].inPoint));
+				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].outPoint));
+			}
+			
+			// remove the associated interrupt nodes
+			for (int i = 0; i < nodesToRemove.Count; i++) {
+				mainEditor.nodes.Remove(nodesToRemove[i]);
+			}
+			nodesToRemove = null;
+		}
+		
 		// remove all the connections from the global list of connections.
 		for (int i = 0; i < connectionsToRemove.Count; i++) {
 			mainEditor.connections.Remove(connectionsToRemove[i]);
@@ -72,6 +111,7 @@ public static class NodeManager {
 		// remove the node from the global node list and the SelectionManager
 		mainEditor.nodes.Remove(node);
 		SelectionManager.Deselect(node);
+		
 		
 		Undo.FlushUndoRecordObjects();
 	}

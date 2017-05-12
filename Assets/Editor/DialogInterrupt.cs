@@ -25,7 +25,7 @@ public class DialogInterrupt : SDEContainer {
 	
 	private void Init() {
 		this.label = ScriptableObject.CreateInstance<SDELabel>();
-		this.label.Init(this, "test");
+		this.label.Init(this, "test", NodeManager.INTERRUPT_WIDTH, NodeManager.INTERRUPT_HEIGHT);
 		
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.outPoint.Init(label, ConnectionPointType.Out);
