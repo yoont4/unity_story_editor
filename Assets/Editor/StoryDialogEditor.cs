@@ -77,6 +77,8 @@ public class StoryDialogEditor : EditorWindow {
 		StyleManager.Initialize();
 		NodeManager.nodeDefault = StyleManager.LoadStyle(Style.NodeDefault);
 		NodeManager.nodeSelected = StyleManager.LoadStyle(Style.NodeSelected);
+		NodeManager.nodeInterruptDefault = StyleManager.LoadStyle(Style.NodeInterruptDefault);
+		NodeManager.nodeInterruptSelected = StyleManager.LoadStyle(Style.NodeInterruptSelected);
 		
 		ConnectionManager.connectionPointDefault = StyleManager.LoadStyle(Style.ConnectionPointDefault);
 		ConnectionManager.connectionPointSelected = StyleManager.LoadStyle(Style.ConnectionPointSelected);
@@ -85,6 +87,8 @@ public class StoryDialogEditor : EditorWindow {
 		TextAreaManager.textAreaButtonStyle = StyleManager.LoadStyle(Style.TextAreaButtonDefault);
 		TextAreaManager.textBoxDefault = StyleManager.LoadStyle(Style.TextBoxDefault);
 		TextAreaManager.textBoxSelected = StyleManager.LoadStyle(Style.TextBoxSelected);
+		
+		SDELabelManager.labelStyle = StyleManager.LoadStyle(Style.LabelDefault);
 	}
 	
 
@@ -252,8 +256,10 @@ public class StoryDialogEditor : EditorWindow {
 				SDEComponent component = SelectionManager.SelectedComponent();
 				while (component != null) {
 					if (component.componentType == SDEComponentType.Node) {
-						// if a match is found, remove the Node and return
-						NodeManager.RemoveNode((Node)component);
+						// if a match is found, remove the Node if it's not an Interrupt and return
+						if (((Node)component).nodeType != NodeType.Interrupt) {
+							NodeManager.RemoveNode((Node)component);
+						}
 						return;
 					}
 					component = component.parent;

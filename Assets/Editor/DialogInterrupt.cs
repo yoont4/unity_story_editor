@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 /*
   DialogInterrupts are the containers that handle conditional
@@ -8,14 +9,26 @@ using UnityEngine;
 */
 public class DialogInterrupt : SDEContainer {
 	
+	public SDELabel label;
+	
 	public DialogInterrupt() {}
 	
 	public override void Init(SDEContainer parent) {
 		base.Init(parent);
+		Init();
 	}
 	
 	public override void Init(Node parentNode) {
 		base.Init(parentNode);
+		Init();
+	}
+	
+	private void Init() {
+		this.label = ScriptableObject.CreateInstance<SDELabel>();
+		this.label.Init(this, "test");
+		
+		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		this.outPoint.Init(label, ConnectionPointType.Out);
 	}
 	
 	public override void Draw() {
@@ -28,14 +41,20 @@ public class DialogInterrupt : SDEContainer {
 		
 		rect.x = refRect.x;
 		rect.y = refRect.y + refRect.height;
-		rect.width = refRect.width;
-		rect.height = 20f;
 		
-		GUI.Box(rect, "test");
-		//TODO: implement this
+		// draw children
+		label.Draw();
+		outPoint.Draw();
+		if (child != null) {
+			child.Draw();
+		}
+		
+		rect.width = label.rect.width + outPoint.rect.width;
+		rect.height = label.rect.height;
+		
 	}
 	
 	public override void ProcessEvent(Event e) {
-		//TODO: implement this		
+		outPoint.ProcessEvent(e);
 	}
 }

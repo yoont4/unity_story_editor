@@ -48,7 +48,7 @@ public static class ConnectionManager {
 		
 		if (selectedOutPoint != null && selectedInPoint != null) {
 			if (selectedOutPoint.parent != selectedInPoint.parent) {
-				CreateConnection();
+				CreateConnection(true);
 			} 
 			ClearConnectionSelection();
 		}
@@ -121,7 +121,7 @@ public static class ConnectionManager {
 	  CreateConnection() forms a new Connection between the currently 
 	  selected in/out ConnectionPoints.
 	*/
-	public static void CreateConnection() {
+	public static void CreateConnection(bool clickable) {
 		Undo.RecordObject(mainEditor, "creating connection between 2 nodes");
 		
 		if (mainEditor.connections  == null) {
@@ -129,7 +129,7 @@ public static class ConnectionManager {
 		}
 		
 		Connection newConnection = ScriptableObject.CreateInstance<Connection>();
-		newConnection.Init(selectedInPoint, selectedOutPoint, RemoveConnection);
+		newConnection.Init(selectedInPoint, selectedOutPoint, RemoveConnection, clickable);
 		mainEditor.connections.Add(newConnection);
 		
 		Undo.FlushUndoRecordObjects();

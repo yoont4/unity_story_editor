@@ -20,12 +20,16 @@ public class Connection : ScriptableObject {
 	// the Action that defines what happens on removal
 	private Action<Connection> OnRemoveConnection;
 	
+	private bool clickable;
+	
 	public Connection() {}
 	
-	public void Init(ConnectionPoint inPoint, ConnectionPoint outPoint, Action<Connection> OnRemoveConnection) {
+	public void Init(ConnectionPoint inPoint, ConnectionPoint outPoint, Action<Connection> OnRemoveConnection, bool clickable) {
 		this.inPoint = inPoint;
 		this.outPoint = outPoint;
 		this.OnRemoveConnection = OnRemoveConnection;
+		
+		this.clickable = clickable;
 	}
 	
 	/*
@@ -41,8 +45,10 @@ public class Connection : ScriptableObject {
 			null,
 			WIDTH );
 		
-		if (Handles.Button((inPoint.rect.center + outPoint.rect.center) * 0.5f, Quaternion.identity, 4, 8, Handles.RectangleHandleCap)) {
-			CallOnRemoveConnection();
+		if(clickable) {
+			if (Handles.Button((inPoint.rect.center + outPoint.rect.center) * 0.5f, Quaternion.identity, 4, 8, Handles.RectangleHandleCap)) {
+				CallOnRemoveConnection();
+			}
 		}
 	}
 	

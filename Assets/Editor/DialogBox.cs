@@ -7,7 +7,6 @@ public class DialogBox : SDEContainer {
 	
 	// components of the DialogBox
 	public TextArea dialogArea;
-	public ConnectionPoint outPoint;
 	
 	public GUIStyle textAreaButtonStyle;
 	
@@ -132,50 +131,51 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void UpdateInterrupts(SDEComponent textArea) {
-		//Debug.Log("DialogBox: Updating interrupt options...");
-		//Debug.Log("<<<NOT FULLY IMPLEMENTED YET>>>");
-		//return;
-		
 		string text = ((TextArea)textArea).text;
 		
 		// parse the text for interrupts flags
+		// TODO: implement this
 		List<string> flags = new List<string>();
-		// TODO: implement the rest
 		
 		// find an Interrupt Node that's connected to this
 		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
 		if (interruptNode == null) {
-			// if no Interrupt Node is connected, check if there's a connection to
-			// splice one between
-			ConnectionPoint destinationPoint = null;
-			List<Connection> connections = ConnectionManager.GetConnections(outPoint);
-			// TODO: only one connection can be paired with an output, when that is
-			// refactored, fix this!
-			if (connections.Count > 0) {
-				destinationPoint = connections[0].inPoint;
-			}
-			
-			// create a new Interrupt Node and connect them
-			Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.5f), rect.y+5f);
-			interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
-			
-			ConnectionManager.selectedInPoint = interruptNode.inPoint;
-			ConnectionManager.selectedOutPoint = outPoint;
-			ConnectionManager.CreateConnection();
-			
-			// do the splicing
-			if (destinationPoint != null) {
-				ConnectionManager.selectedInPoint = destinationPoint;
-				// TODO: this is disconnected by default, fix this!
-				ConnectionManager.selectedOutPoint = interruptNode.outPoint;
-				ConnectionManager.CreateConnection();
-			}
-			
-			Debug.Log("inserted interrupt"); 
+			ConnectInterruptNode(interruptNode);
 		}
 		
 		// update the Interrupt Node
 		// TODO: implement this
+	}
+	
+	private void ConnectInterruptNode(Node interruptNode) {
+		// if no Interrupt Node is connected, check if there's a connection to
+			// splice one between
+		ConnectionPoint destinationPoint = null;
+		List<Connection> connections = ConnectionManager.GetConnections(outPoint);
+			// TODO: only one connection can be paired with an output, when that is
+			// refactored, fix this!
+		if (connections.Count > 0) {
+			destinationPoint = connections[0].inPoint;
+		}
+		
+			// create a new Interrupt Node and connect them
+		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
+		interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
+		
+		ConnectionManager.selectedInPoint = interruptNode.inPoint;
+		ConnectionManager.selectedOutPoint = outPoint;
+		ConnectionManager.CreateConnection(false);
+		
+			// do the splicing
+		if (destinationPoint != null) {
+			ConnectionManager.RemoveConnection(connections[0]);
+			
+			ConnectionManager.selectedInPoint = destinationPoint;
+			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
+			ConnectionManager.CreateConnection(false);
+		}
+		
+		Debug.Log("inserted interrupt"); 
 	}
 	
 	private void CycleFocusUp() {

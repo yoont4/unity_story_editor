@@ -110,6 +110,9 @@ public class Node : SDEComponent {
 	*/
 	public override void Draw() {
 		inPoint.Draw();
+		if(outPoint != null) {
+			outPoint.Draw();
+		}
 		CallOnDrawNodeChild();
 		
 		GUI.Box(rect, title, style);
@@ -190,9 +193,10 @@ public class Node : SDEComponent {
 	public override void ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		//if (child != null) {
-		//	child.ProcessEvent(e);
-		//}
+		if (outPoint != null) {
+			outPoint.ProcessEvent(e);
+		}
+		
 		
 		if (childContainer != null) {
 			childContainer.ProcessEvent(e);
@@ -261,9 +265,13 @@ public class Node : SDEComponent {
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
 		
+		style = NodeManager.nodeInterruptDefault;
+		defaultStyle = NodeManager.nodeInterruptDefault;
+		selectedStyle = NodeManager.nodeInterruptSelected;
+		
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;
-		title = "INTERRUPT";
+		title = "-->";
 	}
 	
 	

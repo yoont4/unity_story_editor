@@ -6,12 +6,15 @@ using UnityEditor;
 public enum Style {
 	NodeDefault,
 	NodeSelected,
+	NodeInterruptDefault,
+	NodeInterruptSelected,
 	ConnectionPointDefault,
 	ConnectionPointSelected,
 	TextAreaDefault,
 	TextBoxDefault,
 	TextBoxSelected,
-	TextAreaButtonDefault
+	TextAreaButtonDefault,
+	LabelDefault
 }
 
 /*
@@ -59,8 +62,14 @@ public static class StyleManager {
 		case Style.NodeSelected:
 			returnStyle = NodeSelectedStyle();
 			break;
+		case Style.NodeInterruptDefault:
+			returnStyle = NodeInterruptDefaultStyle(); 
+			break;
+		case Style.NodeInterruptSelected:
+			returnStyle = NodeInterruptSelectedStyle();
+			break;
 		case Style.ConnectionPointDefault:
-			returnStyle = ConnectionPointDefaultStyle();
+			returnStyle = ConnectionPointDefaultStyle(); 
 			break;
 		case Style.ConnectionPointSelected:
 			returnStyle = ConnectionPointSelectedStyle();
@@ -76,6 +85,9 @@ public static class StyleManager {
 			break;
 		case Style.TextAreaButtonDefault:
 			returnStyle = TextAreaButtonDefaultStyle();
+			break;
+		case Style.LabelDefault:
+			returnStyle = LabelDefaultStyle();
 			break;
 		}
 		
@@ -122,6 +134,18 @@ public static class StyleManager {
 		style.normal.textColor = Color.white;
 		style.fontSize = 14;
 		style.alignment = TextAnchor.MiddleCenter;
+		return style;
+	}
+	
+	private static GUIStyle NodeInterruptDefaultStyle() {
+		GUIStyle style = NodeDefaultStyle();
+		style.fontSize = 10;
+		return style;
+	}
+	
+	private static GUIStyle NodeInterruptSelectedStyle() {
+		GUIStyle style = NodeSelectedStyle();
+		style.fontSize = 10;
 		return style;
 	}
 	
@@ -174,6 +198,17 @@ public static class StyleManager {
 		style.normal.textColor = Color.white;
 		style.hover.textColor = Color.yellow;
 		style.active.textColor = Color.green;
+		style.alignment = TextAnchor.MiddleCenter;
+		return style;
+	}
+	
+	private static GUIStyle LabelDefaultStyle() {
+		GUIStyle style = new GUIStyle();
+		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
+		style.border = nodeBorder;
+		
+		style.fontSize = 10;
+		style.normal.textColor = Color.white;
 		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}

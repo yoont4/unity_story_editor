@@ -16,6 +16,9 @@ public abstract class SDEContainer : ScriptableObject {
 	// x,y pos of the container and the size of it's contents
 	public Rect rect;
 	
+	// references for control flow
+	public ConnectionPoint outPoint;
+	
 	public SDEContainer() {}
 	public virtual void Init(SDEContainer parent) {
 		this.parent = parent;

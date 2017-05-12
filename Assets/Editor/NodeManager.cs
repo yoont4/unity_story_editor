@@ -18,12 +18,14 @@ public static class NodeManager {
 	// all Nodes use these styles
 	public static GUIStyle nodeDefault;
 	public static GUIStyle nodeSelected;
+	public static GUIStyle nodeInterruptDefault;
+	public static GUIStyle nodeInterruptSelected;
 	
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 27;
-	public const int INTERRUPT_WIDTH = 100;
-	public const int INTERRUPT_HEIGHT = 27;
+	public const int INTERRUPT_WIDTH = 40;
+	public const int INTERRUPT_HEIGHT = 20;
 	
 	
 	/*
@@ -84,10 +86,6 @@ public static class NodeManager {
 			mainEditor.nodes = new List<Node>();
 		}
 		
-		// add node as close to center as possible while staying on grid
-		nodePosition.x -= (NODE_WIDTH/2) - (NODE_WIDTH/2) % StoryDialogEditor.GRID_SIZE;
-		nodePosition.y -= (NODE_HEIGHT/2) - (NODE_HEIGHT/2) % StoryDialogEditor.GRID_SIZE;
-		
 		float width;
 		float height;
 		switch(type) {
@@ -100,6 +98,10 @@ public static class NodeManager {
 			height = NODE_HEIGHT;
 			break;
 		}
+		
+		// add node as close to center as possible while staying on grid
+		nodePosition.x -= (width/2) - (width/2) % StoryDialogEditor.GRID_SIZE;
+		nodePosition.y -= (height/2) - (height/2) % StoryDialogEditor.GRID_SIZE;
 		
 		Node newNode = ScriptableObject.CreateInstance<Node>();
 		newNode.Init(

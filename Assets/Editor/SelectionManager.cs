@@ -9,6 +9,8 @@ public static class SelectionManager {
 	// persistent vars that are changed on input
 	private static SDEComponent _selectedComponent;
 	
+	private static SDEComponent _selectedEventComponent;
+	
 	// per-event vars used to check for changes
 	private static bool componentSelectedOnEvent;
 	private static bool eventSelectionStarted;
@@ -57,6 +59,7 @@ public static class SelectionManager {
 	*/
 	public static void SelectComponent(SDEComponent component) {
 		_selectedComponent = component;
+		_selectedEventComponent = component;
 		componentSelectedOnEvent = true;
 	}
 	
@@ -85,7 +88,7 @@ public static class SelectionManager {
 			eventSelectionStarted = true;
 			
 			componentSelectedOnEvent = false;
-			_selectedComponent = null;
+			_selectedEventComponent = null;
 		}
 	}
 	
