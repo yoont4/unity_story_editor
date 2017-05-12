@@ -60,6 +60,29 @@ public class Node : SDEComponent {
 		this.OnDrawNodeChild = DrawStartOptions;
 	}
 	
+	public void Init(
+		Vector2 position, float width, float height, 
+		GUIStyle defaultStyle, GUIStyle selectedStyle,
+		Action<Node> OnRemoveNode, NodeType type)
+	{
+		Init(position, width, height, defaultStyle, selectedStyle, OnRemoveNode);
+		
+		this.nodeType = type;
+		switch(type) {
+		case NodeType.Dialog:
+			ToggleDialog();
+			break;
+		case NodeType.Decision:
+			ToggleDecision();
+			break;
+		case NodeType.Interrupt:
+			ToggleInterrupt();
+			break;
+		default:
+			break;
+		}
+	}
+	
 	/*
 	  Drag() shifts the position of the node by a delta.
 	
@@ -99,19 +122,11 @@ public class Node : SDEComponent {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
 		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 24), "Text", TextAreaManager.textAreaButtonStyle)) {
-			// create a child DialogBox
-			this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
-			((DialogBox)this.childContainer).Init(this, "");
-			
-			nodeType = NodeType.Dialog;
-			OnDrawNodeChild = DrawDialog;
-			title = "DIALOG";
+			ToggleDialog();
 		}
 		
 		if(GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 24), "Dec", TextAreaManager.textAreaButtonStyle)) {
-			nodeType = NodeType.Decision;
-			OnDrawNodeChild = DrawDecision;
-			title = "DECISION";
+			ToggleDecision();
 		}
 		
 		GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", TextAreaManager.textAreaButtonStyle);
@@ -164,6 +179,7 @@ public class Node : SDEComponent {
 	
 	private void DrawInterrupt() {
 		// TODO: Implement this
+		childContainer.Draw();
 	}
 	
 	/*
@@ -220,6 +236,36 @@ public class Node : SDEComponent {
 		genericMenu.AddItem(new GUIContent("Remove Node"), false, CallOnRemoveNode);
 		genericMenu.ShowAsContext();
 	}
+	
+	private void ToggleDialog() {
+		// create a child DialogBox
+		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
+		((DialogBox)this.childContainer).Init(this, "");
+		
+		
+		nodeType = NodeType.Dialog;
+		OnDrawNodeChild = DrawDialog;
+		title = "DIALOG";
+	}
+	
+	private void ToggleDecision() {
+		nodeType = NodeType.Decision;
+		OnDrawNodeChild = DrawDecision;
+		title = "DECISION";
+	}
+	
+	private void ToggleInterrupt() {
+		this.childContainer = ScriptableObject.CreateInstance<DialogInterrupt>();
+		((DialogInterrupt)this.childContainer).Init(this);
+		// TODO: something is broken here
+		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
+		
+		nodeType = NodeType.Interrupt;
+		OnDrawNodeChild = DrawInterrupt;
+		title = "INTERRUPT";
+	}
+	
 	
 	/*
 	  CallOnRemoveNode() activates the OnRemoveNode actions for this Node

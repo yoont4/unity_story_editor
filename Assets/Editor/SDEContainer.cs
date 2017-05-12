@@ -17,12 +17,12 @@ public abstract class SDEContainer : ScriptableObject {
 	public Rect rect;
 	
 	public SDEContainer() {}
-	public void Init(SDEContainer parent) {
+	public virtual void Init(SDEContainer parent) {
 		this.parent = parent;
 		
 	}
 	
-	public void Init(Node parentNode) {
+	public virtual void Init(Node parentNode) {
 		this.parentNode = parentNode;
 	}
 	

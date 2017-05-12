@@ -77,7 +77,7 @@ public static class NodeManager {
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
-	public static void AddNodeAt(Vector2 nodePosition, NodeType type) {
+	public static Node AddNodeAt(Vector2 nodePosition, NodeType type) {
 		Undo.RecordObject(mainEditor, "adding node at...");
 		
 		if (mainEditor.nodes == null) {
@@ -105,10 +105,12 @@ public static class NodeManager {
 		newNode.Init(
 			nodePosition, width, height, 
 			nodeDefault, nodeSelected, 
-			RemoveNode);
+			RemoveNode, type);
 		
 		mainEditor.nodes.Add(newNode);
 		
 		Undo.FlushUndoRecordObjects();
+		
+		return newNode;
 	}
 }
