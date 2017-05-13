@@ -149,16 +149,17 @@ public class DialogBox : SDEContainer {
 	
 	private void ConnectInterruptNode(Node interruptNode) {
 		// if no Interrupt Node is connected, check if there's a connection to
-			// splice one between
+		// splice one between
 		ConnectionPoint destinationPoint = null;
-		List<Connection> connections = ConnectionManager.GetConnections(outPoint);
-			// TODO: only one connection can be paired with an output, when that is
-			// refactored, fix this!
+		List<Connection> connections = outPoint.connections;
+		
+		// TODO: only one connection can be paired with an output, when that is
+		// refactored, fix this!
 		if (connections.Count > 0) {
 			destinationPoint = connections[0].inPoint;
 		}
 		
-			// create a new Interrupt Node and connect them
+		// create a new Interrupt Node and connect them
 		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
 		interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
 		
@@ -166,14 +167,16 @@ public class DialogBox : SDEContainer {
 		ConnectionManager.selectedOutPoint = outPoint;
 		ConnectionManager.CreateConnection(false);
 		
-			// do the splicing
+		// do the splicing
 		if (destinationPoint != null) {
 			ConnectionManager.RemoveConnection(connections[0]);
 			
 			ConnectionManager.selectedInPoint = destinationPoint;
 			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
-			ConnectionManager.CreateConnection(false);
+			ConnectionManager.CreateConnection(true);
 		}
+		
+		ConnectionManager.ClearConnectionSelection();
 		
 		Debug.Log("inserted interrupt"); 
 	}

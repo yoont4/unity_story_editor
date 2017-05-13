@@ -121,7 +121,7 @@ public static class ConnectionManager {
 	  CreateConnection() forms a new Connection between the currently 
 	  selected in/out ConnectionPoints.
 	*/
-	public static void CreateConnection(bool clickable) {
+	public static Connection CreateConnection(bool clickable) {
 		Undo.RecordObject(mainEditor, "creating connection between 2 nodes");
 		
 		if (mainEditor.connections  == null) {
@@ -132,7 +132,13 @@ public static class ConnectionManager {
 		newConnection.Init(selectedInPoint, selectedOutPoint, RemoveConnection, clickable);
 		mainEditor.connections.Add(newConnection);
 		
+		// add the connection references
+		selectedOutPoint.connections.Add(newConnection);
+		selectedInPoint.connections.Add(newConnection);
+		
 		Undo.FlushUndoRecordObjects();
+		
+		return newConnection;
 	}
 	
 	/*
@@ -141,10 +147,22 @@ public static class ConnectionManager {
 	*/
 	public static void RemoveConnection(Connection connection) {
 		Undo.RecordObject(mainEditor, "removing connection...");
+		Undo.RecordObject(connection.inPoint, "removing point history");
+		Undo.RecordObject(connection.outPoint, "removing point history");
 		
 		mainEditor.connections.Remove(connection);
+		RemoveConnectionHistory(connection);
 		
 		Undo.FlushUndoRecordObjects();
+	}
+	
+	/*
+	  RemoveConnectionHistory() removes the connection from the ConnectionPoints
+	  list of connections.
+	*/
+	public static void RemoveConnectionHistory(Connection connection) {
+		connection.inPoint.connections.Remove(connection);
+		connection.outPoint.connections.Remove(connection);
 	}
 	
 	/*

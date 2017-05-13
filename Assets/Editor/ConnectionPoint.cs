@@ -17,6 +17,8 @@ public class ConnectionPoint : SDEComponent {
 	// the Action that defines what happens when clicked
 	private Action<ConnectionPoint> OnClickConnectionPoint;
 	
+	public List<Connection> connections;
+	
 	public ConnectionPoint() {}
 	
 	public void Init(SDEComponent parent, ConnectionPointType connectionType) {
@@ -34,6 +36,8 @@ public class ConnectionPoint : SDEComponent {
 		} else {
 			this.OnClickConnectionPoint = ConnectionManager.OnClickOutPoint;
 		}
+		
+		this.connections = new List<Connection>();
 	}
 	
 	/*

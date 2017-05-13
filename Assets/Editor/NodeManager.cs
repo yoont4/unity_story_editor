@@ -59,57 +59,17 @@ public static class NodeManager {
 		Undo.RecordObject(mainEditor, "removing node and associated connections...");
 		
 		// build the list of Connections to remove
-		List<Connection> connectionsToRemove = ConnectionManager.GetConnections(node.inPoint);
+		List<Connection> connectionsToRemove = node.inPoint.connections;
 		
 		// remove any associated Interrupt Nodes and Connections
 		if (node.nodeType == NodeType.Dialog) {
-			// get all the associated connections to clear
-			SDEContainer tempContainer = node.childContainer;
-			
-			while (tempContainer != null) {
-				connectionsToRemove.AddRange(ConnectionManager.GetConnections(tempContainer.outPoint));
-				tempContainer = tempContainer.child;
-			}
-			
-			// get any connected nodes
-			List<Node> nodesToRemove = new List<Node>();
-			Node tempNode;
-			
-			for (int i = 0; i < mainEditor.nodes.Count; i++) {
-				tempNode = mainEditor.nodes[i];
-				if (tempNode.nodeType == NodeType.Interrupt) {
-					for (int j = 0; j < connectionsToRemove.Count; j++) {
-						if (connectionsToRemove[j].inPoint == tempNode.inPoint) {
-							Debug.Log("wow");
-							nodesToRemove.Add(tempNode);
-						}
-					}
-				}
-			}
-			
-			// get any connections of the associated interrupt nodes
-			for (int i = 0; i < nodesToRemove.Count; i++) {
-				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].inPoint));
-				
-				// get the child container connections to remove as well
-				tempContainer = nodesToRemove[i].childContainer;
-				while (tempContainer != null) {
-					connectionsToRemove.AddRange(ConnectionManager.GetConnections(tempContainer.outPoint));
-					tempContainer = tempContainer.child;
-				}
-				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].outPoint));
-			}
-			
-			// remove the associated interrupt nodes
-			for (int i = 0; i < nodesToRemove.Count; i++) {
-				mainEditor.nodes.Remove(nodesToRemove[i]);
-			}
-			nodesToRemove = null;
+			RemoveInterruptNodes(connectionsToRemove, node);
 		}
 		
 		// remove all the connections from the global list of connections.
 		for (int i = 0; i < connectionsToRemove.Count; i++) {
 			mainEditor.connections.Remove(connectionsToRemove[i]);
+			ConnectionManager.RemoveConnectionHistory(connectionsToRemove[i]);
 		}
 		
 		// free the reference for GC
@@ -121,6 +81,52 @@ public static class NodeManager {
 		
 		
 		Undo.FlushUndoRecordObjects();
+	}
+	
+	/*
+	  RemoveInterruptNodes() is a helper function for RemoveNode() that removes the associated
+	  Interrupt Nodes and appends the Connections of the given Node.
+	*/
+	private static void RemoveInterruptNodes(List<Connection> connectionsToRemove, Node node) {
+		// get all the associated connections to clear
+		SDEContainer tempContainer = node.childContainer;
+		SDEContainer tempInterruptContainer;
+		List<Connection> tempConnections;
+		List<Node> nodesToRemove = new List<Node>();
+		Node tempNode;
+		
+		while (tempContainer != null) {
+			// get all the connections of the Node's child DialogBoxes
+			tempConnections = tempContainer.outPoint.connections;
+			connectionsToRemove.AddRange(tempConnections);
+			
+			// get all the connected nodes
+			for (int i = 0; i < tempConnections.Count; i++) {
+				tempNode = (Node)tempConnections[i].inPoint.parent;
+				if (tempNode.nodeType == NodeType.Interrupt) {
+					// queue the Interrupt Node to be removed
+					nodesToRemove.Add(tempNode);
+					
+					// add the default Interrupt Node output connections
+					connectionsToRemove.AddRange(tempNode.outPoint.connections);
+					
+					// get the connections of the Interrupt Node to remove
+					tempInterruptContainer = tempNode.childContainer;
+					while (tempInterruptContainer != null) {
+						connectionsToRemove.AddRange(tempInterruptContainer.outPoint.connections);
+						tempInterruptContainer = tempInterruptContainer.child;
+					}
+				}
+			}
+			
+			tempContainer = tempContainer.child;
+		}
+		
+		// remove the associated interrupt nodes
+		for (int i = 0; i < nodesToRemove.Count; i++) {
+			mainEditor.nodes.Remove(nodesToRemove[i]);
+		}
+		nodesToRemove = null;
 	}
 	
 	/*

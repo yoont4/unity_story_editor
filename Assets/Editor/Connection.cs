@@ -20,6 +20,9 @@ public class Connection : ScriptableObject {
 	// the Action that defines what happens on removal
 	private Action<Connection> OnRemoveConnection;
 	
+	// This is used to avoid instantiating a float every Draw() call
+	private float tangentOffset;
+	
 	private bool clickable;
 	
 	public Connection() {}
@@ -36,11 +39,13 @@ public class Connection : ScriptableObject {
 	  Draw() draws the bezier curve between the connection's 2 connection points.
 	*/
 	public void Draw() {
+		tangentOffset = Mathf.Min(Vector2.Distance(inPoint.rect.center, outPoint.rect.center)/2f, TANGENT_DIST);
+		
 		Handles.DrawBezier(
 			inPoint.rect.center,
 			outPoint.rect.center,
-			inPoint.rect.center + Vector2.left * TANGENT_DIST,
-			outPoint.rect.center - Vector2.left * TANGENT_DIST,
+			inPoint.rect.center + Vector2.left * tangentOffset,
+			outPoint.rect.center - Vector2.left * tangentOffset,
 			Color.white,
 			null,
 			WIDTH );

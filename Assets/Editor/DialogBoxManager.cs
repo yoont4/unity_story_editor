@@ -83,9 +83,10 @@ public static class DialogBoxManager {
 		}
 		
 		// remove all associated connections
-		List<Connection> connectionsToRemove = ConnectionManager.GetConnections(dialogBox.outPoint);
+		List<Connection> connectionsToRemove = dialogBox.outPoint.connections;
 		for (int i = 0; i < connectionsToRemove.Count; i++) {
 			mainEditor.connections.Remove(connectionsToRemove[i]);
+			ConnectionManager.RemoveConnectionHistory(connectionsToRemove[i]);
 		}
 		connectionsToRemove = null;
 		
