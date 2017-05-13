@@ -72,6 +72,7 @@ public class StoryDialogEditor : EditorWindow {
 		ConnectionManager.mainEditor = this;
 		TextAreaManager.mainEditor = this;
 		DialogBoxManager.mainEditor = this;
+		SDEContainerManager.mainEditor = this;
 		
 		// load GUI styles
 		StyleManager.Initialize();

@@ -160,7 +160,7 @@ public class Node : SDEComponent {
 		// only draw the remove TextArea button if there are multiple TextAreas
 		if (childComponent.parentNode != this) {
 			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
-				DialogBoxManager.RemoveDialogBox((DialogBox)childComponent);
+				SDEContainerManager.RemoveContainer(childComponent);
 			}
 		}
 		
@@ -182,7 +182,9 @@ public class Node : SDEComponent {
 	
 	private void DrawInterrupt() {
 		// TODO: Implement this
-		childContainer.Draw();
+		if (childContainer != null) {
+			childContainer.Draw();
+		}
 	}
 	
 	/*
@@ -259,10 +261,7 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleInterrupt() {
-		this.childContainer = ScriptableObject.CreateInstance<DialogInterrupt>();
-		((DialogInterrupt)this.childContainer).Init(this);
-		// TODO: something is broken here
-		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
 		
 		style = NodeManager.nodeInterruptDefault;

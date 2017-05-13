@@ -51,10 +51,13 @@ public class DialogInterrupt : SDEContainer {
 		
 		rect.width = label.rect.width + outPoint.rect.width;
 		rect.height = label.rect.height;
-		
 	}
 	
 	public override void ProcessEvent(Event e) {
 		outPoint.ProcessEvent(e);
+		
+		if (child != null) {
+			child.ProcessEvent(e);
+		}
 	}
 }

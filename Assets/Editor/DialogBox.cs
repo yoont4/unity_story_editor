@@ -46,16 +46,17 @@ public class DialogBox : SDEContainer {
 		rect.x = refRect.x;
 		rect.y = refRect.y + refRect.height;
 		
-		// draw children
+		// draw components
 		dialogArea.Draw();
 		outPoint.Draw();
-		if (child != null) {
-			child.Draw();
-		}
 		
 		// update container size
 		rect.width = dialogArea.clickRect.width + outPoint.rect.width;
 		rect.height = dialogArea.clickRect.height;
+		
+		if (child != null) {
+			child.Draw();
+		}
 		
 		// draw remove button
 		// don't draw the remove button if its the only child of a Node
@@ -130,57 +131,6 @@ public class DialogBox : SDEContainer {
 		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
 	}
 	
-	private void UpdateInterrupts(SDEComponent textArea) {
-		string text = ((TextArea)textArea).text;
-		
-		// parse the text for interrupts flags
-		// TODO: implement this
-		List<string> flags = new List<string>();
-		
-		// find an Interrupt Node that's connected to this
-		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
-		if (interruptNode == null) {
-			ConnectInterruptNode(interruptNode);
-		}
-		
-		// update the Interrupt Node
-		// TODO: implement this
-	}
-	
-	private void ConnectInterruptNode(Node interruptNode) {
-		// if no Interrupt Node is connected, check if there's a connection to
-		// splice one between
-		ConnectionPoint destinationPoint = null;
-		List<Connection> connections = outPoint.connections;
-		
-		// TODO: only one connection can be paired with an output, when that is
-		// refactored, fix this!
-		if (connections.Count > 0) {
-			destinationPoint = connections[0].inPoint;
-		}
-		
-		// create a new Interrupt Node and connect them
-		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
-		interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
-		
-		ConnectionManager.selectedInPoint = interruptNode.inPoint;
-		ConnectionManager.selectedOutPoint = outPoint;
-		ConnectionManager.CreateConnection(false);
-		
-		// do the splicing
-		if (destinationPoint != null) {
-			ConnectionManager.RemoveConnection(connections[0]);
-			
-			ConnectionManager.selectedInPoint = destinationPoint;
-			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
-			ConnectionManager.CreateConnection(true);
-		}
-		
-		ConnectionManager.ClearConnectionSelection();
-		
-		Debug.Log("inserted interrupt"); 
-	}
-	
 	private void CycleFocusUp() {
 		Debug.Log("DialogBox: cycling up");
 		SDEContainer newFocusedDialogBox = this;
@@ -202,11 +152,114 @@ public class DialogBox : SDEContainer {
 		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
 	}
 	
+	private void UpdateInterrupts(SDEComponent textArea) {
+		string text = ((TextArea)textArea).text;
+		
+		// parse the text for interrupts flags
+		List<string> flags = GetFlags(text);
+		
+		Debug.Log(flags.Count);
+		
+		// find an Interrupt Node that's connected to this
+		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
+		if (interruptNode == null) {
+			interruptNode = ConnectInterruptNode();
+		}
+		
+		// update the Interrupt Node
+		DialogInterrupt interrupt = (DialogInterrupt)interruptNode.childContainer;
+		List<DialogInterrupt> oldInterrupts = new List<DialogInterrupt>();
+		List<DialogInterrupt> interruptsToRemove = new List<DialogInterrupt>();
+		
+		while(interrupt != null) {
+			oldInterrupts.Add(interrupt);
+			interrupt = (DialogInterrupt)interrupt.child;
+		}
+		interrupt = (DialogInterrupt)interruptNode.childContainer;
+		
+		// TODO: figure this shit out and implement the rest
+	}
+	
+	private List<string> GetFlags(string text) {
+		// parse the text for interrupts flags
+		List<string> flags = new List<string>();
+		int flagStart = 0;
+		int flagLength = 0;
+		bool startFlag = false;
+		char c;
+		for (int i = 0; i < text.Length; i++) {
+			c = text[i];
+			switch (c) {
+			case '<':
+				if (startFlag) {
+					throw new UnityException("Invalid Interrupt Flags!");
+				}
+				startFlag = true;
+				flagStart = i+1;
+				flagLength = 0;
+				break;
+			case '>':
+				if (!startFlag) {
+					throw new UnityException("Invalid Interrupt Flags!");
+				}
+				startFlag = false;
+				if (flags.Contains(text.Substring(flagStart, flagLength))) {
+					throw new UnityException("Duplicate Interrupt Flags!");
+				}
+				flags.Add(text.Substring(flagStart, flagLength));
+				break;
+			default:
+				flagLength++;
+				break;
+			}
+		}
+		
+		return flags;
+	}
+	
+	/*
+	  ConnectInterruptNode() creates/splices an Interrupt node to the DialogBox's
+	  output ConnectionPoint.
+	*/
+	private Node ConnectInterruptNode() {
+		// if no Interrupt Node is connected, check if there's a connection to
+		// splice one between
+		ConnectionPoint destinationPoint = null;
+		List<Connection> connections = outPoint.connections;
+		
+		// TODO: only one connection can be paired with an output, when that is
+		// refactored, fix this!
+		if (connections.Count > 0) {
+			destinationPoint = connections[0].inPoint;
+		}
+		
+		// create a new Interrupt Node and connect them
+		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
+		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
+		
+		ConnectionManager.selectedInPoint = interruptNode.inPoint;
+		ConnectionManager.selectedOutPoint = outPoint;
+		ConnectionManager.CreateConnection(false);
+		
+		// do the splicing
+		if (destinationPoint != null) {
+			ConnectionManager.RemoveConnection(connections[0]);
+			
+			ConnectionManager.selectedInPoint = destinationPoint;
+			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
+			ConnectionManager.CreateConnection(true);
+		}
+		
+		ConnectionManager.ClearConnectionSelection();
+		
+		return interruptNode;
+	}
+	
 	/*
 	  Remove() is a wrapper for the DialogBoxManager's RemoveDialogBox function, so it
 	  can be passed to the ContextMenu's menu function argument.
 	*/
 	private void Remove() {
-		DialogBoxManager.RemoveDialogBox(this);
+		SDEContainerManager.RemoveContainer(this);
 	}
 }
