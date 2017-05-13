@@ -90,6 +90,13 @@ public static class NodeManager {
 			// get any connections of the associated interrupt nodes
 			for (int i = 0; i < nodesToRemove.Count; i++) {
 				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].inPoint));
+				
+				// get the child container connections to remove as well
+				tempContainer = nodesToRemove[i].childContainer;
+				while (tempContainer != null) {
+					connectionsToRemove.AddRange(ConnectionManager.GetConnections(tempContainer.outPoint));
+					tempContainer = tempContainer.child;
+				}
 				connectionsToRemove.AddRange(ConnectionManager.GetConnections(nodesToRemove[i].outPoint));
 			}
 			
