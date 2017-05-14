@@ -5,13 +5,14 @@ public static class HistoryManager {
 	public static StoryDialogEditor mainEditor;
 	
 	public static void RecordEditor() {
-		Undo.RecordObject(mainEditor, "");
+		Undo.RegisterCompleteObjectUndo(mainEditor, "");
 		
 		// record all nodes
 		SDEContainer tempContainer;
 		if (mainEditor.nodes != null) {
 			foreach (Node node in mainEditor.nodes) {
 				Undo.RecordObject(node, "");
+				Undo.RecordObject(node.inPoint, "");
 				if (node.outPoint != null) {
 					Undo.RecordObject(node.outPoint, "");
 				}

@@ -25,6 +25,7 @@ public class DialogBox : SDEContainer {
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
 		this.dialogArea.OnDeselect = UpdateInterrupts;
+		this.dialogArea.OnSelect = UpdateInterrupts;
 		
 		// make the outpoint a child of the dialogArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
@@ -160,7 +161,7 @@ public class DialogBox : SDEContainer {
 	  seamless updates that the user didn't input.
 	*/
 	private void UpdateInterrupts(SDEComponent textArea) {
-		//HistoryManager.RecordEditor();		
+		HistoryManager.RecordEditor();		
 		
 		string text = ((TextArea)textArea).text;
 		
@@ -177,8 +178,6 @@ public class DialogBox : SDEContainer {
 		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
 		if (interruptNode == null) {
 			interruptNode = ConnectInterruptNode();
-		} else {
-			Debug.Log("found interrupt");
 		}
 		
 		// update the Interrupt Node's bottom level status
@@ -239,7 +238,7 @@ public class DialogBox : SDEContainer {
 			foundMatch = false;
 		}
 		
-		//HistoryManager.FlushEditor();
+		HistoryManager.FlushEditor();
 	}
 	
 	private List<string> GetFlags(string text) {
@@ -297,11 +296,11 @@ public class DialogBox : SDEContainer {
 		
 		// create a new Interrupt Node and connect them
 		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
-		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt, markHistory: true);
+		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt, markHistory: false);
 		
 		ConnectionManager.selectedInPoint = interruptNode.inPoint;
 		ConnectionManager.selectedOutPoint = outPoint;
-		ConnectionManager.CreateConnection(false, markHistory: true);
+		ConnectionManager.CreateConnection(false, markHistory: false);
 		
 		// do the splicing
 		if (destinationPoint != null) {
@@ -309,7 +308,7 @@ public class DialogBox : SDEContainer {
 			
 			ConnectionManager.selectedInPoint = destinationPoint;
 			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
-			ConnectionManager.CreateConnection(true, markHistory: true);
+			ConnectionManager.CreateConnection(true, markHistory: false);
 		}
 		
 		ConnectionManager.ClearConnectionSelection();

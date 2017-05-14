@@ -248,8 +248,6 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleDialog() {
-		HistoryManager.RecordEditor();
-		
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
 		((DialogBox)this.childContainer).Init(this, "");
@@ -258,18 +256,12 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Dialog;
 		OnDrawNodeChild = DrawDialog;
 		title = "DIALOG";
-		
-		HistoryManager.FlushEditor();
 	}
 	
 	private void ToggleDecision() {
-		HistoryManager.RecordEditor();
-		
 		nodeType = NodeType.Decision;
 		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
-		
-		HistoryManager.FlushEditor();
 	}
 	
 	private void ToggleInterrupt() {
@@ -291,8 +283,6 @@ public class Node : SDEComponent {
 		
 		// clear any connections that were there if no longer a bottom level
 		if (!bottomLevel && outPoint != null) {
-			Debug.Log(outPoint.connections.Count);
-			
 			List<Connection> connectionsToRemove = outPoint.connections;
 			for (int i = 0; i < connectionsToRemove.Count; i++) {
 				ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: true);
