@@ -23,7 +23,7 @@ public class DialogInterrupt : SDEContainer {
 		Init();
 	}
 	
-	private void Init() {
+	public void Init() {
 		this.label = ScriptableObject.CreateInstance<SDELabel>();
 		this.label.Init(this, "test", NodeManager.INTERRUPT_WIDTH, NodeManager.INTERRUPT_HEIGHT);
 		

@@ -6,19 +6,10 @@ using UnityEditor;
 public static class SDEContainerManager {
 	public static StoryDialogEditor mainEditor;
 	
-	public static void RemoveContainer(SDEContainer container) {
-		// the parent, child, text area itself, and mainEditor all get modified
-		if (container.parent != null) {
-			Undo.RecordObject(container.parent, "removing text area...");	
+	public static void RemoveContainer(SDEContainer container, bool removeConnections=true, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordEditor();
 		}
-		if (container.parentNode != null) {
-			Undo.RecordObject(container.parentNode, "removing text area...");	
-		}
-		if (container.child != null) {
-			Undo.RecordObject(container.child, "removing text area...");
-		}
-		Undo.RecordObject(container, "removing text area...");
-		Undo.RecordObject(mainEditor, "removing ConnectionPoint connections...");
 		
 		// stitch the parent to the child
 		Node parentNode = container.parentNode;
@@ -27,38 +18,50 @@ public static class SDEContainerManager {
 		
 		if (parentNode != null) {
 			if (child != null) {
-				// stitch the Node and the DialogBox child together
+				// stitch the Node and the Container child together
 				parentNode.childContainer = child;
 				
 				child.parentNode = parentNode;
 				child.parent = null;
 			} else {
-				// tried to remove last DialogBox of the Node!
-				throw new UnityException("Can't remove last DialogBox of a Node!");
+				// TODO: figure out how to make this Container type dependent
+				parentNode.childContainer = null;
+				// tried to remove last Container of the Node!
+				//throw new UnityException("Can't remove last Container of a Node!");
 			}
 		} else {
 			if (parent != null && child != null) {
-				// switch the parent and child DialogBox together
+				// switch the parent and child Container together
 				parent.child = child;
 				child.parent = parent;
 			} else if (parent != null && child == null) {
-				// removing the last DialogBox of the Node
+				// removing the last Container of the Node
 				parent.child = null;
 			} else {
 				// something bad happened!
-				throw new UnityException("Tried to RemoveDialogBox with erroneous parent/child!");
+				throw new UnityException("Tried to Remove Container with erroneous parent/child!");
 			}
 		}
 		
 		// remove all associated connections
-		List<Connection> connectionsToRemove = container.outPoint.connections;
-		for (int i = 0; i < connectionsToRemove.Count; i++) {
-			mainEditor.connections.Remove(connectionsToRemove[i]);
-			ConnectionManager.RemoveConnectionHistory(connectionsToRemove[i]);
+		if (removeConnections) {
+			List<Connection> connectionsToRemove = container.outPoint.connections;
+			for (int i = 0; i < connectionsToRemove.Count; i++) {
+				mainEditor.connections.Remove(connectionsToRemove[i]);
+				ConnectionManager.RemoveConnectionHistory(connectionsToRemove[i]);
+			}
+			connectionsToRemove = null;
 		}
-		connectionsToRemove = null;
 		
-		Undo.FlushUndoRecordObjects();
+		if (markHistory) {
+			HistoryManager.FlushEditor();
+		}
+	}
+	
+	public static void CleanLinks(SDEContainer container) {
+		container.parent = null;
+		container.parentNode = null;
+		container.child = null;
 	}
 	
 	public static void InsertParent(SDEContainer container, SDEContainer parent) {
@@ -80,6 +83,7 @@ public static class SDEContainerManager {
 	public static void InsertChild(SDEContainer container, SDEContainer child) {
 		if (container.child != null) {
 			container.child.parent = child;
+			container.child.parentNode = null;
 			child.child = container.child;
 		}
 		child.parentNode = null;
@@ -92,6 +96,7 @@ public static class SDEContainerManager {
 	public static void InsertChild(Node node, SDEContainer child) {
 		if (node.childContainer != null) {
 			node.childContainer.parent = child;
+			node.childContainer.parentNode = null;
 			child.child = node.childContainer;
 		}
 		child.parent = null;

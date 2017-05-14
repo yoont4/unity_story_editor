@@ -38,6 +38,9 @@ public class Node : SDEComponent {
 	private Vector2 offset;
 	private Vector2 gridOffset;
 	
+	// Interrupt specific vars
+	private bool bottomLevel = true;
+	
 	public Node() {}
 	
 	public void Init(
@@ -110,9 +113,7 @@ public class Node : SDEComponent {
 	*/
 	public override void Draw() {
 		inPoint.Draw();
-		if(outPoint != null) {
-			outPoint.Draw();
-		}
+		
 		CallOnDrawNodeChild();
 		
 		GUI.Box(rect, title, style);
@@ -145,34 +146,34 @@ public class Node : SDEComponent {
 		childContainer.Draw();
 		
 		// calculate the y position of the dialog buttons
-		SDEContainer childComponent = childContainer;
+		SDEContainer tempChild = childContainer;
 		float buttonY = rect.y + rect.height + 2;
 		while(true) {
-			buttonY += childComponent.rect.height;
+			buttonY += tempChild.rect.height;
 			
-			if (childComponent.child == null) {
+			if (tempChild.child == null) {
 				break;
 			}
 			
-			childComponent  = childComponent.child;
+			tempChild  = tempChild.child;
 		}
 		
 		// only draw the remove TextArea button if there are multiple TextAreas
-		if (childComponent.parentNode != this) {
+		if (tempChild.parentNode != this) {
 			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
-				SDEContainerManager.RemoveContainer(childComponent);
+				((DialogBox)tempChild).Remove();
 			}
 		}
 		
 		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
-			Undo.RecordObject(childComponent, "adding child text area");
+			HistoryManager.RecordEditor();
 			
 			Debug.Log("TEST: adding child component");
 			
-			childComponent.child = ScriptableObject.CreateInstance<DialogBox>();
-			((DialogBox)childComponent.child).Init(childComponent, "");
+			tempChild.child = ScriptableObject.CreateInstance<DialogBox>();
+			((DialogBox)tempChild.child).Init(tempChild, "");
 			
-			Undo.FlushUndoRecordObjects();
+			HistoryManager.FlushEditor();
 		}
 	}
 	
@@ -181,9 +182,12 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawInterrupt() {
-		// TODO: Implement this
 		if (childContainer != null) {
 			childContainer.Draw();
+		}
+		
+		if(outPoint != null && bottomLevel) {
+			outPoint.Draw();
 		}
 	}
 	
@@ -244,6 +248,8 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleDialog() {
+		HistoryManager.RecordEditor();
+		
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
 		((DialogBox)this.childContainer).Init(this, "");
@@ -252,12 +258,18 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Dialog;
 		OnDrawNodeChild = DrawDialog;
 		title = "DIALOG";
+		
+		HistoryManager.FlushEditor();
 	}
 	
 	private void ToggleDecision() {
+		HistoryManager.RecordEditor();
+		
 		nodeType = NodeType.Decision;
 		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
+		
+		HistoryManager.FlushEditor();
 	}
 	
 	private void ToggleInterrupt() {
@@ -271,6 +283,21 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;
 		title = "-->";
+	}
+	
+	public void SetBottomLevelInterrupt(bool bottomLevel) {
+		// mark this as a bottom level Interrupt Node
+		this.bottomLevel = bottomLevel;
+		
+		// clear any connections that were there if no longer a bottom level
+		if (!bottomLevel && outPoint != null) {
+			Debug.Log(outPoint.connections.Count);
+			
+			List<Connection> connectionsToRemove = outPoint.connections;
+			for (int i = 0; i < connectionsToRemove.Count; i++) {
+				ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: true);
+			}
+		}
 	}
 	
 	
@@ -304,7 +331,7 @@ public class Node : SDEComponent {
 	private void HandleDrag(Event e) {
 		// only register a Node being dragged once
 		if (!isDragged) {
-			Undo.RegisterFullObjectHierarchyUndo(this, "Node moved...");
+			HistoryManager.RecordEditor();
 			
 			isDragged = true;
 		}
@@ -318,7 +345,7 @@ public class Node : SDEComponent {
 		// if the object was actually moved, register the undo
 		// otherwise, revert the stored undo.
 		if (isDragged) {
-			Undo.FlushUndoRecordObjects();
+			HistoryManager.FlushEditor();
 		}
 		
 		isDragged = false;

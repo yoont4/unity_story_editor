@@ -152,32 +152,94 @@ public class DialogBox : SDEContainer {
 		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
 	}
 	
+	/*
+	  UpdateInterrupts() heavily modifies the editor by updating connected InterruptNodes
+	  and associated connections depending on the interrupt flags defined in the textArea.
+	
+	  NOTE: this performs write operations WITHOUT tracking history, because it should be
+	  seamless updates that the user didn't input.
+	*/
 	private void UpdateInterrupts(SDEComponent textArea) {
+		//HistoryManager.RecordEditor();		
+		
 		string text = ((TextArea)textArea).text;
 		
 		// parse the text for interrupts flags
-		List<string> flags = GetFlags(text);
-		
-		Debug.Log(flags.Count);
+		List<string> flags;
+		try {
+			flags = GetFlags(text);
+		} catch (UnityException e) {
+			Debug.Log(e.Message);
+			return;
+		}
 		
 		// find an Interrupt Node that's connected to this
 		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
 		if (interruptNode == null) {
 			interruptNode = ConnectInterruptNode();
+		} else {
+			Debug.Log("found interrupt");
+		}
+		
+		// update the Interrupt Node's bottom level status
+		if (child == null) {
+			interruptNode.SetBottomLevelInterrupt(true);
+		} else {
+			interruptNode.SetBottomLevelInterrupt(false);
 		}
 		
 		// update the Interrupt Node
 		DialogInterrupt interrupt = (DialogInterrupt)interruptNode.childContainer;
 		List<DialogInterrupt> oldInterrupts = new List<DialogInterrupt>();
-		List<DialogInterrupt> interruptsToRemove = new List<DialogInterrupt>();
 		
+		// remove all the old Interrupt Nodes, but queue the interrupts that need to be added.
 		while(interrupt != null) {
-			oldInterrupts.Add(interrupt);
+			if (flags.Contains(interrupt.label.text)) {
+				oldInterrupts.Add(interrupt);
+				SDEContainerManager.RemoveContainer(interrupt, removeConnections: false, markHistory: false);
+			} else {
+				SDEContainerManager.RemoveContainer(interrupt, removeConnections: true, markHistory: false);
+			}
+			
 			interrupt = (DialogInterrupt)interrupt.child;
 		}
-		interrupt = (DialogInterrupt)interruptNode.childContainer;
 		
-		// TODO: figure this shit out and implement the rest
+		// rebuild the nodes
+		bool appendNode = true;
+		bool foundMatch = false;
+		DialogInterrupt newInterrupt = null;
+		for (int i = 0; i < flags.Count; i++) {
+			// look for pre-existing nodes that match the flag
+			for (int j = 0; j < oldInterrupts.Count; j++) {
+				if (flags[i] == oldInterrupts[j].label.text) {
+					newInterrupt = oldInterrupts[j];
+					oldInterrupts.RemoveAt(j);
+					foundMatch = true;
+					break;
+				}
+			}
+			
+			if (!foundMatch) {
+				newInterrupt = ScriptableObject.CreateInstance<DialogInterrupt>();
+				newInterrupt.Init();
+				newInterrupt.label.text = flags[i];
+			}
+			
+			// guarantee that we are dealing with a new, unlinked Container.
+			SDEContainerManager.CleanLinks(newInterrupt);
+			
+			if (appendNode) {
+				SDEContainerManager.InsertChild(interruptNode, newInterrupt);
+				appendNode = false;
+			} else {
+				SDEContainerManager.InsertChild(interrupt, newInterrupt);
+			}
+			
+			interrupt = newInterrupt;
+			foundMatch = false;
+		}
+		
+		//HistoryManager.FlushEditor();
 	}
 	
 	private List<string> GetFlags(string text) {
@@ -235,11 +297,11 @@ public class DialogBox : SDEContainer {
 		
 		// create a new Interrupt Node and connect them
 		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
-		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt);
+		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt, markHistory: true);
 		
 		ConnectionManager.selectedInPoint = interruptNode.inPoint;
 		ConnectionManager.selectedOutPoint = outPoint;
-		ConnectionManager.CreateConnection(false);
+		ConnectionManager.CreateConnection(false, markHistory: true);
 		
 		// do the splicing
 		if (destinationPoint != null) {
@@ -247,7 +309,7 @@ public class DialogBox : SDEContainer {
 			
 			ConnectionManager.selectedInPoint = destinationPoint;
 			ConnectionManager.selectedOutPoint = interruptNode.outPoint;
-			ConnectionManager.CreateConnection(true);
+			ConnectionManager.CreateConnection(true, markHistory: true);
 		}
 		
 		ConnectionManager.ClearConnectionSelection();
@@ -259,7 +321,16 @@ public class DialogBox : SDEContainer {
 	  Remove() is a wrapper for the DialogBoxManager's RemoveDialogBox function, so it
 	  can be passed to the ContextMenu's menu function argument.
 	*/
-	private void Remove() {
-		SDEContainerManager.RemoveContainer(this);
+	public void Remove() {
+		HistoryManager.RecordEditor();
+		
+		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);
+		SDEContainerManager.RemoveContainer(this, markHistory: false);
+		if (interruptNode != null) {
+			Debug.Log("deleting interrupt");
+			NodeManager.RemoveNode(interruptNode, markHistory: false);
+		} 
+		
+		HistoryManager.FlushEditor();
 	}
 }

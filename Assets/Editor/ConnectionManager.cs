@@ -121,8 +121,10 @@ public static class ConnectionManager {
 	  CreateConnection() forms a new Connection between the currently 
 	  selected in/out ConnectionPoints.
 	*/
-	public static Connection CreateConnection(bool clickable) {
-		Undo.RecordObject(mainEditor, "creating connection between 2 nodes");
+	public static Connection CreateConnection(bool clickable, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordEditor();
+		}
 		
 		if (mainEditor.connections  == null) {
 			mainEditor.connections = new List<Connection>();
@@ -136,7 +138,9 @@ public static class ConnectionManager {
 		selectedOutPoint.connections.Add(newConnection);
 		selectedInPoint.connections.Add(newConnection);
 		
-		Undo.FlushUndoRecordObjects();
+		if (markHistory) {
+			HistoryManager.FlushEditor();
+		}
 		
 		return newConnection;
 	}
@@ -146,14 +150,20 @@ public static class ConnectionManager {
 	  mainEditor.connections list.
 	*/
 	public static void RemoveConnection(Connection connection) {
-		Undo.RecordObject(mainEditor, "removing connection...");
-		Undo.RecordObject(connection.inPoint, "removing point history");
-		Undo.RecordObject(connection.outPoint, "removing point history");
+		RemoveConnection(connection, markHistory: true);
+	}
+	
+	public static void RemoveConnection(Connection connection, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordEditor();
+		}
 		
 		mainEditor.connections.Remove(connection);
 		RemoveConnectionHistory(connection);
 		
-		Undo.FlushUndoRecordObjects();
+		if (markHistory) {
+			HistoryManager.FlushEditor();
+		}
 	}
 	
 	/*

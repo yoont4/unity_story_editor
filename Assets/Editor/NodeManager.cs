@@ -56,7 +56,13 @@ public static class NodeManager {
 	  destroys any connections it was part of.
 	*/
 	public static void RemoveNode(Node node) {
-		Undo.RecordObject(mainEditor, "removing node and associated connections...");
+		RemoveNode(node, markHistory: true);
+	}
+	
+	public static void RemoveNode(Node node, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordEditor();
+		}
 		
 		// build the list of Connections to remove
 		List<Connection> connectionsToRemove = node.inPoint.connections;
@@ -64,12 +70,13 @@ public static class NodeManager {
 		// remove any associated Interrupt Nodes and Connections
 		if (node.nodeType == NodeType.Dialog) {
 			RemoveInterruptNodes(connectionsToRemove, node);
+		} else {
+			connectionsToRemove.AddRange(GetConnections(node));
 		}
 		
 		// remove all the connections from the global list of connections.
 		for (int i = 0; i < connectionsToRemove.Count; i++) {
-			mainEditor.connections.Remove(connectionsToRemove[i]);
-			ConnectionManager.RemoveConnectionHistory(connectionsToRemove[i]);
+			ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: true);
 		}
 		
 		// free the reference for GC
@@ -79,8 +86,9 @@ public static class NodeManager {
 		mainEditor.nodes.Remove(node);
 		SelectionManager.Deselect(node);
 		
-		
-		Undo.FlushUndoRecordObjects();
+		if (markHistory) {
+			HistoryManager.FlushEditor();
+		}
 	}
 	
 	/*
@@ -109,13 +117,7 @@ public static class NodeManager {
 					
 					// add the default Interrupt Node output connections
 					connectionsToRemove.AddRange(tempNode.outPoint.connections);
-					
-					// get the connections of the Interrupt Node to remove
-					tempInterruptContainer = tempNode.childContainer;
-					while (tempInterruptContainer != null) {
-						connectionsToRemove.AddRange(tempInterruptContainer.outPoint.connections);
-						tempInterruptContainer = tempInterruptContainer.child;
-					}
+					connectionsToRemove.AddRange(GetConnections(tempNode));
 				}
 			}
 			
@@ -129,11 +131,29 @@ public static class NodeManager {
 		nodesToRemove = null;
 	}
 	
+	private static List<Connection> GetConnections(Node node) {
+		SDEContainer tempContainer = node.childContainer;
+		List<Connection> connections = new List<Connection>();
+		
+		if (node.outPoint != null) {
+			connections.AddRange(node.outPoint.connections);
+		}
+		
+		while (tempContainer != null) {
+			connections.AddRange(tempContainer.outPoint.connections);
+			tempContainer = tempContainer.child;
+		}
+		
+		return connections;
+	}
+	
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
-	public static Node AddNodeAt(Vector2 nodePosition, NodeType type) {
-		Undo.RecordObject(mainEditor, "adding node at...");
+	public static Node AddNodeAt(Vector2 nodePosition, NodeType type, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordEditor();
+		}
 		
 		if (mainEditor.nodes == null) {
 			mainEditor.nodes = new List<Node>();
@@ -164,7 +184,9 @@ public static class NodeManager {
 		
 		mainEditor.nodes.Add(newNode);
 		
-		Undo.FlushUndoRecordObjects();
+		if (markHistory) {
+			HistoryManager.FlushEditor();
+		}
 		
 		return newNode;
 	}
