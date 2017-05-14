@@ -98,7 +98,6 @@ public static class SelectionManager {
 			
 			componentSelectedOnEvent = false;
 			
-			// clear the selection if nothing was selected this cycle
 			if (_selectedEventComponent == null) {
 				_selectedComponent = null;
 			}

@@ -78,6 +78,9 @@ public abstract class SDEComponent : ScriptableObject {
 					// select the component.
 					if (!Selected) {
 						Selected = true;
+					} else {
+						// make sure it still registers with the Selection Manager
+						SelectionManager.SelectComponent(this);
 					}
 				} else {
 					// deselect the component.
@@ -141,7 +144,7 @@ public abstract class SDEComponent : ScriptableObject {
 	private void CallOnDeselect() {
 		if (OnDeselect != null) {
 			OnDeselect(this);
-		}
+		} 
 	}
 	
 	/*
