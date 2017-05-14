@@ -26,7 +26,6 @@ public static class HistoryManager {
 			}
 		}
 		
-		
 		// record all connections and connection points
 		if (mainEditor.connections != null) {
 			foreach(Connection connection in mainEditor.connections) {
