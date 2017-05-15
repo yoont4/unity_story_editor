@@ -11,7 +11,7 @@ public static class HistoryManager {
 		SDEContainer tempContainer;
 		if (mainEditor.nodes != null) {
 			foreach (Node node in mainEditor.nodes) {
-				Undo.RecordObject(node, "");
+				Undo.RegisterCompleteObjectUndo(node, "");
 				Undo.RecordObject(node.inPoint, "");
 				if (node.outPoint != null) {
 					Undo.RecordObject(node.outPoint, "");
