@@ -321,7 +321,6 @@ public class Node : SDEComponent {
 	private void HandleDrag(Event e) {
 		// only register a Node being dragged once
 		if (!isDragged) {
-			Debug.Log("FUCKING SHIT");
 			HistoryManager.RecordEditor();
 			
 			isDragged = true;
@@ -336,7 +335,6 @@ public class Node : SDEComponent {
 		// if the object was actually moved, register the undo
 		// otherwise, revert the stored undo.
 		if (isDragged) {
-			Debug.Log("shit over");
 			HistoryManager.FlushEditor();
 		}
 		
