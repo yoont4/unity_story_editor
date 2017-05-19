@@ -87,7 +87,7 @@ public static class NodeManager {
 		SelectionManager.Deselect(node);
 		
 		if (markHistory) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 	}
 	
@@ -185,7 +185,7 @@ public static class NodeManager {
 		mainEditor.nodes.Add(newNode);
 		
 		if (markHistory) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 		
 		return newNode;

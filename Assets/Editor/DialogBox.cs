@@ -238,7 +238,7 @@ public class DialogBox : SDEContainer {
 			foundMatch = false;
 		}
 		
-		HistoryManager.FlushEditor();
+		HistoryManager.Flush();
 	}
 	
 	private List<string> GetFlags(string text) {
@@ -330,6 +330,6 @@ public class DialogBox : SDEContainer {
 			NodeManager.RemoveNode(interruptNode, markHistory: false);
 		} 
 		
-		HistoryManager.FlushEditor();
+		HistoryManager.Flush();
 	}
 }

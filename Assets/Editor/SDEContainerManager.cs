@@ -54,7 +54,7 @@ public static class SDEContainerManager {
 		}
 		
 		if (markHistory) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 	}
 	

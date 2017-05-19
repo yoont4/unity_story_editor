@@ -3,6 +3,7 @@ using UnityEditor;
 
 public static class HistoryManager {
 	public static StoryDialogEditor mainEditor;
+	public static bool needsFlush;
 	
 	public static void RecordEditor() {
 		Undo.RegisterCompleteObjectUndo(mainEditor, "");
@@ -21,15 +22,6 @@ public static class HistoryManager {
 				tempContainer = node.childContainer;
 				while (tempContainer != null) {
 					Undo.RegisterFullObjectHierarchyUndo(tempContainer, "");
-					
-					// TODO: this should be handled separately on all components that take input. It
-					// should not happen in a global "RecordEditor" function, it should be unique to input
-					// fields themselves. Probably attach as an event handler for on keypress or on change?
-					// something to batch multiple key presses for sure.
-					if (node.nodeType == NodeType.Dialog) {
-						Undo.RegisterCompleteObjectUndo(((DialogBox)tempContainer).dialogArea, "");
-					}
-					
 					Undo.RecordObject(tempContainer.outPoint, "");
 					tempContainer = tempContainer.child;
 				}
@@ -43,10 +35,18 @@ public static class HistoryManager {
 			}
 		}
 		
+		needsFlush = true;
 	}
 	
-	public static void FlushEditor() {
+	public static void RecordCompleteComponent(SDEComponent component) {
+		Undo.RegisterCompleteObjectUndo(component, "");
+		needsFlush = true;
+		
+	}
+	
+	public static void Flush() {
 		Undo.FlushUndoRecordObjects();
+		needsFlush = false;
 	}
 	
 }

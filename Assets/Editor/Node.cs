@@ -173,7 +173,7 @@ public class Node : SDEComponent {
 			tempChild.child = ScriptableObject.CreateInstance<DialogBox>();
 			((DialogBox)tempChild.child).Init(tempChild, "");
 			
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 	}
 	
@@ -335,7 +335,7 @@ public class Node : SDEComponent {
 		// if the object was actually moved, register the undo
 		// otherwise, revert the stored undo.
 		if (isDragged) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 		
 		isDragged = false;

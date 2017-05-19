@@ -139,7 +139,7 @@ public static class ConnectionManager {
 		selectedInPoint.connections.Add(newConnection);
 		
 		if (markHistory) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 		
 		return newConnection;
@@ -162,7 +162,7 @@ public static class ConnectionManager {
 		RemoveConnectionHistory(connection);
 		
 		if (markHistory) {
-			HistoryManager.FlushEditor();
+			HistoryManager.Flush();
 		}
 	}
 	
