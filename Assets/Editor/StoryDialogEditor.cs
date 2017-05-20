@@ -121,6 +121,9 @@ public class StoryDialogEditor : EditorWindow {
 		ProcessEvents(Event.current);
 		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
+		// Add to the Undo stack if anything changed
+		HistoryManager.FlushIfDirty();
+		
 		// draw the connections between nodes
 		ConnectionManager.DrawConnections();
 		// draw nodes on top of background

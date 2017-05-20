@@ -52,10 +52,6 @@ public static class SDEContainerManager {
 			}
 			connectionsToRemove = null;
 		}
-		
-		if (markHistory) {
-			HistoryManager.Flush();
-		}
 	}
 	
 	public static void CleanLinks(SDEContainer container) {

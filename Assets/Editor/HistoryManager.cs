@@ -44,9 +44,12 @@ public static class HistoryManager {
 		
 	}
 	
-	public static void Flush() {
-		Undo.FlushUndoRecordObjects();
+	public static void FlushIfDirty() {
+		if (needsFlush) {
+			Undo.FlushUndoRecordObjects();
+			Undo.IncrementCurrentGroup();
+		}
+		
 		needsFlush = false;
 	}
-	
 }

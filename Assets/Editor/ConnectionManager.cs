@@ -138,10 +138,6 @@ public static class ConnectionManager {
 		selectedOutPoint.connections.Add(newConnection);
 		selectedInPoint.connections.Add(newConnection);
 		
-		if (markHistory) {
-			HistoryManager.Flush();
-		}
-		
 		return newConnection;
 	}
 	
@@ -160,10 +156,6 @@ public static class ConnectionManager {
 		
 		mainEditor.connections.Remove(connection);
 		RemoveConnectionHistory(connection);
-		
-		if (markHistory) {
-			HistoryManager.Flush();
-		}
 	}
 	
 	/*

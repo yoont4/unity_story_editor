@@ -85,10 +85,6 @@ public static class NodeManager {
 		// remove the node from the global node list and the SelectionManager
 		mainEditor.nodes.Remove(node);
 		SelectionManager.Deselect(node);
-		
-		if (markHistory) {
-			HistoryManager.Flush();
-		}
 	}
 	
 	/*
@@ -98,7 +94,6 @@ public static class NodeManager {
 	private static void RemoveInterruptNodes(List<Connection> connectionsToRemove, Node node) {
 		// get all the associated connections to clear
 		SDEContainer tempContainer = node.childContainer;
-		SDEContainer tempInterruptContainer;
 		List<Connection> tempConnections;
 		List<Node> nodesToRemove = new List<Node>();
 		Node tempNode;
@@ -183,10 +178,6 @@ public static class NodeManager {
 			RemoveNode, type);
 		
 		mainEditor.nodes.Add(newNode);
-		
-		if (markHistory) {
-			HistoryManager.Flush();
-		}
 		
 		return newNode;
 	}

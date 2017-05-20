@@ -24,8 +24,12 @@ public class DialogBox : SDEContainer {
 	private void Init(string text) {
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
+		
+		// Hook up updates and text undo stacking
 		this.dialogArea.OnDeselect = UpdateInterrupts;
 		this.dialogArea.OnSelect = UpdateInterrupts;
+		this.dialogArea.OnDeselect += HistoryManager.RecordCompleteComponent;
+		this.dialogArea.OnSelect += HistoryManager.RecordCompleteComponent;
 		
 		// make the outpoint a child of the dialogArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
@@ -69,15 +73,6 @@ public class DialogBox : SDEContainer {
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// process children first
-		if (child != null) {
-			child.ProcessEvent(e);
-		}
-		
-		// process component events
-		dialogArea.ProcessEvent(e);
-		outPoint.ProcessEvent(e);
-		
 		switch(e.type) {
 		case EventType.MouseDown:
 			// check for context menu
@@ -88,8 +83,12 @@ public class DialogBox : SDEContainer {
 			break;
 			
 		case EventType.KeyDown:
+			// record text input history
+			if (e.keyCode == KeyCode.None) {
+				HistoryManager.RecordCompleteComponent(dialogArea);
+			}
+			
 			// check for Tab & Shift+Tab cycling
-						
 			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
 				if (e.shift) {
 					CycleFocusUp();
@@ -99,6 +98,15 @@ public class DialogBox : SDEContainer {
 				e.Use();
 			}
 			break;
+		}
+		
+		// process component events
+		dialogArea.ProcessEvent(e);
+		outPoint.ProcessEvent(e);
+		
+		// process children last
+		if (child != null) {
+			child.ProcessEvent(e);
 		}
 	}
 	
@@ -112,7 +120,6 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void CycleFocusDown() {
-		Debug.Log("DialogBox: cycling down");
 		SDEContainer newFocusedDialogBox = this;
 		
 		if (child != null) {
@@ -133,7 +140,6 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void CycleFocusUp() {
-		Debug.Log("DialogBox: cycling up");
 		SDEContainer newFocusedDialogBox = this;
 		
 		if (parent != null) {
@@ -237,8 +243,6 @@ public class DialogBox : SDEContainer {
 			interrupt = newInterrupt;
 			foundMatch = false;
 		}
-		
-		HistoryManager.Flush();
 	}
 	
 	private List<string> GetFlags(string text) {
@@ -329,7 +333,5 @@ public class DialogBox : SDEContainer {
 			Debug.Log("deleting interrupt");
 			NodeManager.RemoveNode(interruptNode, markHistory: false);
 		} 
-		
-		HistoryManager.Flush();
 	}
 }
