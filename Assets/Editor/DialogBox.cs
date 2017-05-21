@@ -83,11 +83,6 @@ public class DialogBox : SDEContainer {
 			break;
 			
 		case EventType.KeyDown:
-			// record text input history
-			if (e.keyCode == KeyCode.None) {
-				HistoryManager.RecordCompleteComponent(dialogArea);
-			}
-			
 			// check for Tab & Shift+Tab cycling
 			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
 				if (e.shift) {

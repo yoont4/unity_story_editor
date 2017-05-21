@@ -121,6 +121,13 @@ public class TextArea : SDEComponent {
 		case EventType.ExecuteCommand:
 			ProcessKeyboardCommand(e.commandName);
 			break;
+			
+		case EventType.KeyDown:
+			// record key presses in history
+			if (e.keyCode == KeyCode.None) {
+				HistoryManager.RecordCompleteComponent(this);
+			}
+			break;
 		}
 	}
 	
@@ -130,18 +137,33 @@ public class TextArea : SDEComponent {
 	  i.e. ctrl+<key>, ctrl+shift+<key>, etc.
 	*/
 	private void ProcessKeyboardCommand(string command) {
+		TextEditor t = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+		
 		switch (command) {
 		case "SelectAll":
-			TextEditor t = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
 			t.SelectAll();
 			break;
 			
 		case "Copy":
-			Debug.Log("TextArea: 'Copy' command not implemented yet");
+			t.Copy();
 			break;
 			
 		case "Paste":
-			Debug.Log("TextArea: 'Paste' command not implemented yet");
+			// record history before pasting text
+			HistoryManager.RecordCompleteComponent(this);
+			
+			int startIndex = Math.Min(t.selectIndex, t.cursorIndex);
+			
+			// check for selection before pasting clipboard
+			if (t.selectIndex != t.cursorIndex) {
+				text = text.Remove(startIndex, Math.Abs(t.selectIndex - t.cursorIndex));
+			}
+			
+			// insert the clipboard text
+			text = text.Insert(startIndex, EditorGUIUtility.systemCopyBuffer);
+			
+			// this moves the internal TextEditor cursor to the right index
+			t.Paste();
 			break;
 			
 		default:

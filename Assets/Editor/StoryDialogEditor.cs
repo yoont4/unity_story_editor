@@ -23,8 +23,8 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private bool lostFocus;
 	
-	private bool drawHelp;
-	private bool drawDebug;
+	private bool drawHelp = true;
+	private bool drawDebug = true;
 	
 	// Help menu constants
 	private const float HELP_WIDTH = 200f;
