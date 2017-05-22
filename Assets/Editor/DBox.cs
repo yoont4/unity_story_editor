@@ -11,12 +11,12 @@ public abstract class DBox : SDEContainer {
 	public GUIStyle textAreaButtonStyle;
 	
 	public DBox() {}
-	public void Init(SDEContainer parent, string text) {
+	public virtual void Init(SDEContainer parent, string text) {
 		base.Init(parent);
 		Init(text);
 	}
 	
-	public void Init(Node parentNode, string text) {
+	public virtual void Init(Node parentNode, string text) {
 		base.Init(parentNode);
 		Init(text);
 	}

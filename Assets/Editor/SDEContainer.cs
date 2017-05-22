@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SDEContainerType {DialogBox, DialogInterrupt}
+public enum SDEContainerType {DialogBox, DialogInterrupt, DecisionBox}
 
 public abstract class SDEContainer : ScriptableObject {
 	

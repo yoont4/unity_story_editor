@@ -158,6 +158,7 @@ public class Node : SDEComponent {
 			tempChild  = tempChild.child;
 		}
 		
+		
 		// only draw the remove TextArea button if there are multiple TextAreas
 		if (tempChild.parentNode != this) {
 			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
@@ -168,7 +169,7 @@ public class Node : SDEComponent {
 		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
 			HistoryManager.RecordEditor();
 			
-			Debug.Log("TEST: adding child component");
+			Debug.Log("Adding DialogBox");
 			
 			tempChild.child = ScriptableObject.CreateInstance<DialogBox>();
 			((DialogBox)tempChild.child).Init(tempChild, "");
@@ -176,7 +177,36 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawDecision() {
-		// TOOD: implement this
+		childContainer.Draw();
+		
+		// calculate the y position of the dialog buttons
+		SDEContainer tempChild = childContainer;
+		float buttonY = rect.y + rect.height + 2;
+		while(true) {
+			buttonY += tempChild.rect.height;
+			
+			if (tempChild.child == null) {
+				break;
+			}
+			
+			tempChild  = tempChild.child;
+		}
+		
+		// only draw the remove DecisionBox button if there are multiple DecisionBoxes
+		if (tempChild.parentNode != this) {
+			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
+				((DecisionBox)tempChild).Remove();
+			}
+		}
+		
+		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
+			HistoryManager.RecordEditor();
+			
+			Debug.Log("Adding DecisionBox");
+			
+			tempChild.child = ScriptableObject.CreateInstance<DecisionBox>();
+			((DecisionBox)tempChild.child).Init(tempChild, "");
+		}
 	}
 	
 	private void DrawInterrupt() {
@@ -257,6 +287,10 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleDecision() {
+		// create a child DecisionBox
+		this.childContainer = ScriptableObject.CreateInstance<DecisionBox>();
+		((DecisionBox)this.childContainer).Init(this, "");
+		
 		nodeType = NodeType.Decision;
 		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
