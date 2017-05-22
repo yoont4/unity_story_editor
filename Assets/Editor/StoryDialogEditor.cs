@@ -29,12 +29,14 @@ public class StoryDialogEditor : EditorWindow {
 	private double t = 0;
 	
 	// Help menu constants
-	private const float HELP_WIDTH = 200f;
+	private const float HELP_WIDTH = 180f;
 	private const float HELP_HEIGHT = 80f;
 	private const string HELP_TEXT = 
 	"H: Hide/Show Help Menu\n" +
+	"Q: Hide/Show Debug Info\n" +
 	"C: Center on all Nodes\n" +
-	"D: Delete the selected Node\n";
+	"D: Delete the selected Node\n\n" +
+	"R-Mouse: Context Menu";
 	
 	// Debug menu constants
 	private const float DEBUG_WIDTH = 300f;
