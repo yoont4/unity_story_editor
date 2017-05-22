@@ -7,7 +7,6 @@
 public static class SelectionManager {
 	
 	// persistent vars that are changed on input
-	[SerializeField]
 	private static SDEComponent _selectedComponent;
 	
 	private static SDEComponent _selectedEventComponent;

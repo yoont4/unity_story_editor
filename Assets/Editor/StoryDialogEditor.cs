@@ -25,6 +25,8 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private bool drawHelp = true;
 	private bool drawDebug = true;
+	private double testTime = 0;
+	private double t = 0;
 	
 	// Help menu constants
 	private const float HELP_WIDTH = 200f;
@@ -93,9 +95,12 @@ public class StoryDialogEditor : EditorWindow {
 		SDELabelManager.labelStyle = StyleManager.LoadStyle(Style.LabelDefault);
 	}
 	
+	
 
 	
 	private void OnGUI() {
+		t = EditorApplication.timeSinceStartup;
+		
 		// draw bg color first
 		GUI.color = new Color(0.3f, 0.3f, 0.3f, 1);
 		windowRect.Set(0, 0, position.width, position.height);
@@ -136,6 +141,8 @@ public class StoryDialogEditor : EditorWindow {
 		if (drawDebug) DrawDebug();
 		
 		if (GUI.changed) Repaint();
+		
+		testTime = testTime * .9d + ((EditorApplication.timeSinceStartup - t)/10);
 	}
 	
 	// change the cursor color to white within the editor
@@ -194,6 +201,7 @@ public class StoryDialogEditor : EditorWindow {
 		debugText += "\nCurrent Keyboard Control ID: " + GUIUtility.keyboardControl;
 		debugText += "\nNumber of Nodes: " + (nodes != null ? nodes.Count.ToString() : "null");
 		debugText += "\nNumber of Connections: " + (connections != null ? connections.Count.ToString() : "null");
+		debugText += "\nOnGUI Run Time: " + (testTime*1000).ToString("F3") + "ms";
 		GUI.Box(debugRect, debugText, TextAreaManager.textAreaStyle);
 	}
 

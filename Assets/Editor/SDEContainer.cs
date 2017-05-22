@@ -9,6 +9,8 @@ public abstract class SDEContainer : ScriptableObject {
 	// set if this container is the child of a Node
 	public Node parentNode;
 	
+	public SDEContainerType containerType;
+	
 	// references for container chaining
 	public SDEContainer parent;
 	public SDEContainer child;

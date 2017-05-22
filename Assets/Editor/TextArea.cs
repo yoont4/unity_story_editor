@@ -123,8 +123,8 @@ public class TextArea : SDEComponent {
 			break;
 			
 		case EventType.KeyDown:
-			// record key presses in history
-			if (e.keyCode == KeyCode.None && e.character != '\t') {
+			// record key presses in history (if selected)
+			if (Selected && e.keyCode == KeyCode.None && e.character != '\t') {
 				HistoryManager.RecordCompleteComponent(this);
 			}
 			break;

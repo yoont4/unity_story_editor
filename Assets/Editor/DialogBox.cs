@@ -25,6 +25,9 @@ public class DialogBox : SDEContainer {
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
 		
+		// assign its container type
+		this.containerType = SDEContainerType.DialogBox;
+		
 		// Hook up updates and text undo stacking
 		this.dialogArea.OnDeselect = UpdateInterrupts;
 		this.dialogArea.OnSelect = UpdateInterrupts;
@@ -124,12 +127,7 @@ public class DialogBox : SDEContainer {
 			}
 		}
 		
-		// transfer selection state
-		dialogArea.Selected = false;
-		((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
-
-		// pass keyboard control
-		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+		ShiftFocus((DialogBox)newFocusedDialogBox);
 	}
 	
 	private void CycleFocusUp() {
@@ -144,22 +142,28 @@ public class DialogBox : SDEContainer {
 			}
 		}
 		
-		// transfer Selection state
-		dialogArea.Selected = false;
-		((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
-		
-		// pass keyboard control
-		GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+		ShiftFocus((DialogBox)newFocusedDialogBox);
+	}
+	
+	private void ShiftFocus(DialogBox newFocusedDialogBox) {
+		if (newFocusedDialogBox != this) {
+			// transfer Selection state
+			dialogArea.Selected = false;
+			((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
+			
+			// pass keyboard control
+			GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+		} else {
+			// if the new focused box is the same, just call the DialogBox's selection event handler
+			dialogArea.Selected = true;
+		}
 	}
 	
 	/*
 	  UpdateInterrupts() heavily modifies the editor by updating connected InterruptNodes
 	  and associated connections depending on the interrupt flags defined in the textArea.
-	
-	  NOTE: this performs write operations WITHOUT tracking history, because it should be
-	  seamless updates that the user didn't input.
 	*/
-	private void UpdateInterrupts(SDEComponent textArea) {
+	private void UpdateInterrupts(SDEComponent textArea) { 
 		HistoryManager.RecordEditor();		
 		
 		string text = ((TextArea)textArea).text;
@@ -264,7 +268,12 @@ public class DialogBox : SDEContainer {
 				if (flags.Contains(text.Substring(flagStart, flagLength))) {
 					throw new UnityException("Duplicate Interrupt Flags!");
 				}
-				flags.Add(text.Substring(flagStart, flagLength));
+				if (flagLength > 0) {
+					flags.Add(text.Substring(flagStart, flagLength));
+				} else {
+					int start = Mathf.Max(0, flagStart-10);
+					Debug.Log("Empty flag at index " + flagStart + ": " + "\"..." + text.Substring(start, Mathf.Min(text.Length-start, 20)) + "...\"");
+				}
 				break;
 			default:
 				flagLength++;
