@@ -28,8 +28,6 @@ public class DialogBox : SDEContainer {
 		// Hook up updates and text undo stacking
 		this.dialogArea.OnDeselect = UpdateInterrupts;
 		this.dialogArea.OnSelect = UpdateInterrupts;
-		this.dialogArea.OnDeselect += HistoryManager.RecordCompleteComponent;
-		this.dialogArea.OnSelect += HistoryManager.RecordCompleteComponent;
 		
 		// make the outpoint a child of the dialogArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();

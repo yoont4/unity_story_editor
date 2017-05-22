@@ -124,7 +124,7 @@ public class TextArea : SDEComponent {
 			
 		case EventType.KeyDown:
 			// record key presses in history
-			if (e.keyCode == KeyCode.None) {
+			if (e.keyCode == KeyCode.None && e.character != '\t') {
 				HistoryManager.RecordCompleteComponent(this);
 			}
 			break;
