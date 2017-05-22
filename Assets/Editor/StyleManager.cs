@@ -44,8 +44,8 @@ public static class StyleManager {
 	private const string CONNECTIONPOINT_HOVER = "Assets/Editor/Resources/TestConnectionPointHoverBG.png";
 	private const string CONNECTIONPOINT_SELECT = "Assets/Editor/Resources/TestConnectionPointSelectedBG.png";
 	
-	
-	
+	private static Color32 AlmostWhite;
+	private static Color32 LightGray;
 	
 	public static GUIStyle LoadStyle(Style style) {
 		returnStyle = null;
@@ -104,6 +104,9 @@ public static class StyleManager {
 		
 		nodePadding = new RectOffset(5, 5, 5, 5);
 		
+		AlmostWhite = new Color32(245, 245, 245, 255);
+		LightGray = new Color32(215, 215, 215, 255);
+		
 		initialized = true;
 	}
 	
@@ -118,8 +121,8 @@ public static class StyleManager {
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
-		style.normal.textColor = Color.white;
-		style.hover.textColor = Color.white;
+		style.normal.textColor = AlmostWhite;
+		style.hover.textColor = LightGray;
 		style.fontSize = 14;
 		style.alignment = TextAnchor.MiddleCenter;
 		return style;
@@ -166,8 +169,7 @@ public static class StyleManager {
 	
 	private static GUIStyle TextAreaDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.textColor = Color.white;
-		style.focused.textColor = Color.white;
+		style.normal.textColor = AlmostWhite;
 		style.wordWrap = true;
 		return style;
 	}
@@ -195,9 +197,9 @@ public static class StyleManager {
 		style.border = nodeBorder;
 		
 		style.fontSize = 10;
-		style.normal.textColor = Color.white;
-		style.hover.textColor = Color.yellow;
-		style.active.textColor = Color.green;
+		style.normal.textColor = AlmostWhite;
+		style.hover.textColor = LightGray;
+		style.active.textColor = Color.white;
 		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}
