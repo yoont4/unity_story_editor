@@ -29,6 +29,8 @@ public class DialogInterrupt : SDEContainer {
 		
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.outPoint.Init(label, ConnectionPointType.Out);
+		
+		this.containerType = SDEContainerType.DialogInterrupt;
 	}
 	
 	public override void Draw() {

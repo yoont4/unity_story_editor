@@ -25,9 +25,6 @@ public class DialogBox : SDEContainer {
 		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
 		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
 		
-		// assign its container type
-		this.containerType = SDEContainerType.DialogBox;
-		
 		// Hook up updates and text undo stacking
 		this.dialogArea.OnDeselect = UpdateInterrupts;
 		this.dialogArea.OnSelect = UpdateInterrupts;
@@ -38,6 +35,9 @@ public class DialogBox : SDEContainer {
 		
 		// set the button styles
 		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
+		
+		// assign its container type
+		this.containerType = SDEContainerType.DialogBox;
 	}
 	
 	public override void Draw() {
