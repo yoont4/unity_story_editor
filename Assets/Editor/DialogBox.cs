@@ -6,7 +6,7 @@ using UnityEditor;
 public class DialogBox : SDEContainer {
 	
 	// components of the DialogBox
-	public TextArea dialogArea;
+	public TextArea textArea;
 	
 	public GUIStyle textAreaButtonStyle;
 	
@@ -22,16 +22,16 @@ public class DialogBox : SDEContainer {
 	}
 	
 	private void Init(string text) {
-		this.dialogArea = ScriptableObject.CreateInstance<TextArea>();
-		this.dialogArea.Init(this, text, NodeManager.NODE_WIDTH);
+		this.textArea = ScriptableObject.CreateInstance<TextArea>();
+		this.textArea.Init(this, text, NodeManager.NODE_WIDTH);
 		
 		// Hook up updates and text undo stacking
-		this.dialogArea.OnDeselect = UpdateInterrupts;
-		this.dialogArea.OnSelect = UpdateInterrupts;
+		this.textArea.OnDeselect = UpdateInterrupts;
+		this.textArea.OnSelect = UpdateInterrupts;
 		
-		// make the outpoint a child of the dialogArea, so it's bound to that field.
+		// make the outpoint a child of the textArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		this.outPoint.Init(this.dialogArea, ConnectionPointType.Out);
+		this.outPoint.Init(this.textArea, ConnectionPointType.Out);
 		
 		// set the button styles
 		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
@@ -53,12 +53,12 @@ public class DialogBox : SDEContainer {
 		rect.y = refRect.y + refRect.height;
 		
 		// draw components
-		dialogArea.Draw();
+		textArea.Draw();
 		outPoint.Draw();
 		
 		// update container size
-		rect.width = dialogArea.clickRect.width + outPoint.rect.width;
-		rect.height = dialogArea.clickRect.height;
+		rect.width = textArea.clickRect.width + outPoint.rect.width;
+		rect.height = textArea.clickRect.height;
 		
 		if (child != null) {
 			child.Draw();
@@ -85,7 +85,7 @@ public class DialogBox : SDEContainer {
 			
 		case EventType.KeyDown:
 			// check for Tab & Shift+Tab cycling
-			if (e.keyCode == KeyCode.Tab && dialogArea.Selected) {
+			if (e.keyCode == KeyCode.Tab && textArea.Selected) {
 				if (e.shift) {
 					CycleFocusUp();
 				} else {
@@ -97,7 +97,7 @@ public class DialogBox : SDEContainer {
 		}
 		
 		// process component events
-		dialogArea.ProcessEvent(e);
+		textArea.ProcessEvent(e);
 		outPoint.ProcessEvent(e);
 		
 		// process children last
@@ -148,14 +148,14 @@ public class DialogBox : SDEContainer {
 	private void ShiftFocus(DialogBox newFocusedDialogBox) {
 		if (newFocusedDialogBox != this) {
 			// transfer Selection state
-			dialogArea.Selected = false;
-			((DialogBox)newFocusedDialogBox).dialogArea.Selected = true;
+			textArea.Selected = false;
+			((DialogBox)newFocusedDialogBox).textArea.Selected = true;
 			
 			// pass keyboard control
-			GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).dialogArea.textID;
+			GUIUtility.keyboardControl = ((DialogBox)newFocusedDialogBox).textArea.textID;
 		} else {
 			// if the new focused box is the same, just call the DialogBox's selection event handler
-			dialogArea.Selected = true;
+			textArea.Selected = true;
 		}
 	}
 	
@@ -163,10 +163,10 @@ public class DialogBox : SDEContainer {
 	  UpdateInterrupts() heavily modifies the editor by updating connected InterruptNodes
 	  and associated connections depending on the interrupt flags defined in the textArea.
 	*/
-	private void UpdateInterrupts(SDEComponent textArea) { 
+	private void UpdateInterrupts(SDEComponent textComponent) { 
 		HistoryManager.RecordEditor();		
 		
-		string text = ((TextArea)textArea).text;
+		string text = ((TextArea)textComponent).text;
 		
 		// parse the text for interrupts flags
 		List<string> flags;
@@ -327,6 +327,12 @@ public class DialogBox : SDEContainer {
 	  can be passed to the ContextMenu's menu function argument.
 	*/
 	public void Remove() {
+		// only remove if there are other dialog boxes
+		if (parentNode != null && child == null) {
+			Debug.Log("Can't remove the last DialogBox!");
+			return;
+		}
+		
 		HistoryManager.RecordEditor();
 		
 		Node interruptNode = DialogBoxManager.GetInterruptNode(outPoint);

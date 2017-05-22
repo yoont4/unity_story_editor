@@ -50,7 +50,7 @@ public static class HistoryManager {
 		
 		switch(container.containerType) {
 		case SDEContainerType.DialogBox:
-			Undo.RegisterCompleteObjectUndo(((DialogBox)container).dialogArea, "");
+			Undo.RegisterCompleteObjectUndo(((DialogBox)container).textArea, "");
 			break;
 			
 		default:
