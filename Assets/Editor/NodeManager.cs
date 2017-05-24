@@ -65,7 +65,8 @@ public static class NodeManager {
 		}
 		
 		// build the list of Connections to remove
-		List<Connection> connectionsToRemove = node.inPoint.connections;
+		List<Connection> connectionsToRemove = new List<Connection>();
+		connectionsToRemove.AddRange(node.inPoint.connections);
 		
 		// remove any associated Interrupt Nodes and Connections
 		if (node.nodeType == NodeType.Dialog) {
@@ -76,8 +77,9 @@ public static class NodeManager {
 		
 		// remove all the connections from the global list of connections.
 		for (int i = 0; i < connectionsToRemove.Count; i++) {
-			ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: true);
+			ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: false);
 		}
+		
 		
 		// free the reference for GC
 		connectionsToRemove = null;
@@ -111,7 +113,6 @@ public static class NodeManager {
 					nodesToRemove.Add(tempNode);
 					
 					// add the default Interrupt Node output connections
-					connectionsToRemove.AddRange(tempNode.outPoint.connections);
 					connectionsToRemove.AddRange(GetConnections(tempNode));
 				}
 			}
