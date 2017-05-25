@@ -11,6 +11,7 @@ public class StoryDialogEditor : EditorWindow {
 	// they must extend the UnityEngine.Object type.
 	public List<Node> nodes;
 	public List<Connection> connections;
+	public List<LocalVariable> localVariables;
 	
 	// the command log history text
 	public string commandHistory;
@@ -73,10 +74,15 @@ public class StoryDialogEditor : EditorWindow {
 		ClearConsole();
 		nodes = null;
 		connections = null;
+		localVariables = null;
 	}
 	
 	private void OnEnable() {
 		DestroyScene();
+		
+		nodes = new List<Node>();
+		connections = new List<Connection>();
+		localVariables = new List<LocalVariable>();
 		
 		// initialize component managers
 		NodeManager.mainEditor = this;
@@ -335,5 +341,15 @@ public class StoryDialogEditor : EditorWindow {
 			
 			GUI.changed = true;
 		}
+	}
+}
+
+public struct LocalVariable {
+	public string name;
+	public bool set;
+	
+	public LocalVariable(string name) {
+		this.name = name;
+		this.set = false;
 	}
 }

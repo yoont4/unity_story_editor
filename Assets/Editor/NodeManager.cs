@@ -24,7 +24,7 @@ public static class NodeManager {
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 27;
-	public const int INTERRUPT_WIDTH = 40;
+	public const int INTERRUPT_WIDTH = 30;
 	public const int INTERRUPT_HEIGHT = 20;
 	
 	
@@ -149,10 +149,6 @@ public static class NodeManager {
 	public static Node AddNodeAt(Vector2 nodePosition, NodeType type, bool markHistory=true) {
 		if (markHistory) {
 			HistoryManager.RecordEditor();
-		}
-		
-		if (mainEditor.nodes == null) {
-			mainEditor.nodes = new List<Node>();
 		}
 		
 		float width;

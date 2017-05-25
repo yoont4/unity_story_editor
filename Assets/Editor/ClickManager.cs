@@ -15,7 +15,7 @@ public static class ClickManager {
 	public static float doubleClickFrame = 0.2f;
 	
 	// tolerable distance between double clicks.
-	public static float clickPositionFrame = 1f;
+	public static float clickPositionFrame = 10f;
 	
 	/*
 	  IsDoubleClick() takes the given time of a click, and determines 
@@ -30,7 +30,7 @@ public static class ClickManager {
 		if (clickTime-lastClickTime < doubleClickFrame) {
 			if (lastClickType == componentType &&
 				SelectionManager.SelectedComponentType() == componentType &&
-				Mathf.Abs((position.SqrMagnitude() - lastClickPosition.SqrMagnitude())) < clickPositionFrame) {
+				(position - lastClickPosition).magnitude < clickPositionFrame) {
 				ret = true;
 			}
 		} 

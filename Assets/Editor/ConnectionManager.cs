@@ -126,10 +126,6 @@ public static class ConnectionManager {
 			HistoryManager.RecordEditor();
 		}
 		
-		if (mainEditor.connections  == null) {
-			mainEditor.connections = new List<Connection>();
-		}
-		
 		Connection newConnection = ScriptableObject.CreateInstance<Connection>();
 		newConnection.Init(selectedInPoint, selectedOutPoint, RemoveConnection, clickable);
 		mainEditor.connections.Add(newConnection);
