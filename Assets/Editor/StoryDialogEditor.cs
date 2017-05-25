@@ -219,6 +219,13 @@ public class StoryDialogEditor : EditorWindow {
 		debugText += "\nOnGUI Run Time: " + (testTime*1000).ToString("F3") + "ms";
 		GUI.Box(debugRect, debugText, TextAreaManager.textAreaStyle);
 	}
+	
+	/*
+	  DrawLocalVariables() displays the current Story instance's variables as a dropdown menu
+	*/
+	private void DrawLocalVariables() {
+		// TODO: implement this
+	}
 
 	private void ProcessEvents(Event e) {
 		drag = Vector2.zero;
@@ -301,7 +308,7 @@ public class StoryDialogEditor : EditorWindow {
 		}
 		
 		// 'H' show/hide the help box
-		if (key == KeyCode.H) {
+		if (key == KeyCode.H) { 
 			if (drawHelp) {
 				Debug.Log("Hiding Help menu");
 				drawHelp = false;
