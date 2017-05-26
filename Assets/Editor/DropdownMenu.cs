@@ -39,6 +39,8 @@ public class DropdownMenu : ScriptableObject {
 		// TODO: implement this
 	}
 	
+	// NOTE: probably not the most efficient way of updating it, but should be 
+	// fast enough for sizes under 100 elements
 	private void UpdateLabelMap() {
 		labelMap.Clear();
 		for (int i = 0; i < labels.Count; i++) {
