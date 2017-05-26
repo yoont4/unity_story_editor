@@ -10,9 +10,15 @@ public class DropdownMenu : ScriptableObject {
 	// maps a label to an index for fast lookups, additions, and removals
 	private Dictionary<string, int> labelMap;
 	
+	// represents the currently selected label index.
+	// -1 means nothing selected
+	public int selectedIndex;
+	
 	public DropdownMenu() {}
 	public void Init() {
-		// TODO: implement this
+		labels = new List<string>();
+		labelMap = new Dictionary<string, int>();
+		selectedIndex = -1;
 	}
 	
 	public void Draw() {
