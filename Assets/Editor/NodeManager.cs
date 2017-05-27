@@ -15,18 +15,11 @@ public static class NodeManager {
 	
 	public static StoryDialogEditor mainEditor;
 	
-	// all Nodes use these styles
-	public static GUIStyle nodeDefault;
-	public static GUIStyle nodeSelected;
-	public static GUIStyle nodeInterruptDefault;
-	public static GUIStyle nodeInterruptSelected;
-	
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 27;
 	public const int INTERRUPT_WIDTH = 30;
 	public const int INTERRUPT_HEIGHT = 20;
-	
 	
 	/*
 	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogEditor window.
@@ -171,7 +164,7 @@ public static class NodeManager {
 		Node newNode = ScriptableObject.CreateInstance<Node>();
 		newNode.Init(
 			nodePosition, width, height, 
-			nodeDefault, nodeSelected, 
+			SDEStyles.nodeDefault, SDEStyles.nodeSelected, 
 			RemoveNode, type);
 		
 		mainEditor.nodes.Add(newNode);

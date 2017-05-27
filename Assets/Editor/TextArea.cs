@@ -15,16 +15,16 @@ public class TextArea : SDEComponent {
 	private float contentHeight;
 	
 	public GUIStyle textAreaStyle;
-	public GUIStyle textAreaButtonStyle;
+	public GUIStyle textButtonStyle;
 	
 	public TextArea() {}
 	
 	public void Init(SDEComponent parent, string text, float width) {
 		Init(SDEComponentType.TextArea, parent, 
 			new Rect(0, 0, width-2*TextAreaManager.X_PAD, 0), 
-			TextAreaManager.textBoxDefault, 
-			TextAreaManager.textBoxDefault, 
-			TextAreaManager.textBoxSelected);
+			SDEStyles.textBoxDefault,
+			SDEStyles.textBoxDefault, 
+			SDEStyles.textBoxSelected);
 		
 		Init(text);
 	}
@@ -32,9 +32,9 @@ public class TextArea : SDEComponent {
 	public void Init(SDEContainer container, string text, float width) {
 		Init(SDEComponentType.TextArea, null, 
 			new Rect(0, 0, width-2*TextAreaManager.X_PAD, 0), 
-			TextAreaManager.textBoxDefault, 
-			TextAreaManager.textBoxDefault, 
-			TextAreaManager.textBoxSelected,
+			SDEStyles.textBoxDefault, 
+			SDEStyles.textBoxDefault, 
+			SDEStyles.textBoxSelected,
 			container);
 		
 		Init(text);
@@ -44,8 +44,8 @@ public class TextArea : SDEComponent {
 		// make the clickRect 4 pixels bigger on each side.
 		// clickRect is used to define the TextArea's BG Box
 		this.ExtendClickBound(new Vector2(TextAreaManager.X_PAD, TextAreaManager.Y_PAD));
-		this.textAreaStyle = TextAreaManager.textAreaStyle;
-		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
+		this.textAreaStyle = SDEStyles.textAreaDefault;
+		this.textButtonStyle = SDEStyles.textButtonDefault;
 		this.text = text; 
 	}
 	

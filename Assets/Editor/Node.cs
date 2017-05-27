@@ -125,18 +125,18 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 24), "Text", TextAreaManager.textAreaButtonStyle)) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 24), "Text", SDEStyles.textButtonDefault)) {
 			ToggleDialog();
 		}
 		
-		if(GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 24), "Dec", TextAreaManager.textAreaButtonStyle)) {
+		if(GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 24), "Dec", SDEStyles.textButtonDefault)) {
 			ToggleDecision();
 		}
 		
-		GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", TextAreaManager.textAreaButtonStyle);
-		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", TextAreaManager.textAreaButtonStyle);
-		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", TextAreaManager.textAreaButtonStyle);
-		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "GGV", TextAreaManager.textAreaButtonStyle);
+		GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "GGV", SDEStyles.textButtonDefault);
 	} 
 	
 	/*
@@ -161,12 +161,12 @@ public class Node : SDEComponent {
 		
 		// only draw the remove TextArea button if there are multiple TextAreas
 		if (tempChild.parentNode != this) {
-			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
+			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", SDEStyles.textButtonDefault)) {
 				((DialogBox)tempChild).Remove();
 			}
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
+		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", SDEStyles.textButtonDefault)) {
 			HistoryManager.RecordEditor();
 			
 			Debug.Log("Adding DialogBox");
@@ -194,12 +194,12 @@ public class Node : SDEComponent {
 		
 		// only draw the remove DecisionBox button if there are multiple DecisionBoxes
 		if (tempChild.parentNode != this) {
-			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", TextAreaManager.textAreaButtonStyle)) {
+			if (GUI.Button(new Rect(rect.xMax-33, buttonY, 16, 16), "-", SDEStyles.textButtonDefault)) {
 				((DecisionBox)tempChild).Remove();
 			}
 		}
 		
-		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", TextAreaManager.textAreaButtonStyle)) {
+		if (GUI.Button(new Rect(rect.xMax-16, buttonY, 16, 16), "+", SDEStyles.textButtonDefault)) {
 			HistoryManager.RecordEditor();
 			
 			Debug.Log("Adding DecisionBox");
@@ -300,9 +300,9 @@ public class Node : SDEComponent {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
 		
-		style = NodeManager.nodeInterruptDefault;
-		defaultStyle = NodeManager.nodeInterruptDefault;
-		selectedStyle = NodeManager.nodeInterruptSelected;
+		style = SDEStyles.nodeInterruptDefault;
+		defaultStyle = SDEStyles.nodeInterruptDefault;
+		selectedStyle = SDEStyles.nodeInterruptSelected;
 		
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;

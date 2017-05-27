@@ -8,7 +8,7 @@ using UnityEditor;
 */
 public abstract class DBox : SDEContainer {
 	public TextArea textArea;
-	public GUIStyle textAreaButtonStyle;
+	public GUIStyle textButtonStyle;
 	
 	public DBox() {}
 	public virtual void Init(SDEContainer parent, string text) {
@@ -30,7 +30,7 @@ public abstract class DBox : SDEContainer {
 		this.outPoint.Init(this.textArea, ConnectionPointType.Out);
 		
 		// set the button styles
-		this.textAreaButtonStyle = TextAreaManager.textAreaButtonStyle;
+		this.textButtonStyle = SDEStyles.textButtonDefault;
 	}
 	
 	public override void Draw() {
@@ -60,7 +60,7 @@ public abstract class DBox : SDEContainer {
 		// draw remove button
 		// don't draw the remove button if its the only child of a Node
 		if (child != null || parent != null) {
-			if (GUI.Button(new Rect(rect.x-11, rect.y + rect.height/2 - 6, 12, 12), "-", textAreaButtonStyle)) {
+			if (GUI.Button(new Rect(rect.x-11, rect.y + rect.height/2 - 6, 12, 12), "-", textButtonStyle)) {
 				Remove();
 			}
 		}

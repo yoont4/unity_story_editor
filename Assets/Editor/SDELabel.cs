@@ -13,7 +13,7 @@ public class SDELabel : SDEComponent {
 	public void Init(SDEComponent parent, string text, float width, float height) {
 		base.Init(SDEComponentType.Label, parent,
 			new Rect(0, 0, width, height), 
-			SDELabelManager.labelStyle, null, null);
+			SDEStyles.labelDefault, null, null);
 		
 		Init(text);
 	}
@@ -21,7 +21,7 @@ public class SDELabel : SDEComponent {
 	public void Init(SDEContainer container, string text, float width, float height) {
 		base.Init(SDEComponentType.Label, null,
 			new Rect(0, 0, width, height), 
-			SDELabelManager.labelStyle, null, null, 
+			SDEStyles.labelDefault, null, null, 
 			container);
 		
 		Init(text);
@@ -32,7 +32,6 @@ public class SDELabel : SDEComponent {
 	}
 	
 	public override void Draw() {
-		
 		if (container != null) {
 			rect.x = container.rect.x;	
 			rect.y = container.rect.y;

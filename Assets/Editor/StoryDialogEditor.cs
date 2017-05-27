@@ -13,6 +13,8 @@ public class StoryDialogEditor : EditorWindow {
 	public List<Connection> connections;
 	public List<LocalVariable> localVariables;
 	
+	public DropdownMenu testMenu;
+	
 	// the command log history text
 	public string commandHistory;
 	
@@ -80,6 +82,7 @@ public class StoryDialogEditor : EditorWindow {
 	private void OnEnable() {
 		DestroyScene();
 		
+		// initialize story node variables
 		nodes = new List<Node>();
 		connections = new List<Connection>();
 		localVariables = new List<LocalVariable>();
@@ -93,25 +96,12 @@ public class StoryDialogEditor : EditorWindow {
 		HistoryManager.mainEditor = this;
 		
 		// load GUI styles
-		StyleManager.Initialize();
-		NodeManager.nodeDefault = StyleManager.LoadStyle(Style.NodeDefault);
-		NodeManager.nodeSelected = StyleManager.LoadStyle(Style.NodeSelected);
-		NodeManager.nodeInterruptDefault = StyleManager.LoadStyle(Style.NodeInterruptDefault);
-		NodeManager.nodeInterruptSelected = StyleManager.LoadStyle(Style.NodeInterruptSelected);
+		SDEStyles.Initialize();
 		
-		ConnectionManager.connectionPointDefault = StyleManager.LoadStyle(Style.ConnectionPointDefault);
-		ConnectionManager.connectionPointSelected = StyleManager.LoadStyle(Style.ConnectionPointSelected);
-		
-		TextAreaManager.textAreaStyle = StyleManager.LoadStyle(Style.TextAreaDefault);
-		TextAreaManager.textAreaButtonStyle = StyleManager.LoadStyle(Style.TextAreaButtonDefault);
-		TextAreaManager.textBoxDefault = StyleManager.LoadStyle(Style.TextBoxDefault);
-		TextAreaManager.textBoxSelected = StyleManager.LoadStyle(Style.TextBoxSelected);
-		
-		SDELabelManager.labelStyle = StyleManager.LoadStyle(Style.LabelDefault);
+		// initialize on-screen components
+		testMenu = ScriptableObject.CreateInstance<DropdownMenu>();
+		testMenu.Init();
 	}
-	
-	
-
 	
 	private void OnGUI() {
 		t = EditorApplication.timeSinceStartup;
@@ -150,6 +140,9 @@ public class StoryDialogEditor : EditorWindow {
 		NodeManager.DrawNodes();
 		// draw the current connection as it's being selected
 		ConnectionManager.DrawConnectionHandle(Event.current);
+		// draw the local variable menus
+		testMenu.SetPosition(position.width - testMenu.rect.width - 5, 5);
+		testMenu.Draw();
 		
 		// draw additional information
 		if (drawHelp) DrawHelp();
@@ -203,7 +196,7 @@ public class StoryDialogEditor : EditorWindow {
 		Rect helpRect = new Rect(0, 0, HELP_WIDTH, HELP_HEIGHT);
 		helpRect.x = position.width - HELP_WIDTH - 5f;
 		helpRect.y = position.height - HELP_HEIGHT - 5f;
-		GUI.Box(helpRect, HELP_TEXT, TextAreaManager.textAreaStyle);
+		GUI.Box(helpRect, HELP_TEXT, SDEStyles.textAreaDefault);
 	}
 	
 	/*
@@ -217,7 +210,7 @@ public class StoryDialogEditor : EditorWindow {
 		debugText += "\nNumber of Nodes: " + (nodes != null ? nodes.Count.ToString() : "null");
 		debugText += "\nNumber of Connections: " + (connections != null ? connections.Count.ToString() : "null");
 		debugText += "\nOnGUI Run Time: " + (testTime*1000).ToString("F3") + "ms";
-		GUI.Box(debugRect, debugText, TextAreaManager.textAreaStyle);
+		GUI.Box(debugRect, debugText, SDEStyles.textAreaDefault);
 	}
 	
 	/*

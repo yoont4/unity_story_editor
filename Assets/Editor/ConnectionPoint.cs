@@ -24,9 +24,9 @@ public class ConnectionPoint : SDEComponent {
 	public void Init(SDEComponent parent, ConnectionPointType connectionType) {
 		base.Init(SDEComponentType.ConnectionPoint, parent, 
 			new Rect(0, 0, ConnectionManager.CONNECTIONPOINT_WIDTH, ConnectionManager.CONNECTIONPOINT_HEIGHT), 
-			ConnectionManager.connectionPointDefault, 
-			ConnectionManager.connectionPointDefault, 
-			ConnectionManager.connectionPointSelected);
+			SDEStyles.connectionPointDefault, 
+			SDEStyles.connectionPointDefault, 
+			SDEStyles.connectionPointSelected);
 		
 		this.connectionType = connectionType;
 		

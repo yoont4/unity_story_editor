@@ -15,10 +15,6 @@ public static class ConnectionManager {
 	
 	public static StoryDialogEditor mainEditor;
 	
-	// all ConnectionPoints use these styles
-	public static GUIStyle connectionPointDefault;
-	public static GUIStyle connectionPointSelected;
-	
 	// keeps track of the selected in/out points
 	public static ConnectionPoint selectedInPoint;
 	public static ConnectionPoint selectedOutPoint;

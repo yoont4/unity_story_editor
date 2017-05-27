@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+// TODO: figure out if this is a necessary design component
 public enum Style {
 	NodeDefault,
 	NodeSelected,
@@ -14,16 +15,18 @@ public enum Style {
 	TextBoxDefault,
 	TextBoxSelected,
 	TextAreaButtonDefault,
-	LabelDefault
+	LabelDefault,
+	ToggleUpDefault,
+	ToggleDownDefault,
 }
 
 /*
-  StyleManager is where all predefined styles are kept.
+  SDEStyles is where all predefined styles are kept.
   
   Styles can be loaded in using the LoadStyle() method to choose 
   what GUIStyle they want applied to a GUI object.
 */
-public static class StyleManager {
+public static class SDEStyles {
 	private static GUIStyle returnStyle;
 	private static bool initialized = false;
 	
@@ -31,6 +34,7 @@ public static class StyleManager {
 	private static RectOffset nodeBorder;
 	private static RectOffset controlPointBorder;
 	private static RectOffset textAreaBorder;
+	private static RectOffset toggleBorder;
 	
 	// padding
 	private static RectOffset nodePadding;
@@ -44,68 +48,75 @@ public static class StyleManager {
 	private const string CONNECTIONPOINT_HOVER = "Assets/Editor/Resources/TestConnectionPointHoverBG.png";
 	private const string CONNECTIONPOINT_SELECT = "Assets/Editor/Resources/TestConnectionPointSelectedBG.png";
 	
+	private const string TOGGLE_UP_DEFAULT = "Assets/Editor/Resources/TestToggleUpBG.png";
+	private const string TOGGLE_UP_HOVER = "Assets/Editor/Resources/TestToggleUpHoverBG.png";
+	private const string TOGGLE_DOWN_DEFAULT = "Assets/Editor/Resources/TestToggleDownBG.png";
+	private const string TOGGLE_DOWN_HOVER = "Assets/Editor/Resources/TestToggleDownHoverBG.png";
+	
+	// custom GUI colors
 	private static Color32 AlmostWhite;
 	private static Color32 LightGray;
 	
-	public static GUIStyle LoadStyle(Style style) {
-		returnStyle = null;
-		
-		if (!initialized) {
-			Debug.Log("Tried to LoadStyle before intializing. Initializing now...");
-			Initialize();
-		}
-		
-		switch(style) {
-		case Style.NodeDefault:
-			returnStyle = NodeDefaultStyle();
-			break;
-		case Style.NodeSelected:
-			returnStyle = NodeSelectedStyle();
-			break;
-		case Style.NodeInterruptDefault:
-			returnStyle = NodeInterruptDefaultStyle(); 
-			break;
-		case Style.NodeInterruptSelected:
-			returnStyle = NodeInterruptSelectedStyle();
-			break;
-		case Style.ConnectionPointDefault:
-			returnStyle = ConnectionPointDefaultStyle(); 
-			break;
-		case Style.ConnectionPointSelected:
-			returnStyle = ConnectionPointSelectedStyle();
-			break;
-		case Style.TextAreaDefault:
-			returnStyle = TextAreaDefaultStyle();
-			break;
-		case Style.TextBoxDefault:
-			returnStyle = TextBoxDefaultStyle();
-			break;
-		case Style.TextBoxSelected:
-			returnStyle = TextBoxSelectedStyle();
-			break;
-		case Style.TextAreaButtonDefault:
-			returnStyle = TextAreaButtonDefaultStyle();
-			break;
-		case Style.LabelDefault:
-			returnStyle = LabelDefaultStyle();
-			break;
-		}
-		
-		return returnStyle;
-	}
+	// ----------- style references -----------
+	// node styles
+	public static GUIStyle nodeDefault;
+	public static GUIStyle nodeSelected;
+	public static GUIStyle nodeInterruptDefault;
+	public static GUIStyle nodeInterruptSelected;
+	// connection point styles
+	public static GUIStyle connectionPointDefault;
+	public static GUIStyle connectionPointSelected;
+	// text area styles
+	public static GUIStyle textAreaDefault;
+	// text box styles
+	public static GUIStyle textBoxDefault;
+	public static GUIStyle textBoxSelected;
+	// text button styles
+	public static GUIStyle textButtonDefault;
+	// label styles
+	public static GUIStyle labelDefault;
+	// toggle styles
+	public static GUIStyle toggleUpDefault;
+	public static GUIStyle toggleDownDefault;
+	// ----------- style references -----------
 	
 	/*
 	  Initializes the variables used to create styles
 	*/
 	public static void Initialize() {
+		// initialize texture borders
 		nodeBorder = new RectOffset(5, 5, 5, 5);
 		controlPointBorder = new RectOffset(6, 5, 5, 5);
 		textAreaBorder = nodeBorder;
+		toggleBorder = nodeBorder;
 		
+		// initialize padding
 		nodePadding = new RectOffset(5, 5, 5, 5);
 		
+		// initialize colors
 		AlmostWhite = new Color32(245, 245, 245, 255);
 		LightGray = new Color32(215, 215, 215, 255);
+		
+		// initialize styles
+		nodeDefault = NodeDefaultStyle();
+		nodeSelected = NodeSelectedStyle();
+		nodeInterruptDefault = NodeInterruptDefaultStyle();
+		nodeInterruptSelected = NodeInterruptSelectedStyle();
+		
+		connectionPointDefault = ConnectionPointDefaultStyle();
+		connectionPointSelected = ConnectionPointSelectedStyle();
+		
+		textAreaDefault = TextAreaDefaultStyle();
+		
+		textBoxDefault = TextBoxDefaultStyle();
+		textBoxSelected = TextBoxSelectedStyle();
+		
+		textButtonDefault = TextButtonDefaultStyle();
+		
+		labelDefault = LabelDefaultStyle();
+		
+		toggleUpDefault = ToggleUpDefaultStyle();
+		toggleDownDefault = ToggleDownDefaultStyle();
 		
 		initialized = true;
 	}
@@ -189,7 +200,7 @@ public static class StyleManager {
 		return style;
 	}
 	
-	private static GUIStyle TextAreaButtonDefaultStyle() {
+	private static GUIStyle TextButtonDefaultStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
@@ -212,6 +223,30 @@ public static class StyleManager {
 		style.fontSize = 10;
 		style.normal.textColor = Color.white;
 		style.alignment = TextAnchor.MiddleCenter;
+		return style;
+	}
+	
+	private static GUIStyle ToggleUpDefaultStyle() {
+		GUIStyle style = new GUIStyle();
+		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_DEFAULT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_HOVER) as Texture2D;
+		style.border = controlPointBorder;
+		
+		style.normal.textColor = AlmostWhite;
+		style.hover.textColor = LightGray;
+		
+		return style;
+	}
+	
+	private static GUIStyle ToggleDownDefaultStyle() {
+		GUIStyle style = new GUIStyle();
+		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_DEFAULT) as Texture2D;
+		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_HOVER) as Texture2D;
+		style.border = controlPointBorder;
+		
+		style.normal.textColor = AlmostWhite;
+		style.hover.textColor = LightGray;
+		
 		return style;
 	}
 }
