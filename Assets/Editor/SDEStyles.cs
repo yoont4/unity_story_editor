@@ -32,7 +32,7 @@ public static class SDEStyles {
 	
 	// borders
 	private static RectOffset nodeBorder;
-	private static RectOffset controlPointBorder;
+	private static RectOffset connectionPointBorder;
 	private static RectOffset textAreaBorder;
 	private static RectOffset toggleBorder;
 	
@@ -86,7 +86,7 @@ public static class SDEStyles {
 	public static void Initialize() {
 		// initialize texture borders
 		nodeBorder = new RectOffset(5, 5, 5, 5);
-		controlPointBorder = new RectOffset(6, 5, 5, 5);
+		connectionPointBorder = new RectOffset(6, 5, 5, 5);
 		textAreaBorder = nodeBorder;
 		toggleBorder = nodeBorder;
 		
@@ -167,14 +167,14 @@ public static class SDEStyles {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_DEFAULT) as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_HOVER) as Texture2D;
-		style.border = controlPointBorder;
+		style.border = connectionPointBorder;
 		return style;
 	}
 	
 	private static GUIStyle ConnectionPointSelectedStyle() {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_SELECT) as Texture2D;
-		style.border = controlPointBorder;
+		style.border = connectionPointBorder;
 		return style;
 	}
 	
@@ -230,7 +230,7 @@ public static class SDEStyles {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_DEFAULT) as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_HOVER) as Texture2D;
-		style.border = controlPointBorder;
+		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;
 		style.hover.textColor = LightGray;
@@ -242,7 +242,7 @@ public static class SDEStyles {
 		GUIStyle style = new GUIStyle();
 		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_DEFAULT) as Texture2D;
 		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_HOVER) as Texture2D;
-		style.border = controlPointBorder;
+		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;
 		style.hover.textColor = LightGray;

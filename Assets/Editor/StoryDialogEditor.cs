@@ -11,8 +11,8 @@ public class StoryDialogEditor : EditorWindow {
 	// they must extend the UnityEngine.Object type.
 	public List<Node> nodes;
 	public List<Connection> connections;
-	public List<LocalVariable> localVariables;
 	
+	// local variables are stored in this dropdown
 	public DropdownMenu testMenu;
 	
 	// the command log history text
@@ -76,7 +76,6 @@ public class StoryDialogEditor : EditorWindow {
 		ClearConsole();
 		nodes = null;
 		connections = null;
-		localVariables = null;
 	}
 	
 	private void OnEnable() {
@@ -85,7 +84,6 @@ public class StoryDialogEditor : EditorWindow {
 		// initialize story node variables
 		nodes = new List<Node>();
 		connections = new List<Connection>();
-		localVariables = new List<LocalVariable>();
 		
 		// initialize component managers
 		NodeManager.mainEditor = this;

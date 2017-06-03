@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ public class DropdownMenu : ScriptableObject {
 	public Rect rect;
 	public Rect toggleRect;
 	
+	// can be hooked up to update story nodes on delete, etc.
+	public Action<string> OnDelete;
+	
 	// scroll view vars
 	private Rect outerViewRect;
 	private Rect innerViewRect;
@@ -28,9 +32,6 @@ public class DropdownMenu : ScriptableObject {
 	public GUIStyle toggleStyle;
 	public GUIStyle toggleUpStyle;
 	public GUIStyle toggleDownStyle;
-	// TODO: implement these
-	public GUIStyle verticalScrollStyle;
-	public GUIStyle horizontalScrollStyle;
 	
 	public DropdownMenu() {}
 	public void Init() {
@@ -40,7 +41,7 @@ public class DropdownMenu : ScriptableObject {
 		expanded = false;
 		rect = new Rect(0, 0, 100, 20);
 		toggleRect = new Rect(0, 0, 16, 16);
-		outerViewRect = new Rect(0, 0, 105, 300);
+		outerViewRect = new Rect(0, 0, 140, 300);
 		innerViewRect = new Rect(0, 0, 100, 1000);
 		
 		// TODO: refactor this shit (use DropdownMenuManager?)
@@ -51,21 +52,17 @@ public class DropdownMenu : ScriptableObject {
 		
 		// vvvvvv test code vvvvvv 
 		expanded = true;
-		labels.Add("test");
-		labels.Add("asd");
-		labels.Add(":)");
-		labels.Add("wow");
-		labels.Add("test");
-		labels.Add("asd");
-		labels.Add(":)");
-		labels.Add("wow");
+		AddLabel("test");
+		AddLabel("123");
+		AddLabel(":)");
+		AddLabel("what");
 		// ^^^^^^ test code ^^^^^^ 
 	}
 	
 	public void Draw() {
 		toggleRect.x = rect.x - 16;
 		toggleRect.y = rect.y + 2;
-		outerViewRect.x = rect.x;
+		outerViewRect.x = rect.x-20;
 		outerViewRect.y = rect.y + 20;
 		
 		GUI.Box(rect, "Local Variables", boxStyle);
@@ -79,16 +76,33 @@ public class DropdownMenu : ScriptableObject {
 		
 		if (expanded) {
 			// start scroll view 
+			int deleteIndex = -1;
+			
 			scrollPos = GUI.BeginScrollView(outerViewRect, scrollPos, innerViewRect);
 			for (int i = 0; i < labels.Count; i++) {
 				// draw each label as a button
-				GUI.Box(new Rect(0, i*20, rect.width, 20), labels[i], boxStyle);
+				GUI.Box(new Rect(20, i*20, rect.width, 20), labels[i], boxStyle);
+				// draw each label's remove button
+				if (GUI.Button(new Rect(6, i*20+4, 12, 12), "-", SDEStyles.textButtonDefault)) {
+					// show dialog to confirm
+					deleteIndex = i;
+				}
 			}
 			GUI.EndScrollView();
+			
+			if (deleteIndex >= 0) {
+				CallOnDelete(labels[deleteIndex]);
+				labels.RemoveAt(deleteIndex);
+			}
 		} 
 	}
 	
 	public void ProcessEvent(Event e) {
+		switch(e.type) {
+		case EventType.MouseDown:
+			break;
+		}
+		
 		// TODO: implement this
 	}
 	
@@ -108,11 +122,23 @@ public class DropdownMenu : ScriptableObject {
 	}
 	
 	private void AddLabel(string label) {
-		// TODO: implement this
+		if (labelMap.ContainsKey(label)) {
+			Debug.Log("Dropdown already contains: " + label);
+			return;
+		} 
+		
+		labels.Add(label);
+		labelMap.Add(label, labels.IndexOf(label));
 	}
 	
 	private void RemoveLabel(string label) {
-		// TODO: implement this
+		label.Remove(labelMap[label]);
+		labelMap.Remove(label);
+	}
+	
+	private void RemoveLabel(int index) {
+		labelMap.Remove(labels[index]);
+		labels.RemoveAt(index);
 	}
 	
 	private void ContainsLabel(string label) {
@@ -129,6 +155,12 @@ public class DropdownMenu : ScriptableObject {
 		labelMap.Clear();
 		for (int i = 0; i < labels.Count; i++) {
 			labelMap.Add(labels[i], i);
+		}
+	}
+	
+	private void CallOnDelete(string text) {
+		if (OnDelete != null) {
+			OnDelete(text);
 		}
 	}
 }
