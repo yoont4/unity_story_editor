@@ -134,7 +134,8 @@ public class DropdownMenu : ScriptableObject {
 	}
 	
 	private void AddLabel(string label) {
-		HistoryManager.RecordDropdown(this);
+		// TODO: figure out why this breaks initializtion
+		//HistoryManager.RecordDropdown(this);
 		
 		if (labelMap.ContainsKey(label)) {
 			Debug.Log("Dropdown already contains: " + label);
@@ -169,7 +170,8 @@ public class DropdownMenu : ScriptableObject {
 	}
 	
 	private TextArea CreateTextArea(string text) {
-		HistoryManager.RecordDropdown(this);
+		// TODO: figure out why this breaks initializtion
+		//HistoryManager.RecordDropdown(this);
 		
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
 		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
