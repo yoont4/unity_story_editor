@@ -6,10 +6,10 @@ using UnityEngine;
 public class DropdownMenu : ScriptableObject {
 	
 	// holds the list of labels that are used
-	private List<TextArea> labels;
+	public List<TextArea> labels;
 	
 	// used to keep track of labels and help with updating, checking for changes, etc.
-	private Dictionary<String, TextArea> labelMap;
+	public Dictionary<String, TextArea> labelMap;
 	
 	// represents the currently selected label index.
 	// -1 means nothing selected
@@ -134,6 +134,8 @@ public class DropdownMenu : ScriptableObject {
 	}
 	
 	private void AddLabel(string label) {
+		HistoryManager.RecordDropdown(this);
+		
 		if (labelMap.ContainsKey(label)) {
 			Debug.Log("Dropdown already contains: " + label);
 			return;
@@ -144,12 +146,9 @@ public class DropdownMenu : ScriptableObject {
 		labelMap.Add(label, newText);
 	}
 	
-	private void RemoveLabel(string label) {
-		labels.Remove(labelMap[label]);
-		labelMap.Remove(label);
-	}
-	
 	private void RemoveLabel(int index) {
+		HistoryManager.RecordDropdown(this);
+		
 		// drop the position of the labels above the deleted one
 		for (int i = index; i < labels.Count; i++) {
 			labels[i].rect.y -= LABEL_OFFSET;
@@ -157,6 +156,7 @@ public class DropdownMenu : ScriptableObject {
 		}
 		
 		CallOnDelete(labels[index].text);
+		labelMap.Remove(labels[index].text);
 		labels.RemoveAt(index);
 	}
 	
@@ -169,6 +169,8 @@ public class DropdownMenu : ScriptableObject {
 	}
 	
 	private TextArea CreateTextArea(string text) {
+		HistoryManager.RecordDropdown(this);
+		
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
 		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
 		textArea.maxLength = MAX_TEXT_LENGTH;

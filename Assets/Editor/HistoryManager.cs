@@ -32,6 +32,7 @@ public static class HistoryManager {
 		if (node.outPoint != null) {
 			Undo.RecordObject(node.outPoint, "");
 		}
+		needsFlush = true;
 	}
 	
 	public static void RecordNodeHierarchy(Node node) {
@@ -42,6 +43,7 @@ public static class HistoryManager {
 			RecordContainer(tempContainer);
 			tempContainer = tempContainer.child;
 		}
+		needsFlush = true;
 	}
 	
 	public static void RecordContainer(SDEContainer container) {
@@ -59,12 +61,21 @@ public static class HistoryManager {
 		
 		// all containers have the outpoint
 		Undo.RecordObject(container.outPoint, "");
+		needsFlush = true;
 	}
 	
 	public static void RecordCompleteComponent(SDEComponent component) {
 		Undo.RegisterCompleteObjectUndo(component, "");
 		needsFlush = true;
+	}
+	
+	public static void RecordDropdown(DropdownMenu menu) {
+		Undo.RecordObject(menu, "");
+		foreach (TextArea label in menu.labels) {
+			Undo.RecordObject(label, "");
+		}
 		
+		needsFlush = true;
 	}
 	
 	public static void FlushIfDirty() {
