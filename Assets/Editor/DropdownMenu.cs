@@ -35,6 +35,7 @@ public class DropdownMenu : ScriptableObject {
 	
 	public const int LABEL_HEIGHT = 20;
 	public const int LABEL_OFFSET = 22;
+	public const int MAX_TEXT_LENGTH = 16;
 	
 	public DropdownMenu() {}
 	public void Init() {
@@ -97,16 +98,17 @@ public class DropdownMenu : ScriptableObject {
 			GUI.EndScrollView();
 			
 			if (deleteIndex >= 0) {
-				CallOnDelete(labels[deleteIndex].text);
-				labels.RemoveAt(deleteIndex);
+				RemoveLabel(deleteIndex);
 			}
 		} 
 	}
 	
 	public void ProcessEvent(Event e) {
-		// run all the TextAreas
-		for (int i = 0; i < labels.Count; i++) {
-			labels[i].ProcessEvent(e);
+		// process the TextAreas
+		if (expanded) {
+			for (int i = 0; i < labels.Count; i++) {
+				labels[i].ProcessEvent(e);
+			}
 		}
 		
 		// TODO: implement the rest
@@ -147,6 +149,17 @@ public class DropdownMenu : ScriptableObject {
 		labelMap.Remove(label);
 	}
 	
+	private void RemoveLabel(int index) {
+		// drop the position of the labels above the deleted one
+		for (int i = index; i < labels.Count; i++) {
+			labels[i].rect.y -= LABEL_OFFSET;
+			labels[i].clickRect.y -= LABEL_OFFSET;
+		}
+		
+		CallOnDelete(labels[index].text);
+		labels.RemoveAt(index);
+	}
+	
 	private void ContainsLabel(string label) {
 		// TODO: implement this
 	}
@@ -158,7 +171,7 @@ public class DropdownMenu : ScriptableObject {
 	private TextArea CreateTextArea(string text) {
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
 		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
-		textArea.maxLength = 16;
+		textArea.maxLength = MAX_TEXT_LENGTH;
 		textArea.textAreaStyle = SDEStyles.textAreaSmallDefault;
 		
 		return textArea;
