@@ -28,6 +28,9 @@ public abstract class SDEComponent : ScriptableObject {
 	// if it's null, then just use rect.
 	public Rect clickRect;
 	
+	// this defines if their is an offset from rendering inside a ScrollView
+	public Vector2 scrollViewOffset = Vector2.zero;
+	
 	// denotes the width and height difference between rect and clickRect
 	public float widthPad = 0f;
 	public float heightPad = 0f;
@@ -73,8 +76,7 @@ public abstract class SDEComponent : ScriptableObject {
 		case EventType.MouseDown:
 		// handle selection clicks
 			if (e.button == 0) {
-				if (!SelectionManager.IsComponentSelectedOnEvent() && 
-				((padded && clickRect.Contains(e.mousePosition)) || rect.Contains(e.mousePosition))) {
+				if (!SelectionManager.IsComponentSelectedOnEvent() && Contains(e.mousePosition)) {
 					// select the component.
 					if (!Selected) {
 						Selected = true;
@@ -162,4 +164,27 @@ public abstract class SDEComponent : ScriptableObject {
 		clickRect.y = rect.y - heightPad;
 	}
 	
+	// TODO: convert all SDEComponent classes to use this
+	public bool Contains(Vector2 pos) {
+		Rect temp;
+		
+		// choose which rect to evaluate on
+		if (padded) {
+			temp = clickRect;
+		} else {
+			temp = rect;
+		}
+		
+		// apply offsets if necessary
+		temp.x += scrollViewOffset.x;
+		temp.y += scrollViewOffset.y;
+		
+		// check if it contains the position
+		if (temp.Contains(pos)) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
 }

@@ -11,6 +11,8 @@ public class TextArea : SDEComponent {
 	// used for keyboard focus controls
 	public int textID;
 	
+	public int maxLength = -1;
+	
 	private GUIContent textContent;
 	private float contentHeight;
 	
@@ -38,6 +40,21 @@ public class TextArea : SDEComponent {
 			container);
 		
 		Init(text);
+	}
+	
+	public void Init(string text, float width, float x, float y) {
+		Init(SDEComponentType.TextArea, null, 
+			new Rect(0, 0, width-2*TextAreaManager.X_PAD, 0), 
+			SDEStyles.textBoxDefault, 
+			SDEStyles.textBoxDefault, 
+			SDEStyles.textBoxSelected);
+		
+		Init(text);
+		
+		clickRect.x = x;
+		clickRect.y = y;
+		rect.x = x + widthPad;
+		rect.y = y + heightPad;
 	}
 	
 	private void Init(string text) {
@@ -81,14 +98,20 @@ public class TextArea : SDEComponent {
 			rect.x = clickRect.x + widthPad;
 			rect.y = clickRect.y + heightPad;
 		} else {
-			throw new UnityException("Tried to draw TextArea without container or parent!");
+			// TOOD: figure out if we need this or not. What if we just want a TextArea that floats?
+			//throw new UnityException("Tried to draw TextArea without container or parent!");
 		}
 		
 		GUI.Box(clickRect, "", style);
 		
 		// get the Keyboard focusable ControlID of the TextArea before it's drawn
 		textID = GUIUtility.GetControlID(FocusType.Keyboard) + 1;
-		text = GUI.TextArea(rect, text, textAreaStyle);
+		
+		if (maxLength > 0) {
+			text = GUI.TextArea(rect, text, maxLength, textAreaStyle);
+		} else {
+			text = GUI.TextArea(rect, text, textAreaStyle);
+		}
 	}
 	
 	public override void ProcessEvent(Event e) {
@@ -98,7 +121,7 @@ public class TextArea : SDEComponent {
 		case EventType.MouseDown:
 			// handle selection
 			if (e.button == 0) {
-				if (clickRect.Contains(e.mousePosition)) {
+				if (Contains(e.mousePosition)) {
 					FeatureManager.dragEnabled = false;
 				} else {
 					GUIUtility.keyboardControl = 0;
@@ -189,5 +212,10 @@ public class TextArea : SDEComponent {
 		default:
 			return false;
 		}
+	}
+	
+	// hashes on the text instead of the object
+	public override int GetHashCode() {
+		return text.GetHashCode();
 	}
 }

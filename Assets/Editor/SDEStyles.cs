@@ -68,6 +68,7 @@ public static class SDEStyles {
 	public static GUIStyle connectionPointSelected;
 	// text area styles
 	public static GUIStyle textAreaDefault;
+	public static GUIStyle textAreaSmallDefault;
 	// text box styles
 	public static GUIStyle textBoxDefault;
 	public static GUIStyle textBoxSelected;
@@ -107,6 +108,7 @@ public static class SDEStyles {
 		connectionPointSelected = ConnectionPointSelectedStyle();
 		
 		textAreaDefault = TextAreaDefaultStyle();
+		textAreaSmallDefault = TextAreaSmallDefaultStyle();
 		
 		textBoxDefault = TextBoxDefaultStyle();
 		textBoxSelected = TextBoxSelectedStyle();
@@ -182,6 +184,14 @@ public static class SDEStyles {
 		GUIStyle style = new GUIStyle();
 		style.normal.textColor = AlmostWhite;
 		style.wordWrap = true;
+		return style;
+	}
+	
+	private static GUIStyle TextAreaSmallDefaultStyle() {
+		GUIStyle style = new GUIStyle();
+		style.normal.textColor = AlmostWhite;
+		style.wordWrap = true;
+		style.fontSize = 10;
 		return style;
 	}
 	

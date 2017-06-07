@@ -127,6 +127,7 @@ public class StoryDialogEditor : EditorWindow {
 		SelectionManager.StartSelectionEventProcessing(Event.current);
 		NodeManager.ProcessEvents(Event.current);
 		ProcessEvents(Event.current);
+		testMenu.ProcessEvent(Event.current);
 		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
 		// Add to the Undo stack if anything changed

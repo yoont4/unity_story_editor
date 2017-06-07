@@ -6,10 +6,10 @@ using UnityEngine;
 public class DropdownMenu : ScriptableObject {
 	
 	// holds the list of labels that are used
-	private List<string> labels;
+	private List<TextArea> labels;
 	
-	// maps a label to an index for fast lookups, additions, and removals
-	private Dictionary<string, int> labelMap;
+	// used to keep track of labels and help with updating, checking for changes, etc.
+	private Dictionary<String, TextArea> labelMap;
 	
 	// represents the currently selected label index.
 	// -1 means nothing selected
@@ -33,15 +33,19 @@ public class DropdownMenu : ScriptableObject {
 	public GUIStyle toggleUpStyle;
 	public GUIStyle toggleDownStyle;
 	
+	public const int LABEL_HEIGHT = 20;
+	public const int LABEL_OFFSET = 22;
+	
 	public DropdownMenu() {}
 	public void Init() {
-		labels = new List<string>();
-		labelMap = new Dictionary<string, int>();
+		labels = new List<TextArea>();
+		labelMap = new Dictionary<String, TextArea>();
+		
 		selectedIndex = -1;
 		expanded = false;
-		rect = new Rect(0, 0, 100, 20);
+		rect = new Rect(0, 0, 140, LABEL_HEIGHT);
 		toggleRect = new Rect(0, 0, 16, 16);
-		outerViewRect = new Rect(0, 0, 140, 300);
+		outerViewRect = new Rect(0, 0, rect.width+40, 300);
 		innerViewRect = new Rect(0, 0, 100, 1000);
 		
 		// TODO: refactor this shit (use DropdownMenuManager?)
@@ -62,7 +66,7 @@ public class DropdownMenu : ScriptableObject {
 	public void Draw() {
 		toggleRect.x = rect.x - 16;
 		toggleRect.y = rect.y + 2;
-		outerViewRect.x = rect.x-20;
+		outerViewRect.x = rect.x - 20;
 		outerViewRect.y = rect.y + 20;
 		
 		GUI.Box(rect, "Local Variables", boxStyle);
@@ -80,10 +84,12 @@ public class DropdownMenu : ScriptableObject {
 			
 			scrollPos = GUI.BeginScrollView(outerViewRect, scrollPos, innerViewRect);
 			for (int i = 0; i < labels.Count; i++) {
-				// draw each label as a button
-				GUI.Box(new Rect(20, i*20, rect.width, 20), labels[i], boxStyle);
+				// draw each label and update scroll view
+				labels[i].scrollViewOffset = outerViewRect.position - scrollPos;
+				labels[i].Draw();
+				
 				// draw each label's remove button
-				if (GUI.Button(new Rect(6, i*20+4, 12, 12), "-", SDEStyles.textButtonDefault)) {
+				if (GUI.Button(new Rect(6, i*LABEL_OFFSET+4, 12, 12), "-", SDEStyles.textButtonDefault)) {
 					// show dialog to confirm
 					deleteIndex = i;
 				}
@@ -91,19 +97,23 @@ public class DropdownMenu : ScriptableObject {
 			GUI.EndScrollView();
 			
 			if (deleteIndex >= 0) {
-				CallOnDelete(labels[deleteIndex]);
+				CallOnDelete(labels[deleteIndex].text);
 				labels.RemoveAt(deleteIndex);
 			}
 		} 
 	}
 	
 	public void ProcessEvent(Event e) {
+		// run all the TextAreas
+		for (int i = 0; i < labels.Count; i++) {
+			labels[i].ProcessEvent(e);
+		}
+		
+		// TODO: implement the rest
 		switch(e.type) {
 		case EventType.MouseDown:
 			break;
 		}
-		
-		// TODO: implement this
 	}
 	
 	public void Expand() {
@@ -127,18 +137,14 @@ public class DropdownMenu : ScriptableObject {
 			return;
 		} 
 		
-		labels.Add(label);
-		labelMap.Add(label, labels.IndexOf(label));
+		TextArea newText = CreateTextArea(label);
+		labels.Add(newText);
+		labelMap.Add(label, newText);
 	}
 	
 	private void RemoveLabel(string label) {
-		label.Remove(labelMap[label]);
+		labels.Remove(labelMap[label]);
 		labelMap.Remove(label);
-	}
-	
-	private void RemoveLabel(int index) {
-		labelMap.Remove(labels[index]);
-		labels.RemoveAt(index);
 	}
 	
 	private void ContainsLabel(string label) {
@@ -149,13 +155,13 @@ public class DropdownMenu : ScriptableObject {
 		// TODO: implement this
 	}
 	
-	// NOTE: probably not the most efficient way of updating it, but should be 
-	// fast enough for sizes under 100 elements
-	private void UpdateLabelMap() {
-		labelMap.Clear();
-		for (int i = 0; i < labels.Count; i++) {
-			labelMap.Add(labels[i], i);
-		}
+	private TextArea CreateTextArea(string text) {
+		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
+		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
+		textArea.maxLength = 16;
+		textArea.textAreaStyle = SDEStyles.textAreaSmallDefault;
+		
+		return textArea;
 	}
 	
 	private void CallOnDelete(string text) {
