@@ -11,6 +11,12 @@ public class DropdownMenu : ScriptableObject {
 	// used to keep track of labels and help with updating, checking for changes, etc.
 	public Dictionary<String, TextArea> labelMap;
 	
+	// TODO: figure out if this is necessary.
+	// originally planned to use this to update Nodes when labels change, but the Nodes should
+	// be in charge of updating themselves. LocalVariable Nodes should just have a reference to the 
+	// TextArea itself, and if null, print the broken link text ("---"). That would minimize coupling
+	public Dictionary<String, List<Node>> nodeMap;
+	
 	// represents the currently selected label index.
 	// -1 means nothing selected
 	public int selectedIndex;
@@ -37,10 +43,14 @@ public class DropdownMenu : ScriptableObject {
 	public const int LABEL_OFFSET = 22;
 	public const int MAX_TEXT_LENGTH = 16;
 	
+	// this value is set when the TextArea is highlighted, to ensure we know what text was modified
+	private string selectedLabelStartText;
+	
 	public DropdownMenu() {}
 	public void Init() {
 		labels = new List<TextArea>();
 		labelMap = new Dictionary<String, TextArea>();
+		nodeMap = new Dictionary<string, List<Node>>();
 		
 		selectedIndex = -1;
 		expanded = false;
@@ -145,6 +155,7 @@ public class DropdownMenu : ScriptableObject {
 		TextArea newText = CreateTextArea(label);
 		labels.Add(newText);
 		labelMap.Add(label, newText);
+		nodeMap.Add(label, new List<Node>());
 	}
 	
 	private void RemoveLabel(int index) {
@@ -158,7 +169,9 @@ public class DropdownMenu : ScriptableObject {
 		
 		CallOnDelete(labels[index].text);
 		labelMap.Remove(labels[index].text);
+		nodeMap.Remove(labels[index].text);
 		labels.RemoveAt(index);
+		
 	}
 	
 	private void ContainsLabel(string label) {
@@ -175,10 +188,18 @@ public class DropdownMenu : ScriptableObject {
 		
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
 		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
+		
 		textArea.maxLength = MAX_TEXT_LENGTH;
 		textArea.textAreaStyle = SDEStyles.textAreaSmallDefault;
+		textArea.OnSelectText += SetLabelStartText;
 		
 		return textArea;
+	}
+	
+	// TODO: decide if this will ever be needed or if self-updating local variable Nodes
+	// handles all of the use cases of this.
+	private void SetLabelStartText(string text) {
+		selectedLabelStartText = text;
 	}
 	
 	private void CallOnDelete(string text) {

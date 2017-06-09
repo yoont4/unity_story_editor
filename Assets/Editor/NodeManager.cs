@@ -171,12 +171,4 @@ public static class NodeManager {
 		
 		return newNode;
 	}
-	
-	/*
-	  UpdateLocalVariableNodes() goes through every local variable node and makes sure that 
-	  the field they're using is within the StoryEditor's dropdown local variable list
-	*/
-	public static void UpdateLocalVariableNodes() {
-		// TODO: implement this
-	}
 }
