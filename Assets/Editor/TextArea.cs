@@ -20,8 +20,9 @@ public class TextArea : SDEComponent {
 	public GUIStyle textButtonStyle;
 	
 	// used to trigger text dependent actions on selection/deselection
-	public Action<String> OnSelectText;
-	public Action<String> OnDeselectText;
+	// cascading arrangement: called by SDEComponent OnSelect
+	public Action<TextArea> OnTextAreaSelect;
+	public Action<TextArea> OnTextAreaDeselect;
 	
 	public TextArea() {}
 	
@@ -70,8 +71,8 @@ public class TextArea : SDEComponent {
 		this.text = text; 
 		
 		// set callbacks
-		this.OnSelect += CallOnSelectText;
-		this.OnDeselect += CallOnDeselectText;
+		this.OnSelect += CallOnTextAreaSelect;
+		this.OnDeselect += CallOnTextAreaDeselect;
 	}
 	
 	/*
@@ -227,15 +228,15 @@ public class TextArea : SDEComponent {
 		return text.GetHashCode();
 	}
 	
-	private void CallOnSelectText(SDEComponent component) {
-		if (OnSelectText != null) {
-			OnSelectText(this.text);
+	private void CallOnTextAreaSelect(SDEComponent component) {
+		if (OnTextAreaSelect != null) {
+			OnTextAreaSelect(this);
 		}
 	}
 	
-	private void CallOnDeselectText(SDEComponent component) {
-		if (OnDeselectText != null) {
-			OnDeselectText(this.text);
+	private void CallOnTextAreaDeselect(SDEComponent component) {
+		if (OnTextAreaDeselect != null) {
+			OnTextAreaDeselect(this);
 		}
 	}
 }

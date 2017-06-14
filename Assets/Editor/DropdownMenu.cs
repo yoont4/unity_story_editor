@@ -191,15 +191,23 @@ public class DropdownMenu : ScriptableObject {
 		
 		textArea.maxLength = MAX_TEXT_LENGTH;
 		textArea.textAreaStyle = SDEStyles.textAreaSmallDefault;
-		textArea.OnSelectText += SetLabelStartText;
+		
+		// set callbacks
+		textArea.OnTextAreaSelect += SetLabelStartText;
+		textArea.OnTextAreaDeselect += RevertIfDuplicated;
 		
 		return textArea;
 	}
 	
 	// TODO: decide if this will ever be needed or if self-updating local variable Nodes
 	// handles all of the use cases of this.
-	private void SetLabelStartText(string text) {
-		selectedLabelStartText = text;
+	private void SetLabelStartText(TextArea dropdownItem) {
+		selectedLabelStartText = dropdownItem.text;
+	}
+	
+	private void RevertIfDuplicated(TextArea dropdownItem) {
+		// TODO: implement this
+		// if there is already a duplicate dropdown item, then revert to the original value.
 	}
 	
 	private void CallOnDelete(string text) {
