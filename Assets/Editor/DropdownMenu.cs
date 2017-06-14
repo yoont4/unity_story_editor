@@ -3,55 +3,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DropdownMenu : ScriptableObject {
+public class DropdownMenu : ToggleMenu {
 	
 	// holds the list of labels that are used
 	public List<TextArea> labels;
 	
-	// used to keep track of labels and help with updating, checking for changes, etc.
-	public Dictionary<String, TextArea> labelMap;
+	// used to keep track of edits
+	private Dictionary<TextArea, string> preEditMap;
 	
 	// Dictionary<TextArea, List<Node>> nodeMap: originally planned to use this to update Nodes when 
 	// labels change, but the Nodes should be in charge of updating themselves. LocalVariable Nodes 
 	// should just have a reference to the TextArea itself, and if null, print the broken link text ("---"). 
 	// That would minimize coupling while keeping it cohesive
 	
-	// represents the currently selected label index.
-	// -1 means nothing selected
-	public int selectedIndex;
-	
-	private bool expanded;
-	
-	public Rect rect;
-	public Rect toggleRect;
-	
-	// can be hooked up to update story nodes on delete, etc.
-	public Action<string> OnDelete;
-	
-	// scroll view vars
-	private Rect outerViewRect;
-	private Rect innerViewRect;
-	private Vector2 scrollPos;
-	
-	public GUIStyle boxStyle;
-	public GUIStyle toggleStyle;
-	public GUIStyle toggleUpStyle;
-	public GUIStyle toggleDownStyle;
-	
-	public const int LABEL_HEIGHT = 20;
-	public const int LABEL_OFFSET = 22;
-	public const int MAX_TEXT_LENGTH = 16;
-	
 	// this value is set when the TextArea is highlighted, to ensure we know what text was modified
 	private string selectedItemStartText;
 	private TextArea selectedItem;
 	
-	private Dictionary<TextArea, string> preEditMap;
 	
 	public DropdownMenu() {}
-	public void Init() {
+	public override void Init() {
 		labels = new List<TextArea>();
-		labelMap = new Dictionary<String, TextArea>();
 		preEditMap = new Dictionary<TextArea, string>();
 		
 		selectedIndex = -1;
@@ -76,11 +48,8 @@ public class DropdownMenu : ScriptableObject {
 		// ^^^^^^ test code ^^^^^^ 
 	}
 	
-	public void Draw() {
-		toggleRect.x = rect.x - 16;
-		toggleRect.y = rect.y + 2;
-		outerViewRect.x = rect.x - 20;
-		outerViewRect.y = rect.y + 20;
+	public override void Draw() {
+		base.Draw();
 		
 		GUI.Box(rect, "Local Variables", boxStyle);
 		if (GUI.Button(toggleRect, "", toggleStyle)) {
@@ -115,7 +84,7 @@ public class DropdownMenu : ScriptableObject {
 		} 
 	}
 	
-	public void ProcessEvent(Event e) {
+	public override void ProcessEvent(Event e) {
 		// process the TextAreas
 		if (expanded) {
 			for (int i = 0; i < labels.Count; i++) {
@@ -123,40 +92,26 @@ public class DropdownMenu : ScriptableObject {
 			}
 		}
 		
-		// TODO: implement the rest
+		// TODO: implement the rest (figure out if necessary)
 		switch(e.type) {
 		case EventType.MouseDown:
 			break;
 		}
 	}
 	
-	public void Expand() {
-		toggleStyle = toggleUpStyle;
-		expanded = true;
-	}
-	
-	public void Close() {
-		toggleStyle = toggleDownStyle;
-		expanded = false;
-	}
-	
-	public void SetPosition(float x, float y) {
-		rect.x = x;
-		rect.y = y;
-	}
-	
 	private void AddLabel(string label) {
 		// TODO: figure out why this breaks initializtion
 		//HistoryManager.RecordDropdown(this);
 		
-		if (labelMap.ContainsKey(label)) {
-			Debug.Log("Dropdown already contains: " + label);
-			return;
-		} 
+		for (int i = 0; i < labels.Count; i++) {
+			if (label == labels[i].text) {
+				Debug.Log("Dropdown already contains: " + label);
+				return;	
+			}
+		}
 		
 		TextArea newText = CreateTextArea(label);
 		labels.Add(newText);
-		labelMap.Add(label, newText);
 	}
 	
 	private void RemoveLabel(int index) {
@@ -168,8 +123,7 @@ public class DropdownMenu : ScriptableObject {
 			labels[i].clickRect.y -= LABEL_OFFSET;
 		}
 		
-		CallOnDelete(labels[index].text);
-		labelMap.Remove(labels[index].text);
+		preEditMap.Remove(labels[index]);
 		labels.RemoveAt(index);
 		
 	}
@@ -221,12 +175,6 @@ public class DropdownMenu : ScriptableObject {
 				dropdownItem.text = preEditMap[dropdownItem];
 				return;
 			}
-		}
-	}
-	
-	private void CallOnDelete(string text) {
-		if (OnDelete != null) {
-			OnDelete(text);
 		}
 	}
 }
