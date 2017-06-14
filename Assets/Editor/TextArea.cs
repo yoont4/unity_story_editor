@@ -223,11 +223,6 @@ public class TextArea : SDEComponent {
 		}
 	}
 	
-	// hashes on the text instead of the object
-	public override int GetHashCode() {
-		return text.GetHashCode();
-	}
-	
 	private void CallOnTextAreaSelect(SDEComponent component) {
 		if (OnTextAreaSelect != null) {
 			OnTextAreaSelect(this);

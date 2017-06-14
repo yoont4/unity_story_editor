@@ -11,11 +11,10 @@ public class DropdownMenu : ScriptableObject {
 	// used to keep track of labels and help with updating, checking for changes, etc.
 	public Dictionary<String, TextArea> labelMap;
 	
-	// TODO: figure out if this is necessary.
-	// originally planned to use this to update Nodes when labels change, but the Nodes should
-	// be in charge of updating themselves. LocalVariable Nodes should just have a reference to the 
-	// TextArea itself, and if null, print the broken link text ("---"). That would minimize coupling
-	public Dictionary<String, List<Node>> nodeMap;
+	// Dictionary<TextArea, List<Node>> nodeMap: originally planned to use this to update Nodes when 
+	// labels change, but the Nodes should be in charge of updating themselves. LocalVariable Nodes 
+	// should just have a reference to the TextArea itself, and if null, print the broken link text ("---"). 
+	// That would minimize coupling while keeping it cohesive
 	
 	// represents the currently selected label index.
 	// -1 means nothing selected
@@ -45,12 +44,15 @@ public class DropdownMenu : ScriptableObject {
 	
 	// this value is set when the TextArea is highlighted, to ensure we know what text was modified
 	private string selectedItemStartText;
+	private TextArea selectedItem;
+	
+	private Dictionary<TextArea, string> preEditMap;
 	
 	public DropdownMenu() {}
 	public void Init() {
 		labels = new List<TextArea>();
 		labelMap = new Dictionary<String, TextArea>();
-		nodeMap = new Dictionary<string, List<Node>>();
+		preEditMap = new Dictionary<TextArea, string>();
 		
 		selectedIndex = -1;
 		expanded = false;
@@ -155,7 +157,6 @@ public class DropdownMenu : ScriptableObject {
 		TextArea newText = CreateTextArea(label);
 		labels.Add(newText);
 		labelMap.Add(label, newText);
-		nodeMap.Add(label, new List<Node>());
 	}
 	
 	private void RemoveLabel(int index) {
@@ -169,7 +170,6 @@ public class DropdownMenu : ScriptableObject {
 		
 		CallOnDelete(labels[index].text);
 		labelMap.Remove(labels[index].text);
-		nodeMap.Remove(labels[index].text);
 		labels.RemoveAt(index);
 		
 	}
@@ -204,7 +204,7 @@ public class DropdownMenu : ScriptableObject {
 	  pre-edit value of a TextArea.
 	*/
 	private void SetLabelStartText(TextArea dropdownItem) {
-		selectedItemStartText = dropdownItem.text;
+		preEditMap[dropdownItem] = dropdownItem.text;
 	}
 	
 	/*
@@ -213,9 +213,12 @@ public class DropdownMenu : ScriptableObject {
 	*/
 	private void RevertIfDuplicated(TextArea dropdownItem) {
 		string text = dropdownItem.text;
+		
+		// run through all the labels for matches
 		for (int i = 0; i < labels.Count; i++) {
-			if (text == labels[i].text) {
-				dropdownItem.text = selectedItemStartText;
+			// check if the dropdown text matches with anything but itself
+			if (text == labels[i].text && dropdownItem != labels[i]) {
+				dropdownItem.text = preEditMap[dropdownItem];
 				return;
 			}
 		}
