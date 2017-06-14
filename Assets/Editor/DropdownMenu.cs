@@ -78,6 +78,22 @@ public class DropdownMenu : ToggleMenu {
 			}
 			GUI.EndScrollView();
 			
+			// calculate where the bottom of the last visible element of the scroll view is
+			float yPos = outerViewRect.y;
+			
+			// get the number of elements
+			float yMod = Mathf.Min(((float)labels.Count*(float)LABEL_OFFSET)-scrollPos.y, outerViewRect.height);
+			if (yMod < 0) {
+				yMod = 0;
+			}
+			
+			yPos += yMod;
+			
+			// draw the add new label button
+			if (GUI.Button(new Rect(outerViewRect.x+20, yPos, rect.width, 20), "+item", SDEStyles.textButtonDefault)) {
+				// TODO: implement this
+			}
+			
 			if (deleteIndex >= 0) {
 				RemoveLabel(deleteIndex);
 			}
