@@ -44,7 +44,7 @@ public class DropdownMenu : ScriptableObject {
 	public const int MAX_TEXT_LENGTH = 16;
 	
 	// this value is set when the TextArea is highlighted, to ensure we know what text was modified
-	private string selectedLabelStartText;
+	private string selectedItemStartText;
 	
 	public DropdownMenu() {}
 	public void Init() {
@@ -199,15 +199,26 @@ public class DropdownMenu : ScriptableObject {
 		return textArea;
 	}
 	
-	// TODO: decide if this will ever be needed or if self-updating local variable Nodes
-	// handles all of the use cases of this.
+	/*
+	  SetLabelStartText() is a callback function used with RevertIfDuplicated() to set the 
+	  pre-edit value of a TextArea.
+	*/
 	private void SetLabelStartText(TextArea dropdownItem) {
-		selectedLabelStartText = dropdownItem.text;
+		selectedItemStartText = dropdownItem.text;
 	}
 	
+	/*
+	  RevertIfDuplicated() is a callback function, used to revert a TextArea's text value to
+	  its pre-edit value if the post-edit value is a duplicate.
+	*/
 	private void RevertIfDuplicated(TextArea dropdownItem) {
-		// TODO: implement this
-		// if there is already a duplicate dropdown item, then revert to the original value.
+		string text = dropdownItem.text;
+		for (int i = 0; i < labels.Count; i++) {
+			if (text == labels[i].text) {
+				dropdownItem.text = selectedItemStartText;
+				return;
+			}
+		}
 	}
 	
 	private void CallOnDelete(string text) {
