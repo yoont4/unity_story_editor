@@ -43,7 +43,7 @@ public class DropdownMenu : ToggleMenu {
 	public override void Draw() {
 		base.Draw();
 		
-		GUI.Box(rect, "Local Variables", boxStyle);
+		GUI.Box(rect, "Local Flags", boxStyle);
 		if (GUI.Button(toggleRect, "", toggleStyle)) {
 			if (toggleStyle == toggleDownStyle) {
 				Expand();

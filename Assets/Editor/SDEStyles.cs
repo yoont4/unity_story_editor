@@ -61,8 +61,8 @@ public static class SDEStyles {
 	// node styles
 	public static GUIStyle nodeDefault;
 	public static GUIStyle nodeSelected;
-	public static GUIStyle nodeInterruptDefault;
-	public static GUIStyle nodeInterruptSelected;
+	public static GUIStyle nodeSmallDefault;
+	public static GUIStyle nodeSmallSelected;
 	// connection point styles
 	public static GUIStyle connectionPointDefault;
 	public static GUIStyle connectionPointSelected;
@@ -101,8 +101,8 @@ public static class SDEStyles {
 		// initialize styles
 		nodeDefault = NodeDefaultStyle();
 		nodeSelected = NodeSelectedStyle();
-		nodeInterruptDefault = NodeInterruptDefaultStyle();
-		nodeInterruptSelected = NodeInterruptSelectedStyle();
+		nodeSmallDefault = NodeSmallDefaultStyle();
+		nodeSmallSelected = NodeSmallSelectedStyle();
 		
 		connectionPointDefault = ConnectionPointDefaultStyle();
 		connectionPointSelected = ConnectionPointSelectedStyle();
@@ -153,13 +153,13 @@ public static class SDEStyles {
 		return style;
 	}
 	
-	private static GUIStyle NodeInterruptDefaultStyle() {
+	private static GUIStyle NodeSmallDefaultStyle() {
 		GUIStyle style = NodeDefaultStyle();
 		style.fontSize = 10;
 		return style;
 	}
 	
-	private static GUIStyle NodeInterruptSelectedStyle() {
+	private static GUIStyle NodeSmallSelectedStyle() {
 		GUIStyle style = NodeSelectedStyle();
 		style.fontSize = 10;
 		return style;

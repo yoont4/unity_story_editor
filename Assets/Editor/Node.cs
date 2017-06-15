@@ -133,8 +133,13 @@ public class Node : SDEComponent {
 			ToggleDecision();
 		}
 		
-		GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", SDEStyles.textButtonDefault);
-		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", SDEStyles.textButtonDefault);
+		if (GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", SDEStyles.textButtonDefault)) {
+			ToggleSetLocalFlag();
+		}
+		
+		if (GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", SDEStyles.textButtonDefault)) {
+			ToggleCheckLocalFlag();
+		}
 		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", SDEStyles.textButtonDefault);
 		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "GGV", SDEStyles.textButtonDefault);
 	} 
@@ -219,6 +224,14 @@ public class Node : SDEComponent {
 		}
 	}
 	
+	private void DrawSetLocalFlag() {
+		// TODO: implement this
+	}
+	
+	private void DrawCheckLocalFlag() {
+		// TODO: implement this
+	}
+	
 	/*
 	  Processes Events running through the component.
 	
@@ -300,13 +313,39 @@ public class Node : SDEComponent {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
 		
-		style = SDEStyles.nodeInterruptDefault;
-		defaultStyle = SDEStyles.nodeInterruptDefault;
-		selectedStyle = SDEStyles.nodeInterruptSelected;
+		style = SDEStyles.nodeSmallDefault;
+		defaultStyle = SDEStyles.nodeSmallDefault;
+		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;
 		title = "-->";
+	}
+	
+	private void ToggleSetLocalFlag() {
+		style = SDEStyles.nodeSmallDefault;
+		defaultStyle = SDEStyles.nodeSmallDefault;
+		selectedStyle = SDEStyles.nodeSmallSelected;
+		
+		nodeType = NodeType.SetLocalFlag;
+		OnDrawNodeChild = DrawSetLocalFlag;
+		title = "SET LOCAL FLAG";
+		
+		rect.width = 140;
+		rect.height = 26;
+	}
+	
+	private void ToggleCheckLocalFlag() {
+		style = SDEStyles.nodeSmallDefault;
+		defaultStyle = SDEStyles.nodeSmallDefault;
+		selectedStyle = SDEStyles.nodeSmallSelected;
+		
+		nodeType = NodeType.CheckLocalFlag;
+		OnDrawNodeChild = DrawCheckLocalFlag;
+		title = "CHECK LOCAL FLAG";
+		
+		rect.width = 140;
+		rect.height = 26;
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {
