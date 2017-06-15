@@ -34,18 +34,10 @@ public class DropdownMenu : ToggleMenu {
 		innerViewRect = new Rect(0, 0, 100, 1000);
 		
 		// TODO: refactor this shit (use DropdownMenuManager?)
-		boxStyle = SDEStyles.nodeInterruptDefault;
+		boxStyle = SDEStyles.labelDefault;
 		toggleUpStyle = SDEStyles.toggleUpDefault;
 		toggleDownStyle = SDEStyles.toggleDownDefault;
-		toggleStyle = toggleUpStyle;
-		
-		// vvvvvv test code vvvvvv 
-		expanded = true;
-		AddLabel("test");
-		AddLabel("123");
-		AddLabel(":)");
-		AddLabel("what");
-		// ^^^^^^ test code ^^^^^^ 
+		toggleStyle = toggleDownStyle;
 	}
 	
 	public override void Draw() {
@@ -91,7 +83,12 @@ public class DropdownMenu : ToggleMenu {
 			
 			// draw the add new label button
 			if (GUI.Button(new Rect(outerViewRect.x+20, yPos, rect.width, 20), "+item", SDEStyles.textButtonDefault)) {
-				// TODO: implement this
+				int i = 0;
+				string newLabel = "new var " + i;
+				while(!AddLabel(newLabel)) {
+					i++;
+					newLabel = "new var " + i;
+				}
 			}
 			
 			if (deleteIndex >= 0) {
@@ -115,19 +112,21 @@ public class DropdownMenu : ToggleMenu {
 		}
 	}
 	
-	private void AddLabel(string label) {
+	private bool AddLabel(string label) {
 		// TODO: figure out why this breaks initializtion
 		//HistoryManager.RecordDropdown(this);
 		
 		for (int i = 0; i < labels.Count; i++) {
 			if (label == labels[i].text) {
 				Debug.Log("Dropdown already contains: " + label);
-				return;	
+				return false;	
 			}
 		}
 		
 		TextArea newText = CreateTextArea(label);
 		labels.Add(newText);
+		
+		return true;
 	}
 	
 	private void RemoveLabel(int index) {

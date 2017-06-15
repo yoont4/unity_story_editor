@@ -188,9 +188,7 @@ public static class SDEStyles {
 	}
 	
 	private static GUIStyle TextAreaSmallDefaultStyle() {
-		GUIStyle style = new GUIStyle();
-		style.normal.textColor = AlmostWhite;
-		style.wordWrap = true;
+		GUIStyle style = TextAreaDefaultStyle();
 		style.fontSize = 10;
 		return style;
 	}
