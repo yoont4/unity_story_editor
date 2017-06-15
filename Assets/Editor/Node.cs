@@ -323,6 +323,9 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleSetLocalFlag() {
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
+		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
 		selectedStyle = SDEStyles.nodeSmallSelected;
