@@ -104,7 +104,6 @@ public class DropdownEditableList : ToggleMenu {
 	}
 	
 	private bool AddItem(string item) {
-		// TODO: figure out why this breaks initializtion
 		HistoryManager.RecordDropdown(this);
 		
 		for (int i = 0; i < items.Count; i++) {
@@ -148,9 +147,6 @@ public class DropdownEditableList : ToggleMenu {
 	}
 	
 	private TextArea CreateTextArea(string text) {
-		// TODO: figure out why this breaks initializtion
-		//HistoryManager.RecordDropdown(this);
-		
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
 		textArea.Init(text, rect.width, ITEM_HEIGHT, items.Count * ITEM_OFFSET);
 		
