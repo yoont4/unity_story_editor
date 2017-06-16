@@ -13,7 +13,7 @@ public class StoryDialogEditor : EditorWindow {
 	public List<Connection> connections;
 	
 	// local variables are stored in this dropdown
-	public DropdownMenu testMenu;
+	public DropdownEditableList testMenu;
 	
 	// the command log history text
 	public string commandHistory;
@@ -97,7 +97,7 @@ public class StoryDialogEditor : EditorWindow {
 		SDEStyles.Initialize();
 		
 		// initialize on-screen components
-		testMenu = ScriptableObject.CreateInstance<DropdownMenu>();
+		testMenu = ScriptableObject.CreateInstance<DropdownEditableList>();
 		testMenu.Init();
 	}
 	

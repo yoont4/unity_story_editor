@@ -69,7 +69,7 @@ public static class HistoryManager {
 		needsFlush = true;
 	}
 	
-	public static void RecordDropdown(DropdownMenu menu) {
+	public static void RecordDropdown(DropdownEditableList menu) {
 		Undo.RecordObject(menu, "");
 		foreach (TextArea item in menu.items) {
 			Undo.RecordObject(item, "");

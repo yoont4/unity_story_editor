@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DropdownMenu : ToggleMenu {
+public class DropdownEditableList : ToggleMenu {
 	
 	// holds the list of items that are used
 	public List<TextArea> items;
@@ -21,7 +21,7 @@ public class DropdownMenu : ToggleMenu {
 	private TextArea selectedItem;
 	
 	
-	public DropdownMenu() {}
+	public DropdownEditableList() {}
 	public override void Init() {
 		base.Init();
 		
@@ -105,7 +105,7 @@ public class DropdownMenu : ToggleMenu {
 	
 	private bool AddItem(string item) {
 		// TODO: figure out why this breaks initializtion
-		//HistoryManager.RecordDropdown(this);
+		HistoryManager.RecordDropdown(this);
 		
 		for (int i = 0; i < items.Count; i++) {
 			if (item == items[i].text) {
