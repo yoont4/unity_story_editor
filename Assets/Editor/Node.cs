@@ -27,6 +27,9 @@ public class Node : SDEComponent {
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
 	
+	// used for local/global flag Nodes
+	public DropdownBox variableDropdown;
+	
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
 	
@@ -225,7 +228,13 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawSetLocalFlag() {
+		variableDropdown.SetPosition(rect.x, rect.y + rect.height);
+		variableDropdown.Draw();
 		// TODO: implement this
+		
+		if (outPoint != null) {
+			outPoint.Draw();
+		}
 	}
 	
 	private void DrawCheckLocalFlag() {
@@ -311,7 +320,7 @@ public class Node : SDEComponent {
 	
 	private void ToggleInterrupt() {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
+		outPoint.Init(this, ConnectionPointType.Out);
 		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
@@ -324,7 +333,13 @@ public class Node : SDEComponent {
 	
 	private void ToggleSetLocalFlag() {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		((ConnectionPoint)this.outPoint).Init(this, ConnectionPointType.Out);
+		outPoint.Init(this, ConnectionPointType.Out);
+		
+		variableDropdown = ScriptableObject.CreateInstance<DropdownBox>();
+		variableDropdown.Init();
+		
+		// bind the dropdown menu to the main editor's local flag list
+		variableDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
 		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
@@ -339,6 +354,12 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleCheckLocalFlag() {
+		variableDropdown = ScriptableObject.CreateInstance<DropdownBox>();
+		variableDropdown.Init();
+		
+		// bind the dropdown menu to the main editor's local flag list
+		variableDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
+		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
 		selectedStyle = SDEStyles.nodeSmallSelected;

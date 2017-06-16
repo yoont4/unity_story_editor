@@ -71,8 +71,8 @@ public static class HistoryManager {
 	
 	public static void RecordDropdown(DropdownMenu menu) {
 		Undo.RecordObject(menu, "");
-		foreach (TextArea label in menu.labels) {
-			Undo.RecordObject(label, "");
+		foreach (TextArea item in menu.items) {
+			Undo.RecordObject(item, "");
 		}
 		
 		needsFlush = true;

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class ToggleMenu : ScriptableObject {
 	
-	// represents the currently selected label index.
+	// represents the currently selected item index.
 	// -1 means nothing selected
 	public int selectedIndex;
 	
@@ -19,19 +19,29 @@ public abstract class ToggleMenu : ScriptableObject {
 	protected Rect innerViewRect;
 	protected Vector2 scrollPos;
 	
-	public GUIStyle boxStyle;
 	public GUIStyle toggleStyle;
 	public GUIStyle toggleUpStyle;
 	public GUIStyle toggleDownStyle;
 	
-	public const int LABEL_HEIGHT = 20;
-	public const int LABEL_OFFSET = 22;
+	public const int ITEM_HEIGHT = 20;
+	public const int ITEM_OFFSET = 22;
 	public const int MAX_TEXT_LENGTH = 16;
 	
-	public abstract void Init();
+	public virtual void Init() {
+		selectedIndex = -1;
+		expanded = false;
+		rect = new Rect(0, 0, 140, ITEM_HEIGHT);
+		toggleRect = new Rect(0, 0, 16, 16);
+		outerViewRect = new Rect(0, 0, rect.width+40, 300);
+		innerViewRect = new Rect(0, 0, rect.width, 0);
+		
+		toggleUpStyle = SDEStyles.toggleUpDefault;
+		toggleDownStyle = SDEStyles.toggleDownDefault;
+		toggleStyle = toggleDownStyle;
+	}
 	
 	public virtual void Draw() {
-		toggleRect.x = rect.x - 16;
+		toggleRect.x = rect.x - 13;
 		toggleRect.y = rect.y + 2;
 		outerViewRect.x = rect.x - 20;
 		outerViewRect.y = rect.y + 20;

@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class DropdownMenu : ToggleMenu {
 	
-	// holds the list of labels that are used
-	public List<TextArea> labels;
+	// holds the list of items that are used
+	public List<TextArea> items;
 	
 	// used to keep track of edits
 	private Dictionary<TextArea, string> preEditMap;
 	
 	// Dictionary<TextArea, List<Node>> nodeMap: originally planned to use this to update Nodes when 
-	// labels change, but the Nodes should be in charge of updating themselves. LocalVariable Nodes 
+	// items change, but the Nodes should be in charge of updating themselves. LocalVariable Nodes 
 	// should just have a reference to the TextArea itself, and if null, print the broken link text ("---"). 
 	// That would minimize coupling while keeping it cohesive
 	
@@ -23,32 +23,23 @@ public class DropdownMenu : ToggleMenu {
 	
 	public DropdownMenu() {}
 	public override void Init() {
-		labels = new List<TextArea>();
+		base.Init();
+		
+		items = new List<TextArea>();
 		preEditMap = new Dictionary<TextArea, string>();
-		
-		selectedIndex = -1;
-		expanded = false;
-		rect = new Rect(0, 0, 140, LABEL_HEIGHT);
-		toggleRect = new Rect(0, 0, 16, 16);
-		outerViewRect = new Rect(0, 0, rect.width+40, 300);
-		innerViewRect = new Rect(0, 0, 100, 1000);
-		
-		// TODO: refactor this shit (use DropdownMenuManager?)
-		boxStyle = SDEStyles.labelDefault;
-		toggleUpStyle = SDEStyles.toggleUpDefault;
-		toggleDownStyle = SDEStyles.toggleDownDefault;
-		toggleStyle = toggleDownStyle;
 	}
 	
 	public override void Draw() {
 		base.Draw();
 		
-		GUI.Box(rect, "Local Flags", boxStyle);
-		if (GUI.Button(toggleRect, "", toggleStyle)) {
-			if (toggleStyle == toggleDownStyle) {
-				Expand();
-			} else {
+		// draw the togle button and the label
+		if (GUI.Button(toggleRect, "", toggleStyle) || 
+			GUI.Button(rect, "Local Flags", SDEStyles.textButtonDefault))
+		{
+			if (expanded) {
 				Close();
+			} else {
+				Expand();
 			}
 		}
 		
@@ -56,14 +47,14 @@ public class DropdownMenu : ToggleMenu {
 			// start scroll view 
 			int deleteIndex = -1;
 			
-			scrollPos = GUI.BeginScrollView(outerViewRect, scrollPos, innerViewRect);
-			for (int i = 0; i < labels.Count; i++) {
-				// draw each label and update scroll view
-				labels[i].scrollViewOffset = outerViewRect.position - scrollPos;
-				labels[i].Draw();
+			scrollPos = GUI.BeginScrollView(outerViewRect, scrollPos, innerViewRect, false, false);
+			for (int i = 0; i < items.Count; i++) {
+				// draw each item and update scroll view
+				items[i].scrollViewOffset = outerViewRect.position - scrollPos;
+				items[i].Draw();
 				
-				// draw each label's remove button
-				if (GUI.Button(new Rect(6, i*LABEL_OFFSET+4, 12, 12), "-", SDEStyles.textButtonDefault)) {
+				// draw each item's remove button
+				if (GUI.Button(new Rect(6, i*ITEM_OFFSET+4, 12, 12), "-", SDEStyles.textButtonDefault)) {
 					// show dialog to confirm
 					deleteIndex = i;
 				}
@@ -74,25 +65,25 @@ public class DropdownMenu : ToggleMenu {
 			float yPos = outerViewRect.y;
 			
 			// get the number of elements
-			float yMod = Mathf.Min(((float)labels.Count*(float)LABEL_OFFSET)-scrollPos.y, outerViewRect.height);
+			float yMod = Mathf.Min(((float)items.Count*(float)ITEM_OFFSET)-scrollPos.y, outerViewRect.height);
 			if (yMod < 0) {
 				yMod = 0;
 			}
 			
 			yPos += yMod;
 			
-			// draw the add new label button
+			// draw the add new item button
 			if (GUI.Button(new Rect(outerViewRect.x+20, yPos, rect.width, 20), "+item", SDEStyles.textButtonDefault)) {
 				int i = 0;
 				string newLabel = "new var " + i;
-				while(!AddLabel(newLabel)) {
+				while(!AddItem(newLabel)) {
 					i++;
 					newLabel = "new var " + i;
 				}
 			}
 			
 			if (deleteIndex >= 0) {
-				RemoveLabel(deleteIndex);
+				RemoveItem(deleteIndex);
 			}
 		} 
 	}
@@ -100,8 +91,8 @@ public class DropdownMenu : ToggleMenu {
 	public override void ProcessEvent(Event e) {
 		// process the TextAreas
 		if (expanded) {
-			for (int i = 0; i < labels.Count; i++) {
-				labels[i].ProcessEvent(e);
+			for (int i = 0; i < items.Count; i++) {
+				items[i].ProcessEvent(e);
 			}
 		}
 		
@@ -112,38 +103,43 @@ public class DropdownMenu : ToggleMenu {
 		}
 	}
 	
-	private bool AddLabel(string label) {
+	private bool AddItem(string item) {
 		// TODO: figure out why this breaks initializtion
 		//HistoryManager.RecordDropdown(this);
 		
-		for (int i = 0; i < labels.Count; i++) {
-			if (label == labels[i].text) {
-				Debug.Log("Dropdown already contains: " + label);
+		for (int i = 0; i < items.Count; i++) {
+			if (item == items[i].text) {
+				Debug.Log("Dropdown already contains: " + item);
 				return false;	
 			}
 		}
 		
-		TextArea newText = CreateTextArea(label);
-		labels.Add(newText);
+		TextArea newText = CreateTextArea(item);
+		items.Add(newText);
+		
+		// expand the size of the inside space
+		innerViewRect.height += ITEM_OFFSET;
 		
 		return true;
 	}
 	
-	private void RemoveLabel(int index) {
+	private void RemoveItem(int index) {
 		HistoryManager.RecordDropdown(this);
 		
-		// drop the position of the labels above the deleted one
-		for (int i = index; i < labels.Count; i++) {
-			labels[i].rect.y -= LABEL_OFFSET;
-			labels[i].clickRect.y -= LABEL_OFFSET;
+		// drop the position of the items above the deleted one
+		for (int i = index; i < items.Count; i++) {
+			items[i].rect.y -= ITEM_OFFSET;
+			items[i].clickRect.y -= ITEM_OFFSET;
 		}
 		
-		preEditMap.Remove(labels[index]);
-		labels.RemoveAt(index);
+		preEditMap.Remove(items[index]);
+		items.RemoveAt(index);
 		
+		// shrink the size of the scrollview space
+		innerViewRect.height -= ITEM_OFFSET;
 	}
 	
-	private void ContainsLabel(string label) {
+	private void ContainsLabel(string item) {
 		// TODO: implement this
 	}
 	
@@ -156,7 +152,7 @@ public class DropdownMenu : ToggleMenu {
 		//HistoryManager.RecordDropdown(this);
 		
 		TextArea textArea = ScriptableObject.CreateInstance<TextArea>();
-		textArea.Init(text, rect.width, LABEL_HEIGHT, labels.Count * LABEL_OFFSET);
+		textArea.Init(text, rect.width, ITEM_HEIGHT, items.Count * ITEM_OFFSET);
 		
 		textArea.maxLength = MAX_TEXT_LENGTH;
 		textArea.textAreaStyle = SDEStyles.textAreaSmallDefault;
@@ -183,10 +179,10 @@ public class DropdownMenu : ToggleMenu {
 	private void RevertIfDuplicated(TextArea dropdownItem) {
 		string text = dropdownItem.text;
 		
-		// run through all the labels for matches
-		for (int i = 0; i < labels.Count; i++) {
+		// run through all the items for matches
+		for (int i = 0; i < items.Count; i++) {
 			// check if the dropdown text matches with anything but itself
-			if (text == labels[i].text && dropdownItem != labels[i]) {
+			if (text == items[i].text && dropdownItem != items[i]) {
 				dropdownItem.text = preEditMap[dropdownItem];
 				return;
 			}
