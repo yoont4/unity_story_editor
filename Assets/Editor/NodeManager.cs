@@ -16,7 +16,7 @@ public static class NodeManager {
 	public static StoryDialogEditor mainEditor;
 	
 	// defines Node dimensions
-	public const int NODE_WIDTH = 200;
+	public const int NODE_WIDTH = 150;
 	public const int NODE_HEIGHT = 27;
 	public const int INTERRUPT_WIDTH = 30;
 	public const int INTERRUPT_HEIGHT = 20;

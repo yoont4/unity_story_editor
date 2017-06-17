@@ -145,7 +145,7 @@ public static class SDEStyles {
 		
 		style.normal.textColor = AlmostWhite;
 		style.hover.textColor = LightGray;
-		style.fontSize = 14;
+		style.fontSize = 12;
 		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}
@@ -157,7 +157,7 @@ public static class SDEStyles {
 		style.padding = nodePadding;
 		
 		style.normal.textColor = Color.white;
-		style.fontSize = 14;
+		style.fontSize = 12;
 		style.alignment = TextAnchor.MiddleCenter;
 		return style;
 	}

@@ -40,7 +40,7 @@ public class Node : SDEComponent {
 	private Action OnDrawNodeChild;
 	
 	// the action for handling event processing depending on the node type
-	private Action<Event> OnProcessEvent;
+	private Action<Event> NodeTypeProcessHandle;
 	
 	// variables to maintain mouse offset and grid positioning on Move() 
 	private Vector2 offset;
@@ -133,23 +133,23 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 33, 24), "Text", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 24), "Text", SDEStyles.textButtonDefault)) {
 			ToggleDialog();
 		}
 		
-		if(GUI.Button(new Rect(rect.x+33, rect.y + rect.height, 33, 24), "Dec", SDEStyles.textButtonDefault)) {
+		if(GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 24), "Dec", SDEStyles.textButtonDefault)) {
 			ToggleDecision();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+67, rect.y + rect.height, 33, 24), "SLV", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+50, rect.y + rect.height, 25, 24), "SLV", SDEStyles.textButtonDefault)) {
 			ToggleSetLocalFlag();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "CLV", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+75, rect.y + rect.height, 25, 24), "CLV", SDEStyles.textButtonDefault)) {
 			ToggleCheckLocalFlag();
 		}
-		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", SDEStyles.textButtonDefault);
-		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "CGV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 25, 24), "SGV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 24), "CGV", SDEStyles.textButtonDefault);
 	} 
 	
 	/*
@@ -257,18 +257,9 @@ public class Node : SDEComponent {
 	public override void ProcessEvent(Event e) {
 		// process control point events first
 		inPoint.ProcessEvent(e);
-		if (outPoint != null) {
-			outPoint.ProcessEvent(e);
-		}
 		
-		
-		if (childContainer != null) {
-			childContainer.ProcessEvent(e);
-		}
-		
-		if (splitter != null) {
-			splitter.ProcessEvent(e);
-		}
+		// process accessory components next
+		ProcessSubcomponentEvents(e);
 		
 		base.ProcessEvent(e);
 		
@@ -300,8 +291,12 @@ public class Node : SDEComponent {
 		}
 	}
 	
-	public void ProcessSetLocalFlag(Event e) {
-		// TODO: implement this
+	// ProcessChild is a wrapper for calling the childContainer's ProcessEvent() method,
+	// because not all node types have a childContainer immediately after instantiation
+	private void ProcessChild(Event e) {
+		if (childContainer != null) {
+			childContainer.ProcessEvent(e);
+		}
 	}
 	
 	/*
@@ -313,6 +308,12 @@ public class Node : SDEComponent {
 		genericMenu.ShowAsContext();
 	}
 	
+	private void ProcessSubcomponentEvents(Event e) {
+		if (NodeTypeProcessHandle != null) {
+			NodeTypeProcessHandle(e);
+		}
+	}
+	
 	private void ToggleDialog() {
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
@@ -322,6 +323,9 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Dialog;
 		OnDrawNodeChild = DrawDialog;
 		title = "DIALOG";
+		
+		// set the process component
+		NodeTypeProcessHandle += ProcessChild;
 	}
 	
 	private void ToggleDecision() {
@@ -332,6 +336,9 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Decision;
 		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
+		
+		// set the process component
+		NodeTypeProcessHandle += ProcessChild;
 	}
 	
 	private void ToggleInterrupt() {
@@ -345,6 +352,9 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;
 		title = "-->";
+		
+		// set the process component
+		NodeTypeProcessHandle += ProcessChild;
 	}
 	
 	private void ToggleSetLocalFlag() {
@@ -367,6 +377,9 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
+		
+		// set the process component
+		NodeTypeProcessHandle += outPoint.ProcessEvent;
 	}
 	
 	private void ToggleCheckLocalFlag() {
@@ -388,6 +401,9 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
+		
+		// set the process component
+		NodeTypeProcessHandle += splitter.ProcessEvent;
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {
@@ -402,7 +418,6 @@ public class Node : SDEComponent {
 			}
 		}
 	}
-	
 	
 	/*
 	  CallOnRemoveNode() activates the OnRemoveNode actions for this Node
@@ -426,13 +441,6 @@ public class Node : SDEComponent {
 		}
 	}
 	
-	private void CallOnProcessEvent(Event e) {
-		if (OnProcessEvent != null) {
-			OnProcessEvent(e);
-		} else {
-			throw new UnityException("Tried to call OnProcessEvent when null!");
-		}
-	}
 	
 	private void HandleDragStart(Event e) {
 		offset = e.mousePosition - rect.position;
