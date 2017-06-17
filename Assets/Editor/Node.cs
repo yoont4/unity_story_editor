@@ -133,23 +133,23 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: finalize the buttons and use the correct GUI styles.
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 24), "Text", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 25), "T", SDEStyles.textButtonDefault)) {
 			ToggleDialog();
 		}
 		
-		if(GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 24), "Dec", SDEStyles.textButtonDefault)) {
+		if(GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 25), "D", SDEStyles.textButtonDefault)) {
 			ToggleDecision();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+50, rect.y + rect.height, 25, 24), "SLV", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+50, rect.y + rect.height, 25, 25), "SL", SDEStyles.textButtonDefault)) {
 			ToggleSetLocalFlag();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+75, rect.y + rect.height, 25, 24), "CLV", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+75, rect.y + rect.height, 25, 25), "CL", SDEStyles.textButtonDefault)) {
 			ToggleCheckLocalFlag();
 		}
-		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 25, 24), "SGV", SDEStyles.textButtonDefault);
-		GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 24), "CGV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 25, 25), "SG", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 25), "CG", SDEStyles.textButtonDefault);
 	} 
 	
 	/*
