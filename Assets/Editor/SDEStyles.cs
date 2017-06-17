@@ -193,6 +193,7 @@ public static class SDEStyles {
 		GUIStyle style = new GUIStyle();
 		style.normal.textColor = AlmostWhite;
 		style.wordWrap = true;
+		style.fontSize = 11;
 		return style;
 	}
 	
