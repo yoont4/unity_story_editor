@@ -242,7 +242,7 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawCheckLocalFlag() {
-		splitter.SetPosition(rect.x+rect.width+1, rect.y);
+		splitter.SetPosition(rect.x+rect.width+1, rect.y+7);
 		splitter.Draw();
 		
 		variableDropdown.SetPosition(rect.x, rect.y + rect.height);

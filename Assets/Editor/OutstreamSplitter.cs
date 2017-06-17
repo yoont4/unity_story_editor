@@ -36,8 +36,8 @@ public class OutstreamSplitter {
 	
 	public void Draw() {
 		// set the positions
-		positiveOutpoint.SetPosition(rect.x+16, rect.y);
-		negativeOutpoint.SetPosition(rect.x+16, rect.y+16);
+		positiveOutpoint.SetPosition(rect.x+16, rect.y-1);
+		negativeOutpoint.SetPosition(rect.x+16, rect.y+17);
 		
 		positiveOutpoint.Draw();
 		negativeOutpoint.Draw();
