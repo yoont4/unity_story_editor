@@ -11,6 +11,9 @@ public enum ConnectionPointType { In, Out }
 */
 public class ConnectionPoint : SDEComponent {
 	
+	// if anchored, this ConnectionPoint doesn't implicitly update based on a parent
+	public bool anchored = false;
+	
 	// determines whether this is an in or out ConnectionPoint
 	public ConnectionPointType connectionType;
 	
@@ -44,34 +47,43 @@ public class ConnectionPoint : SDEComponent {
 	  Draw() draws the connection point relative to its parent Node.
 	*/ 
 	public override void Draw() {
-		if (parent == null) {
-			throw new UnityException("ConnectionPoint was drawn without a parent Node!");
+		if (parent == null && !anchored) {
+			throw new UnityException("Unanchored ConnectionPoint was drawn without a parent Node!");
 		}
 		
-		// the parent rect to reference the ConnectionPoint position from
-		Rect refRect;
-		if (parent.widthPad != 0f || parent.heightPad != 0f) {
-			refRect = parent.clickRect;
-		} else {
-			refRect = parent.rect;
-		}
-		
-		// draw the ConnectionPoint midway to the parent
-		rect.y = refRect.y + (refRect.height * 0.5f) - (rect.height * 0.5f);
-		
-		// draw either on the left or right of the parent, depending on 
-		// the ConnectionPoint type.
-		switch (connectionType) {
+		// only inherit parent position if unanchored
+		if (!anchored) {
+			// the parent rect to reference the ConnectionPoint position from
+			Rect refRect;
+			if (parent.widthPad != 0f || parent.heightPad != 0f) {
+				refRect = parent.clickRect;
+			} else {
+				refRect = parent.rect;
+			}
+			
+			// draw the ConnectionPoint midway to the parent
+			rect.y = refRect.y + (refRect.height * 0.5f) - (rect.height * 0.5f);
+			
+			// draw either on the left or right of the parent, depending on 
+			// the ConnectionPoint type.
+			switch (connectionType) {
 			case ConnectionPointType.In:
 				rect.x = refRect.x - rect.width + 3f;
 				break;
-			
+				
 			case ConnectionPointType.Out:
 				rect.x = refRect.x + refRect.width - 3f;
 				break;
+			}
+			
 		}
 		
 		GUI.Box(rect, "", style);
+	}
+	
+	public void SetPosition(float x, float y) {
+		rect.x = x;
+		rect.y = y;
 	}
 	
 	/*

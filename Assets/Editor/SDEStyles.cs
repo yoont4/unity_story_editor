@@ -53,6 +53,8 @@ public static class SDEStyles {
 	private const string TOGGLE_DOWN_DEFAULT = "Assets/Editor/Resources/TestToggleDownBG.png";
 	private const string TOGGLE_DOWN_HOVER = "Assets/Editor/Resources/TestToggleDownHoverBG.png";
 	
+	private const string OUTSTREAM_SPLITTER = "Assets/Editor/Resources/OutstreamSplitter.png";
+	
 	// custom GUI colors
 	private static Color32 AlmostWhite;
 	private static Color32 LightGray;
@@ -80,6 +82,10 @@ public static class SDEStyles {
 	public static GUIStyle toggleUpDefault;
 	public static GUIStyle toggleDownDefault;
 	// ----------- style references -----------
+	
+	// ---------- texture references ----------
+	public static Texture2D outstreamSplitterTexture;
+	// ---------- texture references ----------
 	
 	/*
 	  Initializes the variables used to create styles
@@ -120,6 +126,9 @@ public static class SDEStyles {
 		toggleUpDefault = ToggleUpDefaultStyle();
 		toggleDownDefault = ToggleDownDefaultStyle();
 		
+		// initialize textures
+		outstreamSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(OUTSTREAM_SPLITTER);
+		
 		initialized = true;
 	}
 	
@@ -129,8 +138,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle NodeDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -143,7 +152,7 @@ public static class SDEStyles {
 	
 	private static GUIStyle NodeSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -167,15 +176,15 @@ public static class SDEStyles {
 	
 	private static GUIStyle ConnectionPointDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_DEFAULT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_HOVER) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_HOVER);
 		style.border = connectionPointBorder;
 		return style;
 	}
 	
 	private static GUIStyle ConnectionPointSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(CONNECTIONPOINT_SELECT) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_SELECT);
 		style.border = connectionPointBorder;
 		return style;
 	}
@@ -195,24 +204,24 @@ public static class SDEStyles {
 	
 	private static GUIStyle TextBoxDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
 		style.border = textAreaBorder;
 		return style;
 	}
 	
 	private static GUIStyle TextBoxSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
 		style.border = textAreaBorder;
 		return style;
 	}
 	
 	private static GUIStyle TextButtonDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(NODE_HOVER) as Texture2D;
-		style.active.background = AssetDatabase.GetCachedIcon(NODE_SELECT) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
+		style.active.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
 		style.border = nodeBorder;
 		
 		style.fontSize = 10;
@@ -225,7 +234,7 @@ public static class SDEStyles {
 	
 	private static GUIStyle LabelDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(NODE_DEFALT) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
 		style.border = nodeBorder;
 		
 		style.fontSize = 10;
@@ -236,8 +245,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle ToggleUpDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_DEFAULT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_UP_HOVER) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_UP_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_UP_HOVER);
 		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;
@@ -248,8 +257,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle ToggleDownDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_DEFAULT) as Texture2D;
-		style.hover.background = AssetDatabase.GetCachedIcon(TOGGLE_DOWN_HOVER) as Texture2D;
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_DOWN_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_DOWN_HOVER);
 		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;

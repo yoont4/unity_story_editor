@@ -27,6 +27,9 @@ public class Node : SDEComponent {
 	public ConnectionPoint inPoint;
 	public ConnectionPoint outPoint;
 	
+	// used for CheckLocal/Global modes
+	public OutstreamSplitter splitter;
+	
 	// used for local/global flag Nodes
 	public DropdownBox variableDropdown;
 	
@@ -34,8 +37,10 @@ public class Node : SDEComponent {
 	private Action<Node> OnRemoveNode;
 	
 	// the action for handling how to draw the child node.
-	// NOTE: an action is used to replace the need for a switch statement.
 	private Action OnDrawNodeChild;
+	
+	// the action for handling event processing depending on the node type
+	private Action<Event> OnProcessEvent;
 	
 	// variables to maintain mouse offset and grid positioning on Move() 
 	private Vector2 offset;
@@ -140,11 +145,11 @@ public class Node : SDEComponent {
 			ToggleSetLocalFlag();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "GLV", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 33, 24), "CLV", SDEStyles.textButtonDefault)) {
 			ToggleCheckLocalFlag();
 		}
 		GUI.Button(new Rect(rect.x+134, rect.y + rect.height, 33, 24), "SGV", SDEStyles.textButtonDefault);
-		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "GGV", SDEStyles.textButtonDefault);
+		GUI.Button(new Rect(rect.x+167, rect.y + rect.height, 33, 24), "CGV", SDEStyles.textButtonDefault);
 	} 
 	
 	/*
@@ -230,7 +235,6 @@ public class Node : SDEComponent {
 	private void DrawSetLocalFlag() {
 		variableDropdown.SetPosition(rect.x, rect.y + rect.height);
 		variableDropdown.Draw();
-		// TODO: implement this
 		
 		if (outPoint != null) {
 			outPoint.Draw();
@@ -238,7 +242,11 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawCheckLocalFlag() {
-		// TODO: implement this
+		splitter.SetPosition(rect.x+rect.width+1, rect.y);
+		splitter.Draw();
+		
+		variableDropdown.SetPosition(rect.x, rect.y + rect.height);
+		variableDropdown.Draw();
 	}
 	
 	/*
@@ -256,6 +264,10 @@ public class Node : SDEComponent {
 		
 		if (childContainer != null) {
 			childContainer.ProcessEvent(e);
+		}
+		
+		if (splitter != null) {
+			splitter.ProcessEvent(e);
 		}
 		
 		base.ProcessEvent(e);
@@ -286,6 +298,10 @@ public class Node : SDEComponent {
 			}
 			break;
 		}
+	}
+	
+	public void ProcessSetLocalFlag(Event e) {
+		// TODO: implement this
 	}
 	
 	/*
@@ -357,6 +373,8 @@ public class Node : SDEComponent {
 		variableDropdown = ScriptableObject.CreateInstance<DropdownBox>();
 		variableDropdown.Init();
 		
+		splitter = new OutstreamSplitter();
+		
 		// bind the dropdown menu to the main editor's local flag list
 		variableDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
 		
@@ -405,6 +423,14 @@ public class Node : SDEComponent {
 			OnDrawNodeChild();
 		} else {
 			throw new UnityException("Tried to call OnDrawNodeChild when null!");
+		}
+	}
+	
+	private void CallOnProcessEvent(Event e) {
+		if (OnProcessEvent != null) {
+			OnProcessEvent(e);
+		} else {
+			throw new UnityException("Tried to call OnProcessEvent when null!");
 		}
 	}
 	
