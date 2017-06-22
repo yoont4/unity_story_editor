@@ -151,8 +151,14 @@ public class Node : SDEComponent {
 		if (GUI.Button(new Rect(rect.x+75, rect.y + rect.height, 25, 25), "CL", SDEStyles.textButtonDefault)) {
 			ToggleCheckLocalFlag();
 		}
-		GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 25, 25), "SG", SDEStyles.textButtonDefault);
-		GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 25), "CG", SDEStyles.textButtonDefault);
+		
+		if (GUI.Button(new Rect(rect.x+100, rect.y + rect.height, 25, 25), "SG", SDEStyles.textButtonDefault)) {
+			ToggleSetGlobalFlag();
+		}
+		
+		if (GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 25), "CG", SDEStyles.textButtonDefault)) {
+			ToggleCheckGlobalFlag();
+		}
 	} 
 	
 	/*
@@ -250,6 +256,23 @@ public class Node : SDEComponent {
 		
 		localFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
 		localFlagDropdown.Draw();
+	}
+	
+	private void DrawSetGlobalFlag() {
+		globalFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalFlagDropdown.Draw();
+		
+		if (outPoint != null) {
+			outPoint.Draw();
+		}
+	}
+	
+	private void DrawCheckGlobalFlag() {
+		splitter.SetPosition(rect.x+rect.width+1, rect.y+7);
+		splitter.Draw();
+		
+		globalFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalFlagDropdown.Draw();
 	}
 	
 	/*
@@ -401,6 +424,55 @@ public class Node : SDEComponent {
 		nodeType = NodeType.CheckLocalFlag;
 		OnDrawNodeChild = DrawCheckLocalFlag;
 		title = "CHECK LOCAL FLAG";
+		
+		rect.width = 140;
+		rect.height = 26;
+		
+		// set the process component
+		NodeTypeProcessHandle += splitter.ProcessEvent;
+	}
+	
+	private void ToggleSetGlobalFlag() {
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint.Init(this, ConnectionPointType.Out);
+		
+		globalFlagDropdown =  ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
+		globalFlagDropdown.Init();
+		
+		// bind the dropdown to the global flag list
+		globalFlagDropdown.LoadItems(GlobalFlags.flags);
+		
+		style = SDEStyles.nodeSmallDefault;
+		defaultStyle = SDEStyles.nodeSmallDefault;
+		selectedStyle = SDEStyles.nodeSmallSelected;
+		
+		nodeType = NodeType.SetGlobalFlag;
+		OnDrawNodeChild = DrawSetGlobalFlag;
+		title = "SET GLOBAL FLAG";
+		
+		rect.width = 140;
+		rect.height = 26;
+		
+		// set the process component
+		NodeTypeProcessHandle += outPoint.ProcessEvent;
+	}
+	
+	private void ToggleCheckGlobalFlag() {
+		globalFlagDropdown = ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
+		globalFlagDropdown.Init();
+		
+		splitter = new OutstreamSplitter();
+		
+		// bind the dropdown to the global flag list
+		globalFlagDropdown.LoadItems(GlobalFlags.flags);
+		
+		style = SDEStyles.nodeSmallDefault;
+		defaultStyle = SDEStyles.nodeSmallDefault;
+		selectedStyle = SDEStyles.nodeSmallSelected;
+		
+		nodeType = NodeType.CheckGlobalFlag;
+		OnDrawNodeChild = DrawCheckGlobalFlag;
+		title = "CHECK GLOBAL FLAG";
 		
 		rect.width = 140;
 		rect.height = 26;

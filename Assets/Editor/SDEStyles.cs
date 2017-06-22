@@ -34,7 +34,6 @@ public static class SDEStyles {
 	private static RectOffset nodeBorder;
 	private static RectOffset connectionPointBorder;
 	private static RectOffset textAreaBorder;
-	private static RectOffset toggleBorder;
 	
 	// padding
 	private static RectOffset nodePadding;
@@ -95,7 +94,6 @@ public static class SDEStyles {
 		nodeBorder = new RectOffset(5, 5, 5, 5);
 		connectionPointBorder = new RectOffset(6, 5, 5, 5);
 		textAreaBorder = nodeBorder;
-		toggleBorder = nodeBorder;
 		
 		// initialize padding
 		nodePadding = new RectOffset(5, 5, 5, 5);

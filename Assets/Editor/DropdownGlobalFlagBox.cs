@@ -27,7 +27,7 @@ public class DropdownGlobalFlagBox : ToggleMenu {
 		
 		// draw the toggle button and selected value
 		if (GUI.Button(toggleRect, "", toggleStyle) || 
-			GUI.Button(rect, '['+selectedItem+']', SDEStyles.textButtonDefault))
+			GUI.Button(rect, selectedItem, SDEStyles.textButtonDefault))
 		{
 			if (expanded) {
 				Close();
@@ -44,7 +44,7 @@ public class DropdownGlobalFlagBox : ToggleMenu {
 			
 			for (int i = 0; i < items.Count; i++) {
 				if (GUI.Button(new Rect(20, i*ITEM_OFFSET, rect.width, ITEM_HEIGHT), items[i], SDEStyles.textButtonDefault)) {
-					selectedItem = items[i];
+					selectedItem = '['+items[i]+']';
 					Close();
 				}
 			}
@@ -57,7 +57,10 @@ public class DropdownGlobalFlagBox : ToggleMenu {
 		// TODO: implement this
 	}
 	
-	public void LinkItems(List<string> itemList) {
-		items = itemList;
+	public void LoadItems(string[] itemList) {
+		foreach (string item in itemList) {
+			items.Add(item);
+			
+		}
 	}
 }
