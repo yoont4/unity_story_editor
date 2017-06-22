@@ -13,14 +13,16 @@ public class DropdownBox : ToggleMenu {
 	public List<string> items;
 	private List<TextArea> flagListReference;
 	
-	public string selectedItem = "---";
+	public TextArea selectedItem;
 	
 	public DropdownBox(){}
 	public override void Init() {
 		base.Init();
 		
-		items = new List<string>();
-		flagListReference = new List<TextArea>();
+		this.outerViewRect.height = 100;
+		
+		this.items = new List<string>();
+		this.flagListReference = new List<TextArea>();
 	}
 	
 	public override void Draw() {
@@ -28,7 +30,7 @@ public class DropdownBox : ToggleMenu {
 		
 		// draw the toggle button and selected value
 		if (GUI.Button(toggleRect, "", toggleStyle) || 
-			GUI.Button(rect, selectedItem, SDEStyles.textButtonDefault))
+			GUI.Button(rect, (selectedItem != null ? '['+selectedItem.text+']' : "---"), SDEStyles.textButtonDefault))
 		{
 			if (expanded) {
 				Close();
@@ -40,18 +42,14 @@ public class DropdownBox : ToggleMenu {
 		
 		if (expanded) {
 			// start the scroll view
+			// TODO: this REALLY should be a unique subclass because of this binding behavior as well.
+			innerViewRect.height = flagListReference.Count * ITEM_OFFSET;
 			scrollPos = GUI.BeginScrollView(outerViewRect, scrollPos, innerViewRect);
-			//for (int i = 0; i < items.Count; i++) {
-			//	if (GUI.Button(new Rect(20, i*ITEM_OFFSET, rect.width, ITEM_HEIGHT), items[i], SDEStyles.textButtonDefault)) {
-			//		selectedItem = '[' + items[i] + ']';
-			//		Close();
-			//	}
-			//}
 			
 			// TODO: this really should be a unique subclass since it has very specific binding behavior
 			for (int i = 0; i < flagListReference.Count; i++) {
 				if (GUI.Button(new Rect(20, i*ITEM_OFFSET, rect.width, ITEM_HEIGHT), flagListReference[i].text, SDEStyles.textButtonDefault)) {
-					selectedItem = '[' + flagListReference[i].text + ']';
+					selectedItem = flagListReference[i];
 					Close();
 				}
 			}
