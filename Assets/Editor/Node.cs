@@ -381,6 +381,7 @@ public class Node : SDEComponent {
 		
 		// set the process component
 		NodeTypeProcessHandle += ProcessChild;
+		NodeTypeProcessHandle += outPoint.ProcessEvent;
 	}
 	
 	private void ToggleSetLocalFlag() {
