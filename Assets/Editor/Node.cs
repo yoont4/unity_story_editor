@@ -30,8 +30,11 @@ public class Node : SDEComponent {
 	// used for CheckLocal/Global modes
 	public OutstreamSplitter splitter;
 	
-	// used for local/global flag Nodes
-	public DropdownBox variableDropdown;
+	// used for local flag Nodes
+	public DropdownLocalFlagBox localFlagDropdown;
+	
+	// used for global flag Nodes
+	public DropdownGlobalFlagBox globalFlagDropdown;
 	
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
@@ -233,8 +236,8 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawSetLocalFlag() {
-		variableDropdown.SetPosition(rect.x, rect.y + rect.height);
-		variableDropdown.Draw();
+		localFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
+		localFlagDropdown.Draw();
 		
 		if (outPoint != null) {
 			outPoint.Draw();
@@ -245,8 +248,8 @@ public class Node : SDEComponent {
 		splitter.SetPosition(rect.x+rect.width+1, rect.y+7);
 		splitter.Draw();
 		
-		variableDropdown.SetPosition(rect.x, rect.y + rect.height);
-		variableDropdown.Draw();
+		localFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
+		localFlagDropdown.Draw();
 	}
 	
 	/*
@@ -361,11 +364,11 @@ public class Node : SDEComponent {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		outPoint.Init(this, ConnectionPointType.Out);
 		
-		variableDropdown = ScriptableObject.CreateInstance<DropdownBox>();
-		variableDropdown.Init();
+		localFlagDropdown = ScriptableObject.CreateInstance<DropdownLocalFlagBox>();
+		localFlagDropdown.Init();
 		
 		// bind the dropdown menu to the main editor's local flag list
-		variableDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
+		localFlagDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
 		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
@@ -383,13 +386,13 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleCheckLocalFlag() {
-		variableDropdown = ScriptableObject.CreateInstance<DropdownBox>();
-		variableDropdown.Init();
+		localFlagDropdown = ScriptableObject.CreateInstance<DropdownLocalFlagBox>();
+		localFlagDropdown.Init();
 		
 		splitter = new OutstreamSplitter();
 		
 		// bind the dropdown menu to the main editor's local flag list
-		variableDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
+		localFlagDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
 		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;

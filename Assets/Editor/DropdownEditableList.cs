@@ -117,7 +117,7 @@ public class DropdownEditableList : ToggleMenu {
 		items.Add(newText);
 		
 		// expand the size of the inside space
-		innerViewRect.height += ITEM_OFFSET;
+		innerViewRect.height = items.Count * ITEM_OFFSET;
 		
 		return true;
 	}
@@ -135,7 +135,7 @@ public class DropdownEditableList : ToggleMenu {
 		items.RemoveAt(index);
 		
 		// shrink the size of the scrollview space
-		innerViewRect.height -= ITEM_OFFSET;
+		innerViewRect.height = items.Count * ITEM_OFFSET;
 	}
 	
 	private void ContainsLabel(string item) {

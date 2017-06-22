@@ -145,13 +145,15 @@ public class TextArea : SDEComponent {
 			break;
 			
 		case EventType.ValidateCommand:
-			if (ValidateKeyboardCommand(e.commandName)) {
+			if (Selected && ValidateKeyboardCommand(e.commandName)) {
 				e.Use();
 			}
 			break;
 			
 		case EventType.ExecuteCommand:
-			ProcessKeyboardCommand(e.commandName);
+			if (Selected) {
+				ProcessKeyboardCommand(e.commandName);
+			}
 			break;
 			
 		case EventType.KeyDown:
