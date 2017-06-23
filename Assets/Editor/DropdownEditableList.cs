@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class DropdownEditableList : ToggleMenu {
@@ -114,6 +115,7 @@ public class DropdownEditableList : ToggleMenu {
 		}
 		
 		TextArea newText = CreateTextArea(item);
+		HistoryManager.RecordNewComponent(newText);
 		items.Add(newText);
 		
 		// expand the size of the inside space

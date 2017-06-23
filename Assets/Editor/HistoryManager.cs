@@ -78,6 +78,11 @@ public static class HistoryManager {
 		needsFlush = true;
 	}
 	
+	public static void RecordNewComponent(Object component) {
+		Undo.RegisterCreatedObjectUndo(component, "");
+		needsFlush = true;
+	}
+	
 	public static void FlushIfDirty() {
 		if (needsFlush) {
 			Undo.FlushUndoRecordObjects();
