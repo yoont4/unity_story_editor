@@ -78,8 +78,13 @@ public static class HistoryManager {
 		needsFlush = true;
 	}
 	
-	public static void RecordNewComponent(Object component) {
+	public static void NewComponent(Object component) {
 		Undo.RegisterCreatedObjectUndo(component, "");
+		needsFlush = true;
+	}
+	
+	public static void DeleteComponent(Object component) {
+		Undo.DestroyObjectImmediate(component);
 		needsFlush = true;
 	}
 	
