@@ -357,7 +357,6 @@ public class Node : SDEComponent {
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
 		((DialogBox)this.childContainer).Init(this, "");
-		HistoryManager.NewComponent(this.childContainer);
 		
 		
 		nodeType = NodeType.Dialog;

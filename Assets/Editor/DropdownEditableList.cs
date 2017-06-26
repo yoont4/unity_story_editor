@@ -108,7 +108,6 @@ public class DropdownEditableList : ToggleMenu {
 		}
 		
 		TextArea newText = CreateTextArea(item);
-		HistoryManager.NewComponent(newText);
 		items.Add(newText);
 		
 		// expand the size of the inside space

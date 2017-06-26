@@ -79,6 +79,9 @@ public static class HistoryManager {
 		needsFlush = true;
 	}
 	
+	// NOTE: NewComponent() and DeleteComponent() seem to have weird behavior. 
+	// i.e. not properly adding the new object to  the undo stack. Maybe 
+	// these are really designed for only GameObjects?
 	public static void NewComponent(Object component) {
 		Undo.RegisterCreatedObjectUndo(component, "");
 		needsFlush = true;
