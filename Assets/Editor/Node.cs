@@ -144,6 +144,10 @@ public class Node : SDEComponent {
 		case NodeType.CheckGlobalFlag:
 			DrawCheckGlobalFlag();
 			break;
+			
+		case NodeType.Interrupt:
+			DrawInterrupt();
+			break;
 		}
 		
 		GUI.Box(rect, title, style);
