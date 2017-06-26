@@ -43,7 +43,7 @@ public class StoryDialogEditor : EditorWindow {
 	
 	// Debug menu constants
 	private const float DEBUG_WIDTH = 300f;
-	private const float DEBUG_HEIGHT = 500f;
+	private const float DEBUG_HEIGHT = 80f;
 	private string debugText;
 	
 	[MenuItem("Window/Story & Dialog Editor")]
@@ -140,8 +140,9 @@ public class StoryDialogEditor : EditorWindow {
 		// draw the current connection as it's being selected
 		ConnectionManager.DrawConnectionHandle(Event.current);
 		// draw the local variable menus
-		testMenu.SetPosition(position.width - testMenu.rect.width - 5, 5);
-		testMenu.Draw();
+		DrawLocalVariables();
+		// draw the save state
+		DrawNeedsSave();
 		
 		// draw additional information
 		if (drawHelp) DrawHelp();
@@ -202,7 +203,7 @@ public class StoryDialogEditor : EditorWindow {
 	  DrawDebug() displays some information about the story editor for debug use
 	*/
 	private void DrawDebug() {
-		Rect debugRect = new Rect(5f, 5f, DEBUG_WIDTH, DEBUG_HEIGHT);
+		Rect debugRect = new Rect(5f, position.height - DEBUG_HEIGHT, DEBUG_WIDTH, DEBUG_HEIGHT);
 		debugText = "";
 		debugText += "Selected Component Type: " + SelectionManager.SelectedComponentType();
 		debugText += "\nCurrent Keyboard Control ID: " + GUIUtility.keyboardControl;
@@ -216,7 +217,14 @@ public class StoryDialogEditor : EditorWindow {
 	  DrawLocalVariables() displays the current Story instance's variables as a dropdown menu
 	*/
 	private void DrawLocalVariables() {
-		// TODO: implement this
+		testMenu.SetPosition(position.width - testMenu.rect.width - 5, 5);
+		testMenu.Draw();
+	}
+	
+	private void DrawNeedsSave() {
+		if (HistoryManager.savedUndoGroup != Undo.GetCurrentGroup()) {
+			GUI.Box(new Rect(2, 2, 24, 24), "*", SDEStyles.textAreaLargeDefault);
+		}
 	}
 
 	private void ProcessEvents(Event e) {
@@ -319,6 +327,13 @@ public class StoryDialogEditor : EditorWindow {
 				Debug.Log("Displaying Debug info");
 				drawDebug = true;
 			}
+		}
+		
+		// 'S' saves
+		if (key == KeyCode.S) {
+			// TODO: implement this
+			Debug.Log("saving");
+			HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
 		}
 	}
 	

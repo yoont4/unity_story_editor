@@ -27,9 +27,6 @@ public enum Style {
   what GUIStyle they want applied to a GUI object.
 */
 public static class SDEStyles {
-	private static GUIStyle returnStyle;
-	private static bool initialized = false;
-	
 	// borders
 	private static RectOffset nodeBorder;
 	private static RectOffset connectionPointBorder;
@@ -70,6 +67,7 @@ public static class SDEStyles {
 	// text area styles
 	public static GUIStyle textAreaDefault;
 	public static GUIStyle textAreaSmallDefault;
+	public static GUIStyle textAreaLargeDefault;
 	// text box styles
 	public static GUIStyle textBoxDefault;
 	public static GUIStyle textBoxSelected;
@@ -113,6 +111,7 @@ public static class SDEStyles {
 		
 		textAreaDefault = TextAreaDefaultStyle();
 		textAreaSmallDefault = TextAreaSmallDefaultStyle();
+		textAreaLargeDefault = TextArealargeDefaultStyle();
 		
 		textBoxDefault = TextBoxDefaultStyle();
 		textBoxSelected = TextBoxSelectedStyle();
@@ -126,8 +125,6 @@ public static class SDEStyles {
 		
 		// initialize textures
 		outstreamSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(OUTSTREAM_SPLITTER);
-		
-		initialized = true;
 	}
 	
 	// ------------------------------------------------------------------------------------------ //
@@ -198,6 +195,12 @@ public static class SDEStyles {
 	private static GUIStyle TextAreaSmallDefaultStyle() {
 		GUIStyle style = TextAreaDefaultStyle();
 		style.fontSize = 10;
+		return style;
+	}
+	
+	private static GUIStyle TextArealargeDefaultStyle() {
+		GUIStyle style = TextAreaDefaultStyle();
+		style.fontSize = 16;
 		return style;
 	}
 	

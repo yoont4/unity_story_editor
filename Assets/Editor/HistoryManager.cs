@@ -4,6 +4,7 @@ using UnityEditor;
 public static class HistoryManager {
 	public static StoryDialogEditor mainEditor;
 	public static bool needsFlush;
+	public static int savedUndoGroup;
 	
 	// TODO: optimize this, because it's slow as shit
 	public static void RecordEditor() {

@@ -42,9 +42,6 @@ public class Node : SDEComponent {
 	// the action for handling how to draw the child node.
 	private Action OnDrawNodeChild;
 	
-	// the action for handling event processing depending on the node type
-	private Action<Event> NodeTypeProcessHandle;
-	
 	// variables to maintain mouse offset and grid positioning on Move() 
 	private Vector2 offset;
 	private Vector2 gridOffset;
@@ -236,7 +233,7 @@ public class Node : SDEComponent {
 			childContainer.Draw();
 		}
 		
-		if(outPoint != null && bottomLevel) {
+		if(outPoint != null) {
 			outPoint.Draw();
 		}
 	}
@@ -284,8 +281,10 @@ public class Node : SDEComponent {
 		// process control point events first
 		inPoint.ProcessEvent(e);
 		
-		// process accessory components next
-		ProcessSubcomponentEvents(e);
+		// process subcomponents if necessary
+		if (outPoint != null) outPoint.ProcessEvent(e);
+		if (childContainer != null) childContainer.ProcessEvent(e);
+		if (splitter != null) childContainer.ProcessEvent(e);
 		
 		base.ProcessEvent(e);
 		
@@ -317,14 +316,6 @@ public class Node : SDEComponent {
 		}
 	}
 	
-	// ProcessChild is a wrapper for calling the childContainer's ProcessEvent() method,
-	// because not all node types have a childContainer immediately after instantiation
-	private void ProcessChild(Event e) {
-		if (childContainer != null) {
-			childContainer.ProcessEvent(e);
-		}
-	}
-	
 	/*
 	  ProcessContextMenu() creates and hooks up the context menu attached to this Node.
 	*/
@@ -332,12 +323,6 @@ public class Node : SDEComponent {
 		GenericMenu genericMenu = new GenericMenu();
 		genericMenu.AddItem(new GUIContent("Remove Node"), false, CallOnRemoveNode);
 		genericMenu.ShowAsContext();
-	}
-	
-	private void ProcessSubcomponentEvents(Event e) {
-		if (NodeTypeProcessHandle != null) {
-			NodeTypeProcessHandle(e);
-		}
 	}
 	
 	private void ToggleDialog() {
@@ -349,9 +334,6 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Dialog;
 		OnDrawNodeChild = DrawDialog;
 		title = "DIALOG";
-		
-		// set the process component
-		NodeTypeProcessHandle += ProcessChild;
 	}
 	
 	private void ToggleDecision() {
@@ -362,9 +344,6 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Decision;
 		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
-		
-		// set the process component
-		NodeTypeProcessHandle += ProcessChild;
 	}
 	
 	private void ToggleInterrupt() {
@@ -378,10 +357,6 @@ public class Node : SDEComponent {
 		nodeType = NodeType.Interrupt;
 		OnDrawNodeChild = DrawInterrupt;
 		title = "-->";
-		
-		// set the process component
-		NodeTypeProcessHandle += ProcessChild;
-		NodeTypeProcessHandle += outPoint.ProcessEvent;
 	}
 	
 	private void ToggleSetLocalFlag() {
@@ -404,9 +379,6 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
-		
-		// set the process component
-		NodeTypeProcessHandle += outPoint.ProcessEvent;
 	}
 	
 	private void ToggleCheckLocalFlag() {
@@ -428,9 +400,6 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
-		
-		// set the process component
-		NodeTypeProcessHandle += splitter.ProcessEvent;
 	}
 	
 	private void ToggleSetGlobalFlag() {
@@ -453,9 +422,6 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
-		
-		// set the process component
-		NodeTypeProcessHandle += outPoint.ProcessEvent;
 	}
 	
 	private void ToggleCheckGlobalFlag() {
@@ -477,9 +443,6 @@ public class Node : SDEComponent {
 		
 		rect.width = 140;
 		rect.height = 26;
-		
-		// set the process component
-		NodeTypeProcessHandle += splitter.ProcessEvent;
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {
@@ -492,6 +455,13 @@ public class Node : SDEComponent {
 			for (int i = 0; i < connectionsToRemove.Count; i++) {
 				ConnectionManager.RemoveConnection(connectionsToRemove[i], markHistory: true);
 			}
+			
+			// clear outpoint reference
+			outPoint.connections.Clear();
+			outPoint = null;
+		} else if (bottomLevel && outPoint == null) {
+			outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+			outPoint.Init(this, ConnectionPointType.Out);
 		}
 	}
 	
