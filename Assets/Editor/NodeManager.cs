@@ -128,6 +128,11 @@ public static class NodeManager {
 			connections.AddRange(node.outPoint.connections);
 		}
 		
+		if (node.splitter != null) {
+			connections.AddRange(node.splitter.positiveOutpoint.connections);
+			connections.AddRange(node.splitter.negativeOutpoint.connections);
+		}
+		
 		while (tempContainer != null) {
 			connections.AddRange(tempContainer.outPoint.connections);
 			tempContainer = tempContainer.child;

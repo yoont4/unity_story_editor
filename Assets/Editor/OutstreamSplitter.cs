@@ -10,11 +10,11 @@ using UnityEngine;
 */
 public class OutstreamSplitter {
 	
-	Rect rect;
-	ConnectionPoint positiveOutpoint;
-	ConnectionPoint negativeOutpoint;
+	public Rect rect;
+	public ConnectionPoint positiveOutpoint;
+	public ConnectionPoint negativeOutpoint;
 	
-	Texture2D image;
+	private Texture2D image;
 	
 
 	public OutstreamSplitter() {
