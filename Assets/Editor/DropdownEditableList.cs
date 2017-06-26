@@ -95,12 +95,6 @@ public class DropdownEditableList : ToggleMenu {
 				items[i].ProcessEvent(e);
 			}
 		}
-		
-		// TODO: implement the rest (figure out if necessary)
-		switch(e.type) {
-		case EventType.MouseDown:
-			break;
-		}
 	}
 	
 	private bool AddItem(string item) {
@@ -137,14 +131,6 @@ public class DropdownEditableList : ToggleMenu {
 		
 		// shrink the size of the scrollview space
 		innerViewRect.height = items.Count * ITEM_OFFSET;
-	}
-	
-	private void ContainsLabel(string item) {
-		// TODO: implement this
-	}
-	
-	private void SortLabels() {
-		// TODO: implement this
 	}
 	
 	private TextArea CreateTextArea(string text) {

@@ -39,9 +39,6 @@ public class Node : SDEComponent {
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
 	
-	// the action for handling how to draw the child node.
-	private Action OnDrawNodeChild;
-	
 	// variables to maintain mouse offset and grid positioning on Move() 
 	private Vector2 offset;
 	private Vector2 gridOffset;
@@ -65,10 +62,7 @@ public class Node : SDEComponent {
 		this.inPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.inPoint.Init(this, ConnectionPointType.In);
 		
-
-		
 		this.OnRemoveNode = OnRemoveNode;
-		this.OnDrawNodeChild = DrawStartOptions;
 	}
 	
 	public void Init(
@@ -122,7 +116,35 @@ public class Node : SDEComponent {
 	public override void Draw() {
 		inPoint.Draw();
 		
-		CallOnDrawNodeChild();
+		switch (nodeType) {
+		case NodeType.Nothing:
+			DrawStartOptions();
+			break;
+			
+		case NodeType.Dialog:
+			DrawDialog();
+			break;
+			
+		case NodeType.Decision:
+			DrawDecision();
+			break;
+			
+		case NodeType.SetLocalFlag:
+			DrawSetLocalFlag();
+			break;
+			
+		case NodeType.CheckLocalFlag:
+			DrawCheckLocalFlag();
+			break;
+			
+		case NodeType.SetGlobalFlag:
+			DrawSetGlobalFlag();
+			break;
+			
+		case NodeType.CheckGlobalFlag:
+			DrawCheckGlobalFlag();
+			break;
+		}
 		
 		GUI.Box(rect, title, style);
 	}
@@ -131,7 +153,7 @@ public class Node : SDEComponent {
 	  DrawStartOptions() draws the options for newly created Nodes
 	*/
 	public void DrawStartOptions() {
-		// TODO: finalize the buttons and use the correct GUI styles.
+		// TODO: these should be icons instead of text buttons
 		
 		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 25), "T", SDEStyles.textButtonDefault)) {
 			ToggleDialog();
@@ -284,7 +306,7 @@ public class Node : SDEComponent {
 		// process subcomponents if necessary
 		if (outPoint != null) outPoint.ProcessEvent(e);
 		if (childContainer != null) childContainer.ProcessEvent(e);
-		if (splitter != null) childContainer.ProcessEvent(e);
+		if (splitter != null) splitter.ProcessEvent(e);
 		
 		base.ProcessEvent(e);
 		
@@ -292,12 +314,12 @@ public class Node : SDEComponent {
 		case EventType.MouseDown:
 			// handle the start of a drag
 			if (SelectionManager.SelectedComponent() == this &&
-				e.button == 0 && rect.Contains(e.mousePosition)) {
+				e.button == 0 && Contains(e.mousePosition)) {
 				HandleDragStart(e);
 			}
 			
 			// handle context menu
-			if (e.button == 1 && Selected && rect.Contains(e.mousePosition)) {
+			if (e.button == 1 && Selected && Contains(e.mousePosition)) {
 				ProcessContextMenu();
 				e.Use();
 			}
@@ -326,13 +348,15 @@ public class Node : SDEComponent {
 	}
 	
 	private void ToggleDialog() {
+		HistoryManager.RecordNode(this);
+		
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
 		((DialogBox)this.childContainer).Init(this, "");
+		HistoryManager.NewComponent(this.childContainer);
 		
 		
 		nodeType = NodeType.Dialog;
-		OnDrawNodeChild = DrawDialog;
 		title = "DIALOG";
 	}
 	
@@ -342,7 +366,6 @@ public class Node : SDEComponent {
 		((DecisionBox)this.childContainer).Init(this, "");
 		
 		nodeType = NodeType.Decision;
-		OnDrawNodeChild = DrawDecision;
 		title = "DECISION";
 	}
 	
@@ -355,7 +378,6 @@ public class Node : SDEComponent {
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.Interrupt;
-		OnDrawNodeChild = DrawInterrupt;
 		title = "-->";
 	}
 	
@@ -374,7 +396,6 @@ public class Node : SDEComponent {
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.SetLocalFlag;
-		OnDrawNodeChild = DrawSetLocalFlag;
 		title = "SET LOCAL FLAG";
 		
 		rect.width = 140;
@@ -395,7 +416,6 @@ public class Node : SDEComponent {
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.CheckLocalFlag;
-		OnDrawNodeChild = DrawCheckLocalFlag;
 		title = "CHECK LOCAL FLAG";
 		
 		rect.width = 140;
@@ -417,7 +437,6 @@ public class Node : SDEComponent {
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.SetGlobalFlag;
-		OnDrawNodeChild = DrawSetGlobalFlag;
 		title = "SET GLOBAL FLAG";
 		
 		rect.width = 140;
@@ -438,7 +457,6 @@ public class Node : SDEComponent {
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
 		nodeType = NodeType.CheckGlobalFlag;
-		OnDrawNodeChild = DrawCheckGlobalFlag;
 		title = "CHECK GLOBAL FLAG";
 		
 		rect.width = 140;
@@ -475,18 +493,6 @@ public class Node : SDEComponent {
 			throw new UnityException("Tried to call OnRemoveNode when null!");
 		}
 	}
-	
-	/*
-	  CallOnDrawNodeChild() activates the OnDrawNodeChild actions for this Node
-	*/
-	private void CallOnDrawNodeChild() {
-		if (OnDrawNodeChild != null) {
-			OnDrawNodeChild();
-		} else {
-			throw new UnityException("Tried to call OnDrawNodeChild when null!");
-		}
-	}
-	
 	
 	private void HandleDragStart(Event e) {
 		offset = e.mousePosition - rect.position;

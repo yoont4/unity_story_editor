@@ -50,7 +50,6 @@ public class DropdownLocalFlagBox : ToggleMenu {
 			}
 			GUI.EndScrollView();
 		}
-		// TODO: implement this
 	}
 	
 	public override void ProcessEvent(Event e) {

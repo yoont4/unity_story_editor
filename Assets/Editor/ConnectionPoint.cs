@@ -96,7 +96,7 @@ public class ConnectionPoint : SDEComponent {
 		case EventType.MouseDown:
 			// handle clicking
 			if (e.button == 0) {
-				if (rect.Contains(e.mousePosition)) {
+				if (Contains(e.mousePosition)) {
 					CallOnClickConnectionPoint();
 				}
 			}
