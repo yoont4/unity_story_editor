@@ -333,6 +333,7 @@ public class StoryDialogEditor : EditorWindow {
 		if (key == KeyCode.S) {
 			// TODO: implement this
 			Debug.Log("saving");
+			XMLManager.SaveItems();
 			HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
 		}
 	}
