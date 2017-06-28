@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 public static class XMLManager {
@@ -40,9 +41,10 @@ public static class XMLManager {
 		// TEST CODE ^^^
 		
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
-		FileStream stream = new FileStream(Application.dataPath + "/XML/test.xml", FileMode.Create);
-		serializer.Serialize(stream, storyNode);
-		stream.Close();
+		Encoding encoding = Encoding.GetEncoding("UTF-8");
+		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/test.xml", false, encoding)) {
+			serializer.Serialize(stream, storyNode);
+		}
 	}
 }
 
