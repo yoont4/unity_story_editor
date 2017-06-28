@@ -73,7 +73,7 @@ public class StoryDialogEditor : EditorWindow {
 	  Used only on script recompile.
 	*/
 	private void DestroyScene() {
-		ClearConsole();
+		//ClearConsole();
 		nodes = null;
 		connections = null;
 	}
@@ -92,6 +92,7 @@ public class StoryDialogEditor : EditorWindow {
 		DialogBoxManager.mainEditor = this;
 		SDEContainerManager.mainEditor = this;
 		HistoryManager.mainEditor = this;
+		XMLManager.mainEditor = this;
 		
 		// load GUI styles
 		SDEStyles.Initialize();
