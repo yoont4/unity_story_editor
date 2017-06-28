@@ -175,7 +175,7 @@ public class DialogBox : DBox {
 		}
 		
 		// create a new Interrupt Node and connect them
-		Vector2 nodeRect = new Vector2(rect.x+(rect.width*1.2f), rect.y+5f);
+		Vector2 nodeRect = new Vector2(Mathf.RoundToInt(rect.x+(rect.width*1.2f)), rect.y+5f);
 		Node interruptNode = NodeManager.AddNodeAt(nodeRect, NodeType.Interrupt, markHistory: false);
 		
 		ConnectionManager.selectedInPoint = interruptNode.inPoint;
