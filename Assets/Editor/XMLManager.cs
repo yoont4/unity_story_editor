@@ -32,7 +32,7 @@ public static class XMLManager {
 		// write to disk
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
-		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/test.xml", false, encoding)) {
+		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/_!_test.xml", false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
 		}
 	}
