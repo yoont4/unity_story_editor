@@ -40,7 +40,7 @@ public static class XMLManager {
 		// TEST CODE ^^^
 		
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
-		FileStream stream = new FileStream(Application.dataPath + "/StreamingAssets/XML/test.xml", FileMode.Create);
+		FileStream stream = new FileStream(Application.dataPath + "/XML/test.xml", FileMode.Create);
 		serializer.Serialize(stream, storyNode);
 		stream.Close();
 	}
