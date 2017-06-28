@@ -235,9 +235,7 @@ public class StoryDialogEditor : EditorWindow {
 		// check for selection or context menu
 		case EventType.MouseDown:
 			if (e.button == 0 && ClickManager.IsDoubleClick((float)EditorApplication.timeSinceStartup, e.mousePosition, SDEComponentType.Nothing)) {
-				Vector2 creationOffset = new Vector2(
-					e.mousePosition.x % GRID_SIZE - offset.x % GRID_SIZE,
-					e.mousePosition.y % GRID_SIZE - offset.y % GRID_SIZE);
+				Vector2 creationOffset = CreationOffset(e.mousePosition);
 				NodeManager.AddNodeAt(e.mousePosition - creationOffset, NodeType.Nothing);
 			} 
 			
@@ -264,6 +262,14 @@ public class StoryDialogEditor : EditorWindow {
 			}
 			break;
 		}
+	}
+	
+	public Vector2 CreationOffset(Vector2 vec) {
+		return CreationOffset(vec.x, vec.y);
+	}
+	
+	public Vector2 CreationOffset(float x, float y) {
+		return new Vector2(x % GRID_SIZE - offset.x % GRID_SIZE, y % GRID_SIZE - offset.y % GRID_SIZE);
 	}
 	
 	private void ProcessKeyboardInput(KeyCode key) {
