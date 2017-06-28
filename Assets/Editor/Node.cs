@@ -401,8 +401,8 @@ public class Node : SDEComponent {
 		nodeType = NodeType.SetLocalFlag;
 		title = "SET LOCAL FLAG";
 		
-		rect.width = 140;
-		rect.height = 26;
+		rect.width = NodeManager.FLAG_WIDTH;
+		rect.height = NodeManager.FLAG_HEIGHT;
 	}
 	
 	private void ToggleCheckLocalFlag() {
@@ -421,8 +421,8 @@ public class Node : SDEComponent {
 		nodeType = NodeType.CheckLocalFlag;
 		title = "CHECK LOCAL FLAG";
 		
-		rect.width = 140;
-		rect.height = 26;
+		rect.width = NodeManager.FLAG_WIDTH;
+		rect.height = NodeManager.FLAG_HEIGHT;
 	}
 	
 	private void ToggleSetGlobalFlag() {
@@ -442,8 +442,8 @@ public class Node : SDEComponent {
 		nodeType = NodeType.SetGlobalFlag;
 		title = "SET GLOBAL FLAG";
 		
-		rect.width = 140;
-		rect.height = 26;
+		rect.width = NodeManager.FLAG_WIDTH;
+		rect.height = NodeManager.FLAG_HEIGHT;
 	}
 	
 	private void ToggleCheckGlobalFlag() {
@@ -462,8 +462,8 @@ public class Node : SDEComponent {
 		nodeType = NodeType.CheckGlobalFlag;
 		title = "CHECK GLOBAL FLAG";
 		
-		rect.width = 140;
-		rect.height = 26;
+		rect.width = NodeManager.FLAG_WIDTH;
+		rect.height = NodeManager.FLAG_HEIGHT;
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {
