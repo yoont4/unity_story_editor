@@ -44,7 +44,7 @@ public class Node : SDEComponent {
 	private Vector2 gridOffset;
 	
 	// Interrupt specific vars
-	private bool bottomLevel = true;
+	public bool bottomLevel = true;
 	
 	public Node() {}
 	
@@ -175,7 +175,7 @@ public class Node : SDEComponent {
 			ToggleDialog();
 		}
 		
-		if(GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 25), "D", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 25), "D", SDEStyles.textButtonDefault)) {
 			ToggleDecision();
 		}
 		
@@ -205,7 +205,7 @@ public class Node : SDEComponent {
 		// calculate the y position of the dialog buttons
 		SDEContainer tempChild = childContainer;
 		float buttonY = rect.y + rect.height + 2;
-		while(true) {
+		while (true) {
 			buttonY += tempChild.rect.height;
 			
 			if (tempChild.child == null) {
@@ -239,7 +239,7 @@ public class Node : SDEComponent {
 		// calculate the y position of the dialog buttons
 		SDEContainer tempChild = childContainer;
 		float buttonY = rect.y + rect.height + 2;
-		while(true) {
+		while (true) {
 			buttonY += tempChild.rect.height;
 			
 			if (tempChild.child == null) {
@@ -271,7 +271,7 @@ public class Node : SDEComponent {
 			childContainer.Draw();
 		}
 		
-		if(outPoint != null) {
+		if (outPoint != null) {
 			outPoint.Draw();
 		}
 	}

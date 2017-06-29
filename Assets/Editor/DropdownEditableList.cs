@@ -76,7 +76,7 @@ public class DropdownEditableList : ToggleMenu {
 			if (GUI.Button(new Rect(outerViewRect.x+20, yPos, rect.width, 20), "+item", SDEStyles.textButtonDefault)) {
 				int i = 0;
 				string newLabel = "new var " + i;
-				while(!AddItem(newLabel)) {
+				while (!AddItem(newLabel)) {
 					i++;
 					newLabel = "new var " + i;
 				}

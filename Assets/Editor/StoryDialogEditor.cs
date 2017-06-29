@@ -20,7 +20,7 @@ public class StoryDialogEditor : EditorWindow {
 	
 	public const int GRID_SIZE = 10;
 	
-	private Vector2 offset;
+	public Vector2 offset;
 	private Vector2 drag;
 	private Rect windowRect;
 	
@@ -76,6 +76,7 @@ public class StoryDialogEditor : EditorWindow {
 		ClearConsole();
 		nodes.Clear();
 		connections.Clear();
+		offset = Vector2.zero;
 	}
 	
 	private void OnEnable() {
@@ -243,7 +244,7 @@ public class StoryDialogEditor : EditorWindow {
 				NodeManager.AddNodeAt(e.mousePosition - creationOffset, NodeType.Nothing);
 			} 
 			
-			if(e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
+			if (e.button == 1 && SelectionManager.SelectedComponentType() == SDEComponentType.Nothing) {
 				ProcessContextMenu(e.mousePosition);
 			}
 			break;

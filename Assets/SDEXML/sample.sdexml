@@ -5,10 +5,10 @@
     <NodeEntry>
       <nodeType>Dialog</nodeType>
       <rect>
-        <x>288</x>
-        <y>224</y>
+        <x>-5</x>
+        <y>227</y>
         <width>150</width>
-        <height>27</height>
+        <height>30</height>
       </rect>
       <wPad>0</wPad>
       <hPad>0</hPad>
@@ -16,22 +16,29 @@
         <x>0</x>
         <y>0</y>
       </SVOffset>
+      <bottomLevel>true</bottomLevel>
       <inPoint>
         <CPEID>0</CPEID>
         <linkedCPEIDs />
       </inPoint>
       <childContainer>
+        <child>
+          <outPoint>
+            <CPEID>2</CPEID>
+          </outPoint>
+          <text>dialog2</text>
+        </child>
         <outPoint>
           <CPEID>1</CPEID>
         </outPoint>
-        <text />
+        <text>&lt;f1&gt; dialog1 &lt;f2&gt;</text>
       </childContainer>
     </NodeEntry>
     <NodeEntry>
       <nodeType>Interrupt</nodeType>
       <rect>
-        <x>477.2</x>
-        <y>246</y>
+        <x>175</x>
+        <y>197</y>
         <width>30</width>
         <height>20</height>
       </rect>
@@ -41,15 +48,218 @@
         <x>0</x>
         <y>0</y>
       </SVOffset>
+      <bottomLevel>false</bottomLevel>
       <inPoint>
-        <CPEID>2</CPEID>
+        <CPEID>3</CPEID>
         <linkedCPEIDs>
           <int>1</int>
         </linkedCPEIDs>
       </inPoint>
+      <childContainer>
+        <child>
+          <outPoint>
+            <CPEID>5</CPEID>
+          </outPoint>
+          <text>f2</text>
+        </child>
+        <outPoint>
+          <CPEID>4</CPEID>
+        </outPoint>
+        <text>f1</text>
+      </childContainer>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>Interrupt</nodeType>
+      <rect>
+        <x>175</x>
+        <y>257</y>
+        <width>30</width>
+        <height>20</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>6</CPEID>
+        <linkedCPEIDs>
+          <int>2</int>
+        </linkedCPEIDs>
+      </inPoint>
       <outPoint>
-        <CPEID>3</CPEID>
+        <CPEID>7</CPEID>
       </outPoint>
     </NodeEntry>
+    <NodeEntry>
+      <nodeType>Decision</nodeType>
+      <rect>
+        <x>245</x>
+        <y>227</y>
+        <width>150</width>
+        <height>30</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>8</CPEID>
+        <linkedCPEIDs>
+          <int>4</int>
+          <int>5</int>
+          <int>7</int>
+        </linkedCPEIDs>
+      </inPoint>
+      <childContainer>
+        <child>
+          <outPoint>
+            <CPEID>10</CPEID>
+          </outPoint>
+          <text>decision2</text>
+        </child>
+        <outPoint>
+          <CPEID>9</CPEID>
+        </outPoint>
+        <text>decision1</text>
+      </childContainer>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>SetLocalFlag</nodeType>
+      <rect>
+        <x>425</x>
+        <y>227</y>
+        <width>140</width>
+        <height>26</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>11</CPEID>
+        <linkedCPEIDs>
+          <int>9</int>
+        </linkedCPEIDs>
+      </inPoint>
+      <outPoint>
+        <CPEID>12</CPEID>
+      </outPoint>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>CheckLocalFlag</nodeType>
+      <rect>
+        <x>605</x>
+        <y>227</y>
+        <width>140</width>
+        <height>26</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>13</CPEID>
+        <linkedCPEIDs>
+          <int>12</int>
+        </linkedCPEIDs>
+      </inPoint>
+      <outPos>
+        <CPEID>14</CPEID>
+      </outPos>
+      <outNeg>
+        <CPEID>15</CPEID>
+      </outNeg>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>SetGlobalFlag</nodeType>
+      <rect>
+        <x>805</x>
+        <y>207</y>
+        <width>140</width>
+        <height>26</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>16</CPEID>
+        <linkedCPEIDs>
+          <int>14</int>
+        </linkedCPEIDs>
+      </inPoint>
+      <outPoint>
+        <CPEID>17</CPEID>
+      </outPoint>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>CheckGlobalFlag</nodeType>
+      <rect>
+        <x>805</x>
+        <y>267</y>
+        <width>140</width>
+        <height>26</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>18</CPEID>
+        <linkedCPEIDs>
+          <int>15</int>
+        </linkedCPEIDs>
+      </inPoint>
+      <outPos>
+        <CPEID>19</CPEID>
+      </outPos>
+      <outNeg>
+        <CPEID>20</CPEID>
+      </outNeg>
+    </NodeEntry>
+    <NodeEntry>
+      <nodeType>Nothing</nodeType>
+      <rect>
+        <x>425</x>
+        <y>297</y>
+        <width>150</width>
+        <height>30</height>
+      </rect>
+      <wPad>0</wPad>
+      <hPad>0</hPad>
+      <SVOffset>
+        <x>0</x>
+        <y>0</y>
+      </SVOffset>
+      <bottomLevel>true</bottomLevel>
+      <inPoint>
+        <CPEID>21</CPEID>
+        <linkedCPEIDs>
+          <int>10</int>
+        </linkedCPEIDs>
+      </inPoint>
+    </NodeEntry>
   </nodes>
+  <offset>
+    <x>-205</x>
+    <y>27</y>
+  </offset>
 </StoryNodeEntry>

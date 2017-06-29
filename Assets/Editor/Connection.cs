@@ -50,7 +50,7 @@ public class Connection : ScriptableObject {
 			null,
 			WIDTH );
 		
-		if(clickable) {
+		if (clickable) {
 			if (Handles.Button((inPoint.rect.center + outPoint.rect.center) * 0.5f, Quaternion.identity, 4, 8, Handles.RectangleHandleCap)) {
 				CallOnRemoveConnection();
 			}

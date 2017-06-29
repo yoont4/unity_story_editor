@@ -146,27 +146,29 @@ public static class NodeManager {
 	/*
 	  AddNoteAt() creates a new Node at the given mouse position.
 	*/
-	public static Node AddNodeAt(Vector2 nodePosition, NodeType type, bool markHistory=true) {
+	public static Node AddNodeAt(Vector2 nodePosition, NodeType type, bool markHistory=true, bool center=true) {
 		if (markHistory) {
 			HistoryManager.RecordEditor();
 		}
 		
 		float width;
 		float height;
-		switch(type) {
-		case NodeType.Interrupt:
+		if (type == NodeType.Interrupt) {
 			width = INTERRUPT_WIDTH;
 			height = INTERRUPT_HEIGHT;
-			break;
-		default:
+		} else if (type == NodeType.CheckLocalFlag || type == NodeType.SetLocalFlag || type == NodeType.CheckGlobalFlag || type == NodeType.SetGlobalFlag) {
+			width = FLAG_WIDTH;
+			height = FLAG_HEIGHT;
+		} else {
 			width = NODE_WIDTH;
 			height = NODE_HEIGHT;
-			break;
 		}
 		
 		// add node as close to center as possible while staying on grid
-		nodePosition.x -= (width/2) - (width/2) % StoryDialogEditor.GRID_SIZE;
-		nodePosition.y -= (height/2) - (height/2) % StoryDialogEditor.GRID_SIZE;
+		if (center) {
+			nodePosition.x -= (width/2) - (width/2) % StoryDialogEditor.GRID_SIZE;
+			nodePosition.y -= (height/2) - (height/2) % StoryDialogEditor.GRID_SIZE;
+		}
 		
 		Node newNode = ScriptableObject.CreateInstance<Node>();
 		newNode.Init(

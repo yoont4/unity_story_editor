@@ -13,6 +13,8 @@ public static class SDEXMLManager {
 	
 	public static StoryDialogEditor mainEditor;
 	
+	// vvvvv LOAD STORY EDITOR vvvvv //
+	
 	public static void LoadItems(string path) {
 		if (mainEditor == null) {
 			Debug.Log("Cannot Load: Story Editor reference unhooked!");
@@ -30,20 +32,125 @@ public static class SDEXMLManager {
 		// destroy the scene before populating it
 		mainEditor.DestroyScene();
 		
-		// generate nodes and data from entries
-		// TODO: implement this
+		// set the editor's offset to match the saved entry
+		mainEditor.offset = storyEntry.offset;
 		
-		// vvv TEST CODE vvv
-		foreach (NodeEntry entry in storyEntry.nodes) {
-			NodeManager.AddNodeAt(
-				new Vector2(entry.rect.x, entry.rect.y), entry.nodeType);
+		// CPEID maps to ConnectionPoint to generate connections later
+		Dictionary<int, ConnectionPoint> connectionPointMap = new Dictionary<int, ConnectionPoint>();
+		
+		// initialize all the nodes and generate the connection map
+		Dictionary<int, List<int>> connectionMap = InitializeNodes(storyEntry, connectionPointMap);
+		
+		// create all the connections
+		foreach (int inCPEID in connectionMap.Keys) {
+			ConnectionManager.selectedInPoint = connectionPointMap[inCPEID];
+			
+			foreach (int outCPEID in connectionMap[inCPEID]) {
+				ConnectionManager.selectedOutPoint = connectionPointMap[outCPEID];
+				ConnectionManager.CreateConnection(true, markHistory:false);
+			}
 		}
-		Debug.Log(storyEntry.nodes.Count);
-		Debug.Log(storyEntry.nodes[0].rect.x);
-		Debug.Log(storyEntry.nodes[0].rect.y);
-		// ^^^ TEST CODE ^^^
+		ConnectionManager.ClearConnectionSelection();
 		
+		Debug.Log("loaded: " + path);
 	}
+	
+	/*
+	  InitializeNodes() is a helper function for loading Story Dialog Editor data.
+	
+	  Returns the mapping of input connection points and their associated output connection points
+	*/
+	private static Dictionary<int, List<int>> InitializeNodes(StoryNodeEntry storyEntry, Dictionary<int, ConnectionPoint> connectionPointMap) {
+		// the map of input points and their associated output points
+		Dictionary<int, List<int>> connectionMap = new Dictionary<int, List<int>>();
+		
+		// generate nodes and data from entries
+		Node tempNode;
+		foreach (NodeEntry entry in storyEntry.nodes) {
+			tempNode = NodeManager.AddNodeAt(new Vector2(entry.rect.x, entry.rect.y), entry.nodeType, markHistory:false, center:false);
+			connectionPointMap[entry.inPoint.CPEID] = tempNode.inPoint;
+			connectionMap[entry.inPoint.CPEID] = entry.inPoint.linkedCPEIDs;
+			
+			// map Node outpoint/splitter depending on NodeType
+			if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.Interrupt) {
+				if (tempNode.outPoint != null && entry.outPoint != null) {
+					connectionPointMap[entry.outPoint.CPEID] = tempNode.outPoint;
+				}
+			} else if (entry.nodeType == NodeType.CheckLocalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
+				if (tempNode.splitter != null && entry.outPos != null && entry.outNeg != null) {
+					connectionPointMap[entry.outPos.CPEID] = tempNode.splitter.positiveOutpoint;
+					connectionPointMap[entry.outNeg.CPEID] = tempNode.splitter.negativeOutpoint;
+				}
+			}
+			
+			// record child container outpoints depending on NodeType and populate fields
+			if (entry.nodeType == NodeType.Dialog || entry.nodeType == NodeType.Decision) {
+				DBox child = tempNode.childContainer as DBox;
+				SDEContainerEntry childEntry = entry.childContainer;
+				
+				while (childEntry != null) {
+					// set text and outpoint mapping for the child container
+					child.textArea.text = childEntry.text;
+					connectionPointMap[childEntry.outPoint.CPEID] = child.outPoint;
+					
+					childEntry = childEntry.child;
+					
+					// generate the child's child if there needs to be one
+					if (childEntry != null) {
+						switch (entry.nodeType) {
+						case NodeType.Dialog:
+							child.child = ScriptableObject.CreateInstance<DialogBox>();
+							((DialogBox)child.child).Init(child, "");
+							break;
+						case NodeType.Decision:
+							child.child = ScriptableObject.CreateInstance<DecisionBox>();
+							((DecisionBox)child.child).Init(child, "");
+							break;
+						}
+					}
+					
+					child = child.child as DBox;
+				}
+			} else if (entry.nodeType == NodeType.Interrupt) {
+				tempNode.SetBottomLevelInterrupt(entry.bottomLevel);
+				
+				DialogInterrupt child;
+				SDEContainerEntry childEntry = entry.childContainer;
+				
+				if (childEntry != null) {
+					// create the first child of the parent node
+					tempNode.childContainer = ScriptableObject.CreateInstance<DialogInterrupt>();
+					tempNode.childContainer.Init(tempNode);
+					((DialogInterrupt)tempNode.childContainer).label.text = childEntry.text;
+					
+					// record the connection point
+					connectionPointMap[childEntry.outPoint.CPEID] = tempNode.childContainer.outPoint;
+					
+					child = tempNode.childContainer as DialogInterrupt;
+					childEntry = childEntry.child;
+					
+					while (childEntry != null) {
+						// generate the child interrupt and populate it
+						child.child = ScriptableObject.CreateInstance<DialogInterrupt>();
+						((DialogInterrupt)child.child).Init(child);
+						((DialogInterrupt)child.child).label.text = childEntry.text;
+						
+						// record the connection point
+						connectionPointMap[childEntry.outPoint.CPEID] = child.child.outPoint;
+						
+						child = child.child as DialogInterrupt;
+						childEntry = childEntry.child;
+					}
+				}
+			}
+		}
+		
+		return connectionMap;
+	}
+	
+	// ^^^^^ LOAD STORY EDITOR ^^^^^ //
+	
+	// vvvvv SAVE STORY EDITOR vvvvv //
 	
 	public static void SaveItems() {
 		if (mainEditor == null) {
@@ -58,11 +165,12 @@ public static class SDEXMLManager {
 		// assign nodes/flags
 		storyEntry.nodes = nodes;
 		storyEntry.localFlags = flags;
+		storyEntry.offset = mainEditor.offset;
 		
 		// write to disk
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
-		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/_!_save_test.sdexml", false, encoding)) {
+		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/SDEXML/_!_save_test.sdexml", false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
 		}
 	}
@@ -91,11 +199,11 @@ public static class SDEXMLManager {
 		NodeEntry tempNode;
 		for(int i = 0; i < nodes.Count; i++) {
 			tempNode = new NodeEntry();
-			nodeMap.Add(tempNode, nodes[i]);
+			nodeMap[tempNode] = nodes[i];
 			
 			tempNode.inPoint = new InPointEntry();
 			tempNode.inPoint.CPEID = GenerateCPEID();
-			connectionPointMap.Add(nodes[i].inPoint, tempNode.inPoint.CPEID);
+			connectionPointMap[nodes[i].inPoint] = tempNode.inPoint.CPEID;
 			
 			// assign CPEID to outpoints and splitter points based on NodeType
 			NodeType type = nodes[i].nodeType;
@@ -106,7 +214,7 @@ public static class SDEXMLManager {
 			{
 				tempNode.outPoint = new ConnectionPointEntry();
 				tempNode.outPoint.CPEID = GenerateCPEID();
-				connectionPointMap.Add(nodes[i].outPoint, tempNode.outPoint.CPEID);
+				connectionPointMap[nodes[i].outPoint] = tempNode.outPoint.CPEID;
 			}
 			
 			if ((type == NodeType.CheckGlobalFlag ||
@@ -117,8 +225,8 @@ public static class SDEXMLManager {
 				tempNode.outNeg = new ConnectionPointEntry();
 				tempNode.outPos.CPEID = GenerateCPEID();
 				tempNode.outNeg.CPEID = GenerateCPEID();
-				connectionPointMap.Add(nodes[i].splitter.positiveOutpoint, tempNode.outPos.CPEID);
-				connectionPointMap.Add(nodes[i].splitter.negativeOutpoint, tempNode.outNeg.CPEID);
+				connectionPointMap[nodes[i].splitter.positiveOutpoint] = tempNode.outPos.CPEID;
+				connectionPointMap[nodes[i].splitter.negativeOutpoint] = tempNode.outNeg.CPEID;
 			}
 			
 			// check if it has child elements based on NodeType
@@ -134,7 +242,7 @@ public static class SDEXMLManager {
 				while (container != null) {
 					tempContainer.outPoint = new ConnectionPointEntry();
 					tempContainer.outPoint.CPEID = GenerateCPEID();
-					connectionPointMap.Add(container.outPoint, tempContainer.outPoint.CPEID);
+					connectionPointMap[container.outPoint] = tempContainer.outPoint.CPEID;
 					
 					// get container data
 					switch(container.containerType) {
@@ -174,6 +282,7 @@ public static class SDEXMLManager {
 		entry.hPad = node.heightPad;
 		entry.SVOffset = node.scrollViewOffset;
 		entry.nodeType = node.nodeType;
+		entry.bottomLevel = node.bottomLevel;
 		
 		// assign inPoint links
 		List<int> linkedCPEIDs = new List<int>();
@@ -188,6 +297,10 @@ public static class SDEXMLManager {
 		CPEIDCounter++;
 		return temp;
 	}
+	
+	// ^^^^^ SAVE STORY EDITOR ^^^^^ //
+	
+	// vvvvv SDEXML UTILIY vvvvv //
 	
 	public static void OnProjectItemGUI(string item, Rect selectionRect) {
 		if (!IsValidOnProjectItemGUIEvent(item, selectionRect)) {
@@ -238,6 +351,8 @@ public static class SDEXMLManager {
 			return false;
 		}
 	}
+	
+	// ^^^^^ SDEXML UTILIY ^^^^^ //
 }
 
 // ----------------------------------------------------------------------------------------------- //
@@ -249,6 +364,7 @@ public static class SDEXMLManager {
 public class StoryNodeEntry {
 	public List<string> localFlags;
 	public List<NodeEntry> nodes;
+	public Vector2 offset;
 }
 
 [System.Serializable]
@@ -269,6 +385,8 @@ public class NodeEntry {
 	public float wPad;
 	public float hPad;
 	public Vector2 SVOffset;
+	
+	public bool bottomLevel;
 	
 	public InPointEntry inPoint;
 	public ConnectionPointEntry outPoint;

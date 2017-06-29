@@ -69,7 +69,7 @@ public class DialogBox : DBox {
 		List<DialogInterrupt> oldInterrupts = new List<DialogInterrupt>();
 		
 		// remove all the old Interrupt Nodes, but queue the interrupts that need to be added.
-		while(interrupt != null) {
+		while (interrupt != null) {
 			if (flags.Contains(interrupt.label.text)) {
 				oldInterrupts.Add(interrupt);
 				SDEContainerManager.RemoveContainer(interrupt, removeConnections: false, markHistory: false);

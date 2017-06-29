@@ -114,7 +114,7 @@ public abstract class DBox : SDEContainer {
 			newFocusedDialogBox = child;
 		} else if (parent != null) {
 			// if at the bottom of the TextArea stack, jump back to the top
-			while(newFocusedDialogBox.parent != null) {
+			while (newFocusedDialogBox.parent != null) {
 				newFocusedDialogBox = newFocusedDialogBox.parent;
 			}
 		}
