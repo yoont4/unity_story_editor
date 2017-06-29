@@ -72,10 +72,10 @@ public class StoryDialogEditor : EditorWindow {
 	
 	  Used only on script recompile.
 	*/
-	private void DestroyScene() {
-		//ClearConsole();
-		nodes = null;
-		connections = null;
+	public void DestroyScene() {
+		ClearConsole();
+		nodes.Clear();
+		connections.Clear();
 	}
 	
 	private void OnEnable() {
@@ -92,7 +92,7 @@ public class StoryDialogEditor : EditorWindow {
 		DialogBoxManager.mainEditor = this;
 		SDEContainerManager.mainEditor = this;
 		HistoryManager.mainEditor = this;
-		XMLManager.mainEditor = this;
+		SDEXMLManager.mainEditor = this;
 		
 		// load GUI styles
 		SDEStyles.Initialize();
@@ -100,6 +100,10 @@ public class StoryDialogEditor : EditorWindow {
 		// initialize on-screen components
 		testMenu = ScriptableObject.CreateInstance<DropdownEditableList>();
 		testMenu.Init();
+		
+		// add the XML load hook
+		EditorApplication.projectWindowItemOnGUI -= SDEXMLManager.OnProjectItemGUI;
+		EditorApplication.projectWindowItemOnGUI += SDEXMLManager.OnProjectItemGUI;
 	}
 	
 	private void OnGUI() {
@@ -338,9 +342,8 @@ public class StoryDialogEditor : EditorWindow {
 		
 		// 'S' saves
 		if (key == KeyCode.S) {
-			// TODO: implement this
 			Debug.Log("saving");
-			XMLManager.SaveItems();
+			SDEXMLManager.SaveItems();
 			HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
 		}
 	}

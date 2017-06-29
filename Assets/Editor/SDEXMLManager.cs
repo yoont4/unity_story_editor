@@ -5,15 +5,45 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using UnityEditor;
 
-public static class XMLManager {
+public static class SDEXMLManager {
 	
 	private static int CPEIDCounter = 0;
 	
 	public static StoryDialogEditor mainEditor;
 	
-	public static StoryNodeEntry storyEntry;
-	
+	public static void LoadItems(string path) {
+		if (mainEditor == null) {
+			Debug.Log("Cannot Load: Story Editor reference unhooked!");
+			return;
+		}
+		
+		StoryNodeEntry storyEntry = new StoryNodeEntry();
+		
+		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
+		Encoding encoding = Encoding.GetEncoding("UTF-8");
+		using (StreamReader stream = new StreamReader(path, encoding)) {
+			storyEntry = serializer.Deserialize(stream) as StoryNodeEntry;
+		}
+		
+		// destroy the scene before populating it
+		mainEditor.DestroyScene();
+		
+		// generate nodes and data from entries
+		// TODO: implement this
+		
+		// vvv TEST CODE vvv
+		foreach (NodeEntry entry in storyEntry.nodes) {
+			NodeManager.AddNodeAt(
+				new Vector2(entry.rect.x, entry.rect.y), entry.nodeType);
+		}
+		Debug.Log(storyEntry.nodes.Count);
+		Debug.Log(storyEntry.nodes[0].rect.x);
+		Debug.Log(storyEntry.nodes[0].rect.y);
+		// ^^^ TEST CODE ^^^
+		
+	}
 	
 	public static void SaveItems() {
 		if (mainEditor == null) {
@@ -21,7 +51,7 @@ public static class XMLManager {
 			return;
 		}
 		
-		storyEntry = new StoryNodeEntry();
+		StoryNodeEntry storyEntry = new StoryNodeEntry();
 		List<NodeEntry> nodes = GenerateNodeEntries(mainEditor.nodes);
 		List<string> flags = new List<string>();
 		
@@ -32,7 +62,7 @@ public static class XMLManager {
 		// write to disk
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
-		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/_!_test.xml", false, encoding)) {
+		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/XML/_!_save_test.sdexml", false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
 		}
 	}
@@ -158,7 +188,61 @@ public static class XMLManager {
 		CPEIDCounter++;
 		return temp;
 	}
+	
+	public static void OnProjectItemGUI(string item, Rect selectionRect) {
+		if (!IsValidOnProjectItemGUIEvent(item, selectionRect)) {
+			return;
+		}
+		
+		// get selected item path
+		string path = AssetDatabase.GUIDToAssetPath(item);
+		if (!IsValidFile(path)) {
+			return;
+		}
+		
+		// if it's a valid item, use the event
+		Event.current.Use();
+		LoadItems(path);
+	}
+	
+	// IsValidOnProjectItemGUIEvent() is a helper function to cull useless update calls from being
+	// processed by OnProjectItemGUI().
+	private static bool IsValidOnProjectItemGUIEvent(string item, Rect selectionRect) {
+		if (string.IsNullOrEmpty(item)) {
+			return false;
+		}
+		
+		if (Event.current.isMouse) {
+			if (Event.current.type != EventType.MouseDown || Event.current.clickCount != 2 || Event.current.button != 0) {
+				return false;
+			}
+			
+			if (selectionRect.height < 20f) {
+				selectionRect.xMin = 0f;
+			}
+			
+			if (!selectionRect.Contains(Event.current.mousePosition)) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static bool IsValidFile(string path) {
+		if (path.EndsWith(".sdexml", System.StringComparison.OrdinalIgnoreCase)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
+
+// ----------------------------------------------------------------------------------------------- //
+// ---------------------------------------- ENTRY CLASSES ---------------------------------------- //
+// ----------------------------------------------------------------------------------------------- //
 
 // the master story entry
 [System.Serializable]

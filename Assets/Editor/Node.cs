@@ -83,6 +83,18 @@ public class Node : SDEComponent {
 		case NodeType.Interrupt:
 			ToggleInterrupt();
 			break;
+		case NodeType.SetLocalFlag:
+			ToggleSetLocalFlag();
+			break;
+		case NodeType.CheckLocalFlag:
+			ToggleCheckLocalFlag();
+			break;
+		case NodeType.SetGlobalFlag:
+			ToggleSetGlobalFlag();
+			break;
+		case NodeType.CheckGlobalFlag:
+			ToggleCheckGlobalFlag();
+			break;
 		default:
 			break;
 		}
