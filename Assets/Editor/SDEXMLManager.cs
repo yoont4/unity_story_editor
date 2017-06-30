@@ -21,6 +21,11 @@ public static class SDEXMLManager {
 			return;
 		}
 		
+		// create dialog entry to warn user that they have unsaved changes
+		if (mainEditor.IsDirty()) {
+			// TODO: implement this
+		}
+		
 		StoryNodeEntry storyEntry = new StoryNodeEntry();
 		
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
@@ -167,10 +172,18 @@ public static class SDEXMLManager {
 		storyEntry.localFlags = flags;
 		storyEntry.offset = mainEditor.offset;
 		
+		// open the file explorer save window if on a new file
+		// otherwise, save to the current file <- TODO: implement this
+		string path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
+		Debug.Log(path);
+		if (path == null || path == "") {
+			return;
+		}
+
 		// write to disk
 		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
-		using (StreamWriter stream = new StreamWriter(Application.dataPath + "/SDEXML/_!_save_test.sdexml", false, encoding)) {
+		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
 		}
 	}

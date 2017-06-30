@@ -15,9 +15,6 @@ public class StoryDialogEditor : EditorWindow {
 	// local variables are stored in this dropdown
 	public DropdownEditableList testMenu;
 	
-	// the command log history text
-	public string commandHistory;
-	
 	public const int GRID_SIZE = 10;
 	
 	public Vector2 offset;
@@ -228,8 +225,16 @@ public class StoryDialogEditor : EditorWindow {
 	}
 	
 	private void DrawNeedsSave() {
-		if (HistoryManager.savedUndoGroup != Undo.GetCurrentGroup()) {
+		if (IsDirty()) {
 			GUI.Box(new Rect(2, 2, 24, 24), "*", SDEStyles.textAreaLargeDefault);
+		}
+	}
+	
+	public bool IsDirty() {
+		if (HistoryManager.savedUndoGroup != Undo.GetCurrentGroup()) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
