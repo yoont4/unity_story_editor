@@ -1,5 +1,8 @@
 # unity_story_editor
-Visual story/dialog editor for my long-term game project.
+Visual story/dialog editor for long-term game project. Built with the intent to make building complex dialog trees intuitive, increasing asset throughput and quality.
+
+Glimpse(s) of the editor:
+![alt text](http://i.imgur.com/YjL9uMs.gif "Story Editor loading sample")
 
 NOTES:
 
