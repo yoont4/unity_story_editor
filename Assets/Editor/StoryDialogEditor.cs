@@ -31,10 +31,12 @@ public class StoryDialogEditor : EditorWindow {
 	
 	// Help menu constants
 	private const float HELP_WIDTH = 180f;
-	private const float HELP_HEIGHT = 80f;
+	private const float HELP_HEIGHT = 110f;
 	private const string HELP_TEXT = 
 	"H: Hide/Show Help Menu\n" +
 	"Q: Hide/Show Debug Info\n" +
+	"S: Save Entry\n" +
+	"Shift+S: Save As\n" +
 	"C: Center on all Nodes\n" +
 	"D: Delete the selected Node\n\n" +
 	"R-Mouse: Context Menu";
@@ -84,6 +86,7 @@ public class StoryDialogEditor : EditorWindow {
 		fileName = "";
 	}
 	
+	// initialize Editor hooks for Story Dialog Editor functionality here
 	static StoryDialogEditor() {
 		// add the XML load hook
 		EditorApplication.projectWindowItemOnGUI -= SDEXMLManager.OnProjectItemGUI;
@@ -234,10 +237,14 @@ public class StoryDialogEditor : EditorWindow {
 		testMenu.Draw();
 	}
 	
+	private char fileNameMod = '*';
 	private void DrawNeedsSave() {
 		if (IsDirty()) {
-			GUI.Box(new Rect(2, 2, 200, 24), fileName + "*", SDEStyles.textAreaSmallDefault);
+			fileNameMod = '*';
+		}  else {
+			fileNameMod = ' ';
 		}
+		GUI.Box(new Rect(2, 2, position.width-200, 24), fileName+fileNameMod, SDEStyles.textAreaSmallDefault);
 	}
 	
 	public bool IsDirty() {
@@ -293,74 +300,85 @@ public class StoryDialogEditor : EditorWindow {
 	}
 	
 	private void ProcessKeyboardInput(KeyCode key) {
-		// 'C' center on node positions
-		if (key == KeyCode.C) {
-			if (nodes != null && nodes.Count > 0) { 
-				Debug.Log("centering on nodes...");
-				// calculate current average
-				Vector2 avgPosition = new Vector2();
-				for (int i = 0; i < nodes.Count; i++) {
-					avgPosition += nodes[i].rect.center;
-				}
-				avgPosition /= nodes.Count;
-				
-				// reshift everything by this new average, including window size
-				OnDrag(-avgPosition + (position.size/2));
-			} else {
-				Debug.Log("no nodes to center on");
+		// check for modifiers
+		if (Event.current.shift) {
+			// 'Sh+S' save as
+			if (key == KeyCode.S) {
+				Debug.Log("saving as...");
+				SDEXMLManager.SaveItems(true);
+				HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
 			}
-		}
-		
-			// 'D' delete the selected node
-		if (key == KeyCode.D) {
-			if (nodes != null && SelectionManager.SelectedComponent() != null) {
-				Debug.Log("deleting selected node...");
-				SDEComponent component = SelectionManager.SelectedComponent();
-				while (component != null) {
-					if (component.componentType == SDEComponentType.Node) {
-						// if a match is found, remove the Node if it's not an Interrupt and return
-						if (((Node)component).nodeType != NodeType.Interrupt) {
-							NodeManager.RemoveNode((Node)component);
-						}
-						return;
+		} else {
+			// 'C' center on node positions
+			if (key == KeyCode.C) {
+				if (nodes != null && nodes.Count > 0) { 
+					Debug.Log("centering on nodes...");
+					// calculate current average
+					Vector2 avgPosition = new Vector2();
+					for (int i = 0; i < nodes.Count; i++) {
+						avgPosition += nodes[i].rect.center;
 					}
-					component = component.parent;
+					avgPosition /= nodes.Count;
+					
+					// reshift everything by this new average, including window size
+					OnDrag(-avgPosition + (position.size/2));
+				} else {
+					Debug.Log("no nodes to center on");
 				}
-				
-				// if no match was found, that means the component had no Node parent!
-				throw new UnityException("tried to delete SDEComponent with no parent Node!");
-			} else {
-				Debug.Log("Ignoring 'D'elete, no Node selected!");
 			}
-		}
-		
-		// 'H' show/hide the help box
-		if (key == KeyCode.H) { 
-			if (drawHelp) {
-				Debug.Log("Hiding Help menu");
-				drawHelp = false;
-			} else {
-				Debug.Log("Displaying Help menu");
-				drawHelp = true;
+			
+			// 'D' delete the selected node
+			if (key == KeyCode.D) {
+				if (nodes != null && SelectionManager.SelectedComponent() != null) {
+					Debug.Log("deleting selected node...");
+					SDEComponent component = SelectionManager.SelectedComponent();
+					while (component != null) {
+						if (component.componentType == SDEComponentType.Node) {
+						// if a match is found, remove the Node if it's not an Interrupt and return
+							if (((Node)component).nodeType != NodeType.Interrupt) {
+								NodeManager.RemoveNode((Node)component);
+							}
+							return;
+						}
+						component = component.parent;
+					}
+					
+					// if no match was found, that means the component had no Node parent!
+					throw new UnityException("tried to delete SDEComponent with no parent Node!");
+				} else {
+					Debug.Log("Ignoring 'D'elete, no Node selected!");
+				}
 			}
-		}
-		
-		// 'Q' show/hide debug information
-		if (key == KeyCode.Q) {
-			if (drawDebug) {
-				Debug.Log("Hiding Debug info");
-				drawDebug = false;
-			} else {
-				Debug.Log("Displaying Debug info");
-				drawDebug = true;
+			
+			// 'H' show/hide the help box
+			if (key == KeyCode.H) { 
+				if (drawHelp) {
+					Debug.Log("Hiding Help menu");
+					drawHelp = false;
+				} else {
+					Debug.Log("Displaying Help menu");
+					drawHelp = true;
+				}
 			}
-		}
-		
-		// 'S' saves
-		if (key == KeyCode.S) {
-			Debug.Log("saving");
-			SDEXMLManager.SaveItems();
-			HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
+			
+			// 'Q' show/hide debug information
+			if (key == KeyCode.Q) {
+				if (drawDebug) {
+					Debug.Log("Hiding Debug info");
+					drawDebug = false;
+				} else {
+					Debug.Log("Displaying Debug info");
+					drawDebug = true;
+				}
+			}
+			
+			// 'S' saves
+			if (key == KeyCode.S) {
+				Debug.Log("saving...");
+				SDEXMLManager.SaveItems(false);
+				HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
+				return;
+			}
 		}
 	}
 	

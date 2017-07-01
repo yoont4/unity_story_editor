@@ -20,7 +20,7 @@ public static class SDEXMLManager {
 			// open a new window if it's unhooked
 			Debug.Log("Window not found, opening new Story Dialog Editor window.");
 			StoryDialogEditor.OpenWindow();
-		} else if (mainEditor.IsDirty()) {
+		} else if (!string.IsNullOrEmpty(mainEditor.fileName) && mainEditor.IsDirty()) {
 			// create dialog entry to warn user that they have unsaved changes
 			if (!EditorUtility.DisplayDialog("Load new entry", "Are you sure you want to open a new entry and close the current one?", "yes", "no")) {
 				return;
@@ -161,7 +161,10 @@ public static class SDEXMLManager {
 	
 	// vvvvv SAVE STORY EDITOR vvvvv //
 	
-	public static void SaveItems() {
+	public static void SaveItems(bool saveAs) {
+		// use event regardless of outcome to prevent unexpected event pass-through
+		Event.current.Use();
+		
 		if (mainEditor == null) {
 			Debug.Log("Cannot Save: Story Editor reference unhooked!");
 			return;
@@ -179,13 +182,14 @@ public static class SDEXMLManager {
 		// open the file explorer save window if on a new file
 		// otherwise, save to the current file <- TODO: implement this
 		string path;
-		if (mainEditor.fileName == "") {
+		if (saveAs || (!saveAs && string.IsNullOrEmpty(mainEditor.fileName))) {
 			path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
 		} else {
 			path = mainEditor.fileName;
 		}
 		
-		if (path == null || path == "") {
+		if (string.IsNullOrEmpty(path)) {
+			Debug.Log("canceled save");
 			return;
 		}
 
