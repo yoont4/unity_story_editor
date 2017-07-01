@@ -8,7 +8,7 @@ using UnityEngine;
   
   positive outpoints are drawn on top, negative outpoints are drawn on bottom
 */
-public class OutstreamSplitter {
+public class OutstreamSplitter : ScriptableObject {
 	
 	public Rect rect;
 	public ConnectionPoint positiveOutpoint;
@@ -16,8 +16,9 @@ public class OutstreamSplitter {
 	
 	private Texture2D image;
 	
-
-	public OutstreamSplitter() {
+	public OutstreamSplitter(){}
+	
+	public void Init() {
 		this.positiveOutpoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.positiveOutpoint.Init(null, ConnectionPointType.Out);
 		this.positiveOutpoint.anchored = true;

@@ -20,7 +20,7 @@ public static class SDEXMLManager {
 			// open a new window if it's unhooked
 			Debug.Log("Window not found, opening new Story Dialog Editor window.");
 			StoryDialogEditor.OpenWindow();
-		} else if (!string.IsNullOrEmpty(mainEditor.fileName) && HistoryManager.needsSave) {
+		} else if (HistoryManager.needsSave) {
 			// create dialog entry to warn user that they have unsaved changes
 			if (!EditorUtility.DisplayDialog("Load new entry", "Are you sure you want to open a new entry and close the current one?", "yes", "no")) {
 				return;
@@ -53,9 +53,13 @@ public static class SDEXMLManager {
 		foreach (int inCPEID in connectionMap.Keys) {
 			ConnectionManager.selectedInPoint = connectionPointMap[inCPEID];
 			
+			bool deletable = true;
+			if (((Node)ConnectionManager.selectedInPoint.parent).nodeType == NodeType.Interrupt) {
+				deletable = false;
+			}
 			foreach (int outCPEID in connectionMap[inCPEID]) {
 				ConnectionManager.selectedOutPoint = connectionPointMap[outCPEID];
-				ConnectionManager.CreateConnection(true, markHistory:false);
+				ConnectionManager.CreateConnection(deletable, markHistory:false);
 			}
 		}
 		ConnectionManager.ClearConnectionSelection();

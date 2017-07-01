@@ -435,7 +435,8 @@ public class Node : SDEComponent {
 		localFlagDropdown = ScriptableObject.CreateInstance<DropdownLocalFlagBox>();
 		localFlagDropdown.Init();
 		
-		splitter = new OutstreamSplitter();
+		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
+		splitter.Init();
 		
 		// bind the dropdown menu to the main editor's local flag list
 		localFlagDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
@@ -484,7 +485,8 @@ public class Node : SDEComponent {
 		globalFlagDropdown = ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
 		globalFlagDropdown.Init();
 		
-		splitter = new OutstreamSplitter();
+		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
+		splitter.Init();
 		
 		// bind the dropdown to the global flag list
 		globalFlagDropdown.LoadItems(GlobalFlags.flags);
