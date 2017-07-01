@@ -17,14 +17,17 @@ public static class SDEXMLManager {
 	
 	public static void LoadItems(string path) {
 		if (mainEditor == null) {
-			Debug.Log("Cannot Load: Story Editor reference unhooked!");
-			return;
+			// open a new window if it's unhooked
+			Debug.Log("Window not found, opening new Story Dialog Editor window.");
+			StoryDialogEditor.OpenWindow();
+		} else if (mainEditor.IsDirty()) {
+			// create dialog entry to warn user that they have unsaved changes
+			if (!EditorUtility.DisplayDialog("Load new entry", "Are you sure you want to open a new entry and close the current one?", "yes", "no")) {
+				return;
+			}
 		}
 		
-		// create dialog entry to warn user that they have unsaved changes
-		if (mainEditor.IsDirty()) {
-			// TODO: implement this
-		}
+		Debug.Log("attempting to load: " + path);
 		
 		StoryNodeEntry storyEntry = new StoryNodeEntry();
 		
@@ -58,6 +61,7 @@ public static class SDEXMLManager {
 		ConnectionManager.ClearConnectionSelection();
 		
 		Debug.Log("loaded: " + path);
+		mainEditor.fileName = path;
 	}
 	
 	/*
@@ -174,8 +178,13 @@ public static class SDEXMLManager {
 		
 		// open the file explorer save window if on a new file
 		// otherwise, save to the current file <- TODO: implement this
-		string path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
-		Debug.Log(path);
+		string path;
+		if (mainEditor.fileName == "") {
+			path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
+		} else {
+			path = mainEditor.fileName;
+		}
+		
 		if (path == null || path == "") {
 			return;
 		}

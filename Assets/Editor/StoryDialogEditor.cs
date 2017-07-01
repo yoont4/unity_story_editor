@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+[InitializeOnLoad]
 public class StoryDialogEditor : EditorWindow {
 	
 	// The global list of nodes and connections. 
@@ -43,6 +44,8 @@ public class StoryDialogEditor : EditorWindow {
 	private const float DEBUG_HEIGHT = 80f;
 	private string debugText;
 	
+	public string fileName = "";
+	
 	[MenuItem("Window/Story & Dialog Editor")]
 	public static void OpenWindow() {
 		StoryDialogEditor window = GetWindow<StoryDialogEditor>();
@@ -71,9 +74,20 @@ public class StoryDialogEditor : EditorWindow {
 	*/
 	public void DestroyScene() {
 		ClearConsole();
-		nodes.Clear();
-		connections.Clear();
+		if (nodes != null) {
+			nodes.Clear();
+		}
+		if (connections != null) {
+			connections.Clear();
+		} 
 		offset = Vector2.zero;
+		fileName = "";
+	}
+	
+	static StoryDialogEditor() {
+		// add the XML load hook
+		EditorApplication.projectWindowItemOnGUI -= SDEXMLManager.OnProjectItemGUI;
+		EditorApplication.projectWindowItemOnGUI += SDEXMLManager.OnProjectItemGUI;
 	}
 	
 	private void OnEnable() {
@@ -98,10 +112,6 @@ public class StoryDialogEditor : EditorWindow {
 		// initialize on-screen components
 		testMenu = ScriptableObject.CreateInstance<DropdownEditableList>();
 		testMenu.Init();
-		
-		// add the XML load hook
-		EditorApplication.projectWindowItemOnGUI -= SDEXMLManager.OnProjectItemGUI;
-		EditorApplication.projectWindowItemOnGUI += SDEXMLManager.OnProjectItemGUI;
 	}
 	
 	private void OnGUI() {
@@ -226,7 +236,7 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private void DrawNeedsSave() {
 		if (IsDirty()) {
-			GUI.Box(new Rect(2, 2, 24, 24), "*", SDEStyles.textAreaLargeDefault);
+			GUI.Box(new Rect(2, 2, 200, 24), fileName + "*", SDEStyles.textAreaSmallDefault);
 		}
 	}
 	
