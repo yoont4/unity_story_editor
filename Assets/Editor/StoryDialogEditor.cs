@@ -237,24 +237,22 @@ public class StoryDialogEditor : EditorWindow {
 		testMenu.Draw();
 	}
 	
-	private char fileNameMod = '*';
+	private char mod = '*';
+	private GUIContent tempContent;
 	private void DrawNeedsSave() {
-		if (IsDirty()) {
-			fileNameMod = '*';
+		if (HistoryManager.needsSave) {
+			mod = '*';
 		}  else {
-			fileNameMod = ' ';
+			mod = ' ';
 		}
-		GUI.Box(new Rect(2, 2, position.width-200, 24), fileName+fileNameMod, SDEStyles.textAreaSmallDefault);
+		
+		tempContent = new GUIContent(fileName+mod);
+		if (GUI.Button(new Rect(2, 2, Mathf.Min(position.width-200, SDEStyles.textButtonDefault.CalcSize(tempContent).x+20), 24), fileName+mod, SDEStyles.textButtonDefault)) {
+			Debug.Log("saving...");
+			SDEXMLManager.SaveItems(false);
+		}
 	}
 	
-	public bool IsDirty() {
-		if (HistoryManager.savedUndoGroup != Undo.GetCurrentGroup()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	private void ProcessEvents(Event e) {
 		drag = Vector2.zero;
 		
@@ -300,13 +298,16 @@ public class StoryDialogEditor : EditorWindow {
 	}
 	
 	private void ProcessKeyboardInput(KeyCode key) {
-		// check for modifiers
+		
+		// alt + shift + ___
 		if (Event.current.shift) {
-			// 'Sh+S' save as
+			// alt + shift + 'S' save as
 			if (key == KeyCode.S) {
 				Debug.Log("saving as...");
-				SDEXMLManager.SaveItems(true);
-				HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
+				bool saved = SDEXMLManager.SaveItems(true);
+				if (saved) {
+					HistoryManager.needsSave = false;
+				}
 			}
 		} else {
 			// 'C' center on node positions
@@ -372,12 +373,13 @@ public class StoryDialogEditor : EditorWindow {
 				}
 			}
 			
-			// 'S' saves
+			// 'S' saves entry
 			if (key == KeyCode.S) {
 				Debug.Log("saving...");
-				SDEXMLManager.SaveItems(false);
-				HistoryManager.savedUndoGroup = Undo.GetCurrentGroup();
-				return;
+				bool saved = SDEXMLManager.SaveItems(false);
+				if (saved) {
+					HistoryManager.needsSave = false;
+				}
 			}
 		}
 	}

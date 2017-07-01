@@ -20,7 +20,7 @@ public static class SDEXMLManager {
 			// open a new window if it's unhooked
 			Debug.Log("Window not found, opening new Story Dialog Editor window.");
 			StoryDialogEditor.OpenWindow();
-		} else if (!string.IsNullOrEmpty(mainEditor.fileName) && mainEditor.IsDirty()) {
+		} else if (!string.IsNullOrEmpty(mainEditor.fileName) && HistoryManager.needsSave) {
 			// create dialog entry to warn user that they have unsaved changes
 			if (!EditorUtility.DisplayDialog("Load new entry", "Are you sure you want to open a new entry and close the current one?", "yes", "no")) {
 				return;
@@ -161,13 +161,14 @@ public static class SDEXMLManager {
 	
 	// vvvvv SAVE STORY EDITOR vvvvv //
 	
-	public static void SaveItems(bool saveAs) {
+	// returns if it completed the save or not
+	public static bool SaveItems(bool saveAs) {
 		// use event regardless of outcome to prevent unexpected event pass-through
 		Event.current.Use();
 		
 		if (mainEditor == null) {
 			Debug.Log("Cannot Save: Story Editor reference unhooked!");
-			return;
+			return false;
 		}
 		
 		StoryNodeEntry storyEntry = new StoryNodeEntry();
@@ -190,7 +191,7 @@ public static class SDEXMLManager {
 		
 		if (string.IsNullOrEmpty(path)) {
 			Debug.Log("canceled save");
-			return;
+			return false;
 		}
 
 		// write to disk
@@ -199,6 +200,8 @@ public static class SDEXMLManager {
 		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
 		}
+		
+		return true;
 	}
 	
 	public static List<NodeEntry> GenerateNodeEntries(List<Node> nodes) {

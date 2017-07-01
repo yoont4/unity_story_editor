@@ -4,7 +4,7 @@ using UnityEditor;
 public static class HistoryManager {
 	public static StoryDialogEditor mainEditor;
 	public static bool needsFlush;
-	public static int savedUndoGroup;
+	public static bool needsSave = false;
 	
 	// TODO: optimize this, because it's slow as shit
 	public static void RecordEditor() {
@@ -23,8 +23,7 @@ public static class HistoryManager {
 				Undo.RecordObject(connection, "");
 			}
 		}
-		
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void RecordNode(Node node) {
@@ -33,7 +32,7 @@ public static class HistoryManager {
 		if (node.outPoint != null) {
 			Undo.RecordObject(node.outPoint, "");
 		}
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void RecordNodeHierarchy(Node node) {
@@ -44,7 +43,7 @@ public static class HistoryManager {
 			RecordContainer(tempContainer);
 			tempContainer = tempContainer.child;
 		}
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void RecordContainer(SDEContainer container) {
@@ -62,12 +61,12 @@ public static class HistoryManager {
 		
 		// all containers have the outpoint
 		Undo.RecordObject(container.outPoint, "");
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void RecordCompleteComponent(SDEComponent component) {
 		Undo.RegisterCompleteObjectUndo(component, "");
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void RecordDropdown(DropdownEditableList menu) {
@@ -76,7 +75,7 @@ public static class HistoryManager {
 			Undo.RecordObject(item, "");
 		}
 		
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	// NOTE: NewComponent() and DeleteComponent() seem to have weird behavior. 
@@ -84,12 +83,12 @@ public static class HistoryManager {
 	// these are really designed for only GameObjects?
 	public static void NewComponent(Object component) {
 		Undo.RegisterCreatedObjectUndo(component, "");
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void DeleteComponent(Object component) {
 		Undo.DestroyObjectImmediate(component);
-		needsFlush = true;
+		MarkModified();
 	}
 	
 	public static void FlushIfDirty() {
@@ -99,5 +98,10 @@ public static class HistoryManager {
 		}
 		
 		needsFlush = false;
+	}
+	
+	private static void MarkModified() {
+		needsFlush = true;
+		needsSave = true;
 	}
 }
