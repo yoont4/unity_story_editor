@@ -25,25 +25,30 @@ public class StoryDialogEditor : EditorWindow {
 	private bool lostFocus;
 	
 	private bool drawHelp = true;
-	private bool drawDebug = true;
+	private bool drawDebug = false;
 	private double testTime = 0;
 	private double t = 0;
 	
 	// Help menu constants
-	private const float HELP_WIDTH = 180f;
-	private const float HELP_HEIGHT = 110f;
+	private const float HELP_WIDTH = 160f;
+	private const float HELP_HEIGHT = 150f;
 	private const string HELP_TEXT = 
-	"H: Hide/Show Help Menu\n" +
-	"Q: Hide/Show Debug Info\n" +
+	"H: Hide/Show Help\n" +
+	"Q: Hide/Show Debug\n" +
+	"----------------------------\n" +
 	"S: Save Entry\n" +
 	"Shift+S: Save As\n" +
+	"Shift+N: Create new entry\n" +
+	"----------------------------\n" +
 	"C: Center on all Nodes\n" +
-	"D: Delete the selected Node\n\n" +
-	"R-Mouse: Context Menu";
+	"D: Delete selected\n" +
+	"----------------------------\n" +
+	"R-Mouse: Context Menu\n" +
+	"----------------------------\n";
 	
 	// Debug menu constants
 	private const float DEBUG_WIDTH = 300f;
-	private const float DEBUG_HEIGHT = 80f;
+	private const float DEBUG_HEIGHT = 75f;
 	private string debugText;
 	
 	public string fileName = "";
@@ -75,7 +80,6 @@ public class StoryDialogEditor : EditorWindow {
 	  Used only on script recompile.
 	*/
 	public void DestroyScene() {
-		ClearConsole();
 		if (nodes != null) {
 			nodes.Clear();
 		}
@@ -209,9 +213,12 @@ public class StoryDialogEditor : EditorWindow {
 	  DrawHelp() displays the hotkeys and basic use of the StoryDialogEditor.
 	*/
 	private void DrawHelp() {
-		Rect helpRect = new Rect(0, 0, HELP_WIDTH, HELP_HEIGHT);
-		helpRect.x = position.width - HELP_WIDTH - 5f;
-		helpRect.y = position.height - HELP_HEIGHT - 5f;
+		Rect helpRect = new Rect(5f, 0, HELP_WIDTH, HELP_HEIGHT);
+		if (drawDebug) {
+			helpRect.y = position.height - HELP_HEIGHT - DEBUG_HEIGHT - 10f;
+		} else {
+			helpRect.y = position.height - HELP_HEIGHT - 10f;
+		}
 		GUI.Box(helpRect, HELP_TEXT, SDEStyles.textAreaDefault);
 	}
 	
@@ -299,15 +306,25 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private void ProcessKeyboardInput(KeyCode key) {
 		
-		// alt + shift + ___
+		// check modifiers
 		if (Event.current.shift) {
-			// alt + shift + 'S' save as
+			// shift + 'S' save entry as
 			if (key == KeyCode.S) {
 				Debug.Log("saving as...");
 				bool saved = SDEXMLManager.SaveItems(true);
 				if (saved) {
 					HistoryManager.needsSave = false;
 				}
+			}
+			
+			// shift + 'N' open new
+			if (key == KeyCode.N) {
+				if (!EditorUtility.DisplayDialog("Start new entry", "Are you sure you want to start a new entry and close the current one?", "yes", "no")) {
+					return;
+				}
+				
+				DestroyScene();
+				HistoryManager.needsSave = false;
 			}
 		} else {
 			// 'C' center on node positions
