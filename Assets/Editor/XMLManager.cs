@@ -42,26 +42,51 @@ public static class XMLManager {
 
 [System.Serializable]
 public class StoryNodeEntry {
+	[XmlArray("lf")]
+	[XmlArrayItem("s")]
 	public List<string> localFlags;
+	
+	[XmlArray("ne")]
+	[XmlArrayItem("n")]
 	public List<NodeEntry> nodeEntries;
 }
 
 [System.Serializable]
 public class NodeEntry {
+	[XmlElement("id")]
 	public int NID;
+	
+	[XmlElement("nt")]
 	public NodeType nodeType;
 	
+	[XmlElement("c")]
 	public ChildEntry child;
 	
+	[XmlArray("op")]
+	[XmlArrayItem("i")]
 	public List<int> outPointNIDs;
+	
+	[XmlArray("opp")]
+	[XmlArrayItem("i")]
 	public List<int> outPointPosNIDs;
+	
+	[XmlArray("opn")]
+	[XmlArrayItem("i")]
 	public List<int> outPointNegNIDs;
+	
+	[XmlElement("f")]
 	public string flag;
 }
 
 [System.Serializable]
 public class ChildEntry {
+	[XmlElement("c")]
 	public ChildEntry child;
+	
+	[XmlArray("op")]
+	[XmlArrayItem("i")]
 	public List<int> outPointNIDs;
+	
+	[XmlElement("t")]
 	public string text;
 }
