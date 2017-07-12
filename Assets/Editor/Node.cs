@@ -414,7 +414,7 @@ public class Node : SDEComponent {
 		localFlagDropdown.Init();
 		
 		// bind the dropdown menu to the main editor's local flag list
-		localFlagDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
+		localFlagDropdown.LinkFlags(NodeManager.mainEditor.localFlagsMenu.items);
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
@@ -439,7 +439,7 @@ public class Node : SDEComponent {
 		splitter.Init();
 		
 		// bind the dropdown menu to the main editor's local flag list
-		localFlagDropdown.LinkFlags(NodeManager.mainEditor.testMenu.items);
+		localFlagDropdown.LinkFlags(NodeManager.mainEditor.localFlagsMenu.items);
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);

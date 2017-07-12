@@ -7,6 +7,9 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 
+/*
+  SDEXMLManager is responsible for saving/loading XML data for the SDE.
+*/
 public static class SDEXMLManager {
 	
 	private static int CPEIDCounter = 0;
@@ -42,6 +45,11 @@ public static class SDEXMLManager {
 		
 		// set the editor's offset to match the saved entry
 		mainEditor.offset = storyEntry.offset;
+		
+		// load flags
+		foreach (string entry in storyEntry.localFlags) {
+			mainEditor.localFlagsMenu.AddItem(entry, markHistory:false);
+		}
 		
 		// CPEID maps to ConnectionPoint to generate connections later
 		Dictionary<int, ConnectionPoint> connectionPointMap = new Dictionary<int, ConnectionPoint>();
@@ -83,6 +91,13 @@ public static class SDEXMLManager {
 			tempNode = NodeManager.AddNodeAt(new Vector2(entry.rect.x, entry.rect.y), entry.nodeType, markHistory:false, center:false);
 			connectionPointMap[entry.inPoint.CPEID] = tempNode.inPoint;
 			connectionMap[entry.inPoint.CPEID] = entry.inPoint.linkedCPEIDs;
+			
+			// add flag data if set local/global
+			if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.CheckLocalFlag) {
+				tempNode.localFlagDropdown.selectedItem = mainEditor.localFlagsMenu.GetTextArea(entry.selectedFlag);
+			} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
+				tempNode.globalFlagDropdown.selectedItem = entry.selectedFlag;
+			}
 			
 			// map Node outpoint/splitter depending on NodeType
 			if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.Interrupt) {
@@ -178,6 +193,9 @@ public static class SDEXMLManager {
 		StoryNodeEntry storyEntry = new StoryNodeEntry();
 		List<NodeEntry> nodes = GenerateNodeEntries(mainEditor.nodes);
 		List<string> flags = new List<string>();
+		foreach (TextArea flag in mainEditor.localFlagsMenu.items) {
+			flags.Add(flag.text);
+		}
 		
 		// assign nodes/flags
 		storyEntry.nodes = nodes;
@@ -189,6 +207,7 @@ public static class SDEXMLManager {
 		string path;
 		if (saveAs || (!saveAs && string.IsNullOrEmpty(mainEditor.fileName))) {
 			path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
+			mainEditor.fileName = path;
 		} else {
 			path = mainEditor.fileName;
 		}
@@ -317,6 +336,14 @@ public static class SDEXMLManager {
 		entry.nodeType = node.nodeType;
 		entry.bottomLevel = node.bottomLevel;
 		
+		if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.CheckLocalFlag){
+			if (node.localFlagDropdown.selectedItem != null) {
+				entry.selectedFlag = node.localFlagDropdown.selectedItem.text;
+			}
+		} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
+			entry.selectedFlag = node.globalFlagDropdown.selectedItem;
+		}
+		
 		// assign inPoint links
 		List<int> linkedCPEIDs = new List<int>();
 		foreach (Connection connection in node.inPoint.connections) {
@@ -395,43 +422,64 @@ public static class SDEXMLManager {
 // the master story entry
 [System.Serializable]
 public class StoryNodeEntry {
+	[XmlElement("lf")]
 	public List<string> localFlags;
+	[XmlElement("n")]
 	public List<NodeEntry> nodes;
+	[XmlElement("o")]
 	public Vector2 offset;
 }
 
 [System.Serializable]
 public class SDEContainerEntry {
+	[XmlElement("c")]
 	public SDEContainerEntry child;
 	
+	[XmlElement("op")]
 	public ConnectionPointEntry outPoint;
 	
+	[XmlElement("t")]
 	public string text;
 }
 
 [System.Serializable]
 public class NodeEntry {
+	[XmlElement("nt")]
 	public NodeType nodeType;
 	
+	[XmlElement("r")]
 	public RectEntry rect;
 	
+	[XmlElement("wp")]
 	public float wPad;
+	[XmlElement("hp")]
 	public float hPad;
+	[XmlElement("sv")]
 	public Vector2 SVOffset;
 	
+	[XmlElement("bl")]
 	public bool bottomLevel;
 	
+	[XmlElement("ip")]
 	public InPointEntry inPoint;
+	[XmlElement("op")]
 	public ConnectionPointEntry outPoint;
 	
+	[XmlElement("opp")]
 	public ConnectionPointEntry outPos;
+	[XmlElement("opn")]
 	public ConnectionPointEntry outNeg;
 	
+	[XmlElement("cc")]
 	public SDEContainerEntry childContainer;
+	
+	[XmlElement("sf")]
+	public string selectedFlag;
 }
 
 [System.Serializable]
 public class ConnectionPointEntry {
+	[XmlElement("id")]
 	public int CPEID;
 }
 
@@ -440,6 +488,8 @@ public class ConnectionPointEntry {
 // connections on Load() as well, guaranteeing no duplicate connections when running through all entries.
 [System.Serializable]
 public class InPointEntry : ConnectionPointEntry {
+	[XmlArray("ids")]
+	[XmlArrayItem("id")]
 	public List<int> linkedCPEIDs;
 }
 
@@ -455,6 +505,9 @@ public class RectEntry {
 	
 	public float x;
 	public float y;
+	
+	[XmlElement("w")]
 	public float width;
+	[XmlElement("h")]
 	public float height;
 }

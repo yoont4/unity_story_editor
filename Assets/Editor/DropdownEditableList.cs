@@ -97,8 +97,10 @@ public class DropdownEditableList : ToggleMenu {
 		}
 	}
 	
-	private bool AddItem(string item) {
-		HistoryManager.RecordDropdown(this);
+	public bool AddItem(string item, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordDropdown(this);
+		}
 		
 		for (int i = 0; i < items.Count; i++) {
 			if (item == items[i].text) {
@@ -116,8 +118,10 @@ public class DropdownEditableList : ToggleMenu {
 		return true;
 	}
 	
-	private void RemoveItem(int index) {
-		HistoryManager.RecordDropdown(this);
+	public void RemoveItem(int index, bool markHistory=true) {
+		if (markHistory) {
+			HistoryManager.RecordDropdown(this);
+		}
 		
 		// drop the position of the items above the deleted one
 		for (int i = index; i < items.Count; i++) {
@@ -144,6 +148,16 @@ public class DropdownEditableList : ToggleMenu {
 		textArea.OnTextAreaDeselect += RevertIfDuplicated;
 		
 		return textArea;
+	}
+	
+	public TextArea GetTextArea(string text) {
+		for (int i = 0; i < items.Count; i++) {
+			if (items[i].text == text) {
+				return items[i];
+			}
+		}
+		return null;
+		
 	}
 	
 	/*

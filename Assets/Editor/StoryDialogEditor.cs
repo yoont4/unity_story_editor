@@ -14,7 +14,7 @@ public class StoryDialogEditor : EditorWindow {
 	public List<Connection> connections;
 	
 	// local variables are stored in this dropdown
-	public DropdownEditableList testMenu;
+	public DropdownEditableList localFlagsMenu;
 	
 	public const int GRID_SIZE = 10;
 	
@@ -85,9 +85,13 @@ public class StoryDialogEditor : EditorWindow {
 		}
 		if (connections != null) {
 			connections.Clear();
-		} 
+		}
+		if (localFlagsMenu != null) {
+			localFlagsMenu.items.Clear();
+		}
 		offset = Vector2.zero;
 		fileName = "";
+		HistoryManager.needsSave = false;
 	}
 	
 	// initialize Editor hooks for Story Dialog Editor functionality here
@@ -99,10 +103,6 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private void OnEnable() {
 		DestroyScene();
-		
-		// initialize story node variables
-		nodes = new List<Node>();
-		connections = new List<Connection>();
 		
 		// initialize component managers
 		NodeManager.mainEditor = this;
@@ -116,9 +116,14 @@ public class StoryDialogEditor : EditorWindow {
 		// load GUI styles
 		SDEStyles.Initialize();
 		
-		// initialize on-screen components
-		testMenu = ScriptableObject.CreateInstance<DropdownEditableList>();
-		testMenu.Init();
+		// initialize nodes, connections, and local flags
+		if (nodes == null) nodes = new List<Node>();
+		if (connections == null) connections = new List<Connection>();
+		if (localFlagsMenu == null) {
+			// initialize on-screen components
+			localFlagsMenu = ScriptableObject.CreateInstance<DropdownEditableList>();
+			localFlagsMenu.Init();
+		}
 	}
 	
 	private void OnGUI() {
@@ -147,7 +152,7 @@ public class StoryDialogEditor : EditorWindow {
 		SelectionManager.StartSelectionEventProcessing(Event.current);
 		NodeManager.ProcessEvents(Event.current);
 		ProcessEvents(Event.current);
-		testMenu.ProcessEvent(Event.current);
+		localFlagsMenu.ProcessEvent(Event.current);
 		SelectionManager.EndSelectionEventProcessing(Event.current);
 		
 		// Add to the Undo stack if anything changed
@@ -240,8 +245,8 @@ public class StoryDialogEditor : EditorWindow {
 	  DrawLocalVariables() displays the current Story instance's variables as a dropdown menu
 	*/
 	private void DrawLocalVariables() {
-		testMenu.SetPosition(position.width - testMenu.rect.width - 5, 5);
-		testMenu.Draw();
+		localFlagsMenu.SetPosition(position.width - localFlagsMenu.rect.width - 5, 5);
+		localFlagsMenu.Draw();
 	}
 	
 	private char mod = '*';
