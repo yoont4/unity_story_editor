@@ -21,13 +21,11 @@ public static class XMLManager {
 		return false;
 	}
 	
-	private static void SavePrePass(Dictionary<Node, int> nodeMap) {
+	private static void AssignNIDs(Dictionary<Node, int> nodeMap) {
 		// assign every node a Node ID (NID)
 		for (int i = 0; i < mainEditor.nodes.Count; i++) {
 			nodeMap[mainEditor.nodes[i]] = GenerateNID();
 		}
-		
-		
 	}
 	
 	private static int GenerateNID() {
