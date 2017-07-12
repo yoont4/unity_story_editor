@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <StoryNodeEntry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <lf>test flag 1</lf>
-  <lf>flag dos</lf>
+  <lfs>
+    <lf>flag 1</lf>
+    <lf>flag_dos</lf>
+  </lfs>
   <n>
     <nt>Dialog</nt>
     <r>
@@ -153,7 +155,7 @@
     <op>
       <id>12</id>
     </op>
-    <sf>test flag 1</sf>
+    <sf>flag 1</sf>
   </n>
   <n>
     <nt>CheckLocalFlag</nt>
@@ -182,7 +184,7 @@
     <opn>
       <id>15</id>
     </opn>
-    <sf>flag dos</sf>
+    <sf>flag_dos</sf>
   </n>
   <n>
     <nt>SetGlobalFlag</nt>

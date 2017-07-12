@@ -422,7 +422,8 @@ public static class SDEXMLManager {
 // the master story entry
 [System.Serializable]
 public class StoryNodeEntry {
-	[XmlElement("lf")]
+	[XmlArray("lfs")]
+	[XmlArrayItem("lf")]
 	public List<string> localFlags;
 	[XmlElement("n")]
 	public List<NodeEntry> nodes;
