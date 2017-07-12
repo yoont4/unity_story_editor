@@ -32,12 +32,12 @@ public static class SDEXMLManager {
 		
 		Debug.Log("attempting to load: " + path);
 		
-		StoryNodeEntry storyEntry = new StoryNodeEntry();
+		EditorStoryNodeEntry storyEntry = new EditorStoryNodeEntry();
 		
-		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
+		XmlSerializer serializer = new XmlSerializer(typeof(EditorStoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
 		using (StreamReader stream = new StreamReader(path, encoding)) {
-			storyEntry = serializer.Deserialize(stream) as StoryNodeEntry;
+			storyEntry = serializer.Deserialize(stream) as EditorStoryNodeEntry;
 		}
 		
 		// destroy the scene before populating it
@@ -81,13 +81,13 @@ public static class SDEXMLManager {
 	
 	  Returns the mapping of input connection points and their associated output connection points
 	*/
-	private static Dictionary<int, List<int>> InitializeNodes(StoryNodeEntry storyEntry, Dictionary<int, ConnectionPoint> connectionPointMap) {
+	private static Dictionary<int, List<int>> InitializeNodes(EditorStoryNodeEntry storyEntry, Dictionary<int, ConnectionPoint> connectionPointMap) {
 		// the map of input points and their associated output points
 		Dictionary<int, List<int>> connectionMap = new Dictionary<int, List<int>>();
 		
 		// generate nodes and data from entries
 		Node tempNode;
-		foreach (NodeEntry entry in storyEntry.nodes) {
+		foreach (EditorNodeEntry entry in storyEntry.nodes) {
 			tempNode = NodeManager.AddNodeAt(new Vector2(entry.rect.x, entry.rect.y), entry.nodeType, markHistory:false, center:false);
 			connectionPointMap[entry.inPoint.CPEID] = tempNode.inPoint;
 			connectionMap[entry.inPoint.CPEID] = entry.inPoint.linkedCPEIDs;
@@ -190,8 +190,8 @@ public static class SDEXMLManager {
 			return false;
 		}
 		
-		StoryNodeEntry storyEntry = new StoryNodeEntry();
-		List<NodeEntry> nodes = GenerateNodeEntries(mainEditor.nodes);
+		EditorStoryNodeEntry storyEntry = new EditorStoryNodeEntry();
+		List<EditorNodeEntry> nodes = GenerateNodeEntries(mainEditor.nodes);
 		List<string> flags = new List<string>();
 		foreach (TextArea flag in mainEditor.localFlagsMenu.items) {
 			flags.Add(flag.text);
@@ -218,7 +218,7 @@ public static class SDEXMLManager {
 		}
 
 		// write to disk
-		XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
+		XmlSerializer serializer = new XmlSerializer(typeof(EditorStoryNodeEntry));
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
 		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
 			serializer.Serialize(stream, storyEntry);
@@ -227,17 +227,17 @@ public static class SDEXMLManager {
 		return true;
 	}
 	
-	public static List<NodeEntry> GenerateNodeEntries(List<Node> nodes) {
+	public static List<EditorNodeEntry> GenerateNodeEntries(List<Node> nodes) {
 		// node and connectionpoint maps to help with entry population later
-		Dictionary<NodeEntry, Node> nodeMap = new Dictionary<NodeEntry, Node>();
+		Dictionary<EditorNodeEntry, Node> nodeMap = new Dictionary<EditorNodeEntry, Node>();
 		Dictionary<ConnectionPoint, int> connectionPointMap = new Dictionary<ConnectionPoint, int>();
 		
 		// start the entries and populate the CPEIDs
-		List<NodeEntry> entries = PrepassNodeEntries(nodes, nodeMap, connectionPointMap);
+		List<EditorNodeEntry> entries = PrepassNodeEntries(nodes, nodeMap, connectionPointMap);
 		
 		// record the node data into NodeEntries
 		Node node;
-		foreach(NodeEntry entry in entries) {
+		foreach(EditorNodeEntry entry in entries) {
 			node = nodeMap[entry];
 			PopulateNodeEntry(entry, node, connectionPointMap);
 		}
@@ -246,11 +246,11 @@ public static class SDEXMLManager {
 	}
 	
 	// goes through everything and assigns CPEIDs to every ConnectionPointEntry and populates container data
-	public static List<NodeEntry> PrepassNodeEntries(List<Node> nodes, Dictionary<NodeEntry, Node> nodeMap, Dictionary<ConnectionPoint, int> connectionPointMap) {
-		List<NodeEntry> entries = new List<NodeEntry>();
-		NodeEntry tempNode;
+	public static List<EditorNodeEntry> PrepassNodeEntries(List<Node> nodes, Dictionary<EditorNodeEntry, Node> nodeMap, Dictionary<ConnectionPoint, int> connectionPointMap) {
+		List<EditorNodeEntry> entries = new List<EditorNodeEntry>();
+		EditorNodeEntry tempNode;
 		for(int i = 0; i < nodes.Count; i++) {
-			tempNode = new NodeEntry();
+			tempNode = new EditorNodeEntry();
 			nodeMap[tempNode] = nodes[i];
 			
 			tempNode.inPoint = new InPointEntry();
@@ -328,7 +328,7 @@ public static class SDEXMLManager {
 		return entries;
 	}
 	
-	public static void PopulateNodeEntry(NodeEntry entry, Node node, Dictionary<ConnectionPoint, int> connectionPointMap) {
+	public static void PopulateNodeEntry(EditorNodeEntry entry, Node node, Dictionary<ConnectionPoint, int> connectionPointMap) {
 		entry.rect = new RectEntry(node.rect.x, node.rect.y, node.rect.width, node.rect.height);
 		entry.wPad = node.widthPad;
 		entry.hPad = node.heightPad;
@@ -421,12 +421,12 @@ public static class SDEXMLManager {
 
 // the master story entry
 [System.Serializable]
-public class StoryNodeEntry {
+public class EditorStoryNodeEntry {
 	[XmlArray("lfs")]
 	[XmlArrayItem("lf")]
 	public List<string> localFlags;
 	[XmlElement("n")]
-	public List<NodeEntry> nodes;
+	public List<EditorNodeEntry> nodes;
 	[XmlElement("o")]
 	public Vector2 offset;
 }
@@ -444,7 +444,7 @@ public class SDEContainerEntry {
 }
 
 [System.Serializable]
-public class NodeEntry {
+public class EditorNodeEntry {
 	[XmlElement("nt")]
 	public NodeType nodeType;
 	
