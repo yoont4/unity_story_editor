@@ -62,17 +62,14 @@ public class NodeEntry {
 	[XmlElement("c")]
 	public ChildEntry child;
 	
-	[XmlArray("op")]
-	[XmlArrayItem("i")]
-	public List<int> outPointNIDs;
+	[XmlElement("op")]
+	public int outPointNID;
 	
-	[XmlArray("opp")]
-	[XmlArrayItem("i")]
-	public List<int> outPointPosNIDs;
+	[XmlElement("opp")]
+	public int outPointPosNID;
 	
-	[XmlArray("opn")]
-	[XmlArrayItem("i")]
-	public List<int> outPointNegNIDs;
+	[XmlElement("opn")]
+	public int outPointNegNID;
 	
 	[XmlElement("f")]
 	public string flag;
@@ -83,9 +80,8 @@ public class ChildEntry {
 	[XmlElement("c")]
 	public ChildEntry child;
 	
-	[XmlArray("op")]
-	[XmlArrayItem("i")]
-	public List<int> outPointNIDs;
+	[XmlElement("op")]
+	public int outPointNID;
 	
 	[XmlElement("t")]
 	public string text;
