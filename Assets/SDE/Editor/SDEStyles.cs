@@ -36,20 +36,20 @@ public static class SDEStyles {
 	private static RectOffset nodePadding;
 	
 	// file paths
-	private const string NODE_DEFALT = "Assets/Editor/Resources/TestNodeBG.png";
-	private const string NODE_HOVER = "Assets/Editor/Resources/TestNodeHoverBG.png";
-	private const string NODE_SELECT = "Assets/Editor/Resources/TestNodeSelectedBG.png";
+	private const string NODE_DEFALT = "Assets/SDE/Editor/Resources/TestNodeBG.png";
+	private const string NODE_HOVER = "Assets/SDE/Editor/Resources/TestNodeHoverBG.png";
+	private const string NODE_SELECT = "Assets/SDE/Editor/Resources/TestNodeSelectedBG.png";
 	
-	private const string CONNECTIONPOINT_DEFAULT = "Assets/Editor/Resources/TestConnectionPointBG.png";
-	private const string CONNECTIONPOINT_HOVER = "Assets/Editor/Resources/TestConnectionPointHoverBG.png";
-	private const string CONNECTIONPOINT_SELECT = "Assets/Editor/Resources/TestConnectionPointSelectedBG.png";
+	private const string CONNECTIONPOINT_DEFAULT = "Assets/SDE/Editor/Resources/TestConnectionPointBG.png";
+	private const string CONNECTIONPOINT_HOVER = "Assets/SDE/Editor/Resources/TestConnectionPointHoverBG.png";
+	private const string CONNECTIONPOINT_SELECT = "Assets/SDE/Editor/Resources/TestConnectionPointSelectedBG.png";
 	
-	private const string TOGGLE_UP_DEFAULT = "Assets/Editor/Resources/TestToggleUpBG.png";
-	private const string TOGGLE_UP_HOVER = "Assets/Editor/Resources/TestToggleUpHoverBG.png";
-	private const string TOGGLE_DOWN_DEFAULT = "Assets/Editor/Resources/TestToggleDownBG.png";
-	private const string TOGGLE_DOWN_HOVER = "Assets/Editor/Resources/TestToggleDownHoverBG.png";
+	private const string TOGGLE_UP_DEFAULT = "Assets/SDE/Editor/Resources/TestToggleUpBG.png";
+	private const string TOGGLE_UP_HOVER = "Assets/SDE/Editor/Resources/TestToggleUpHoverBG.png";
+	private const string TOGGLE_DOWN_DEFAULT = "Assets/SDE/Editor/Resources/TestToggleDownBG.png";
+	private const string TOGGLE_DOWN_HOVER = "Assets/SDE/Editor/Resources/TestToggleDownHoverBG.png";
 	
-	private const string OUTSTREAM_SPLITTER = "Assets/Editor/Resources/OutstreamSplitter.png";
+	private const string OUTSTREAM_SPLITTER = "Assets/SDE/Editor/Resources/OutstreamSplitter.png";
 	
 	// custom GUI colors
 	private static Color32 AlmostWhite;

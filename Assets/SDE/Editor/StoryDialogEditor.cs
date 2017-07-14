@@ -112,6 +112,7 @@ public class StoryDialogEditor : EditorWindow {
 		SDEContainerManager.mainEditor = this;
 		HistoryManager.mainEditor = this;
 		SDEXMLManager.mainEditor = this;
+		XMLManager.mainEditor = this;
 		
 		// load GUI styles
 		SDEStyles.Initialize();
@@ -172,6 +173,8 @@ public class StoryDialogEditor : EditorWindow {
 		DrawLocalVariables();
 		// draw the save state
 		DrawNeedsSave();
+		// draws the export button
+		DrawExport();
 		
 		// draw additional information
 		if (drawHelp) DrawHelp();
@@ -271,6 +274,12 @@ public class StoryDialogEditor : EditorWindow {
 		if (GUI.Button(new Rect(2, 2, Mathf.Min(position.width-200, SDEStyles.textButtonDefault.CalcSize(tempContent).x+20), 24), fileName+mod, SDEStyles.textButtonDefault)) {
 			Debug.Log("saving...");
 			SDEXMLManager.SaveItems(false);
+		}
+	}
+	
+	private void DrawExport() {
+		if (GUI.Button(new Rect(position.width-100, position.height-50, 100, 50), "EXPORT", SDEStyles.textButtonDefault))  {
+			XMLManager.SaveXML("test");
 		}
 	}
 	

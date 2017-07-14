@@ -255,28 +255,6 @@
     </opn>
     <sf>[like so]</sf>
   </n>
-  <n>
-    <nt>Nothing</nt>
-    <r>
-      <x>485</x>
-      <y>288</y>
-      <w>150</w>
-      <h>30</h>
-    </r>
-    <wp>0</wp>
-    <hp>0</hp>
-    <sv>
-      <x>0</x>
-      <y>0</y>
-    </sv>
-    <bl>true</bl>
-    <ip>
-      <id>23</id>
-      <ids>
-        <id>19</id>
-      </ids>
-    </ip>
-  </n>
   <o>
     <x>-465</x>
     <y>98</y>

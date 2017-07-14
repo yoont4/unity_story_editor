@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum NodeType {Nothing, Dialog, Decision, SetLocalFlag, SetGlobalFlag, CheckLocalFlag, CheckGlobalFlag, Interrupt}
-
 /*
   Nodes are the master SDEComponent type in the StoryDialogEditor, and serve
   as the anchor/parent of all subcomponents.
