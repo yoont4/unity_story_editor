@@ -17,6 +17,10 @@ public class StoryNodeEntry {
 	
 	[XmlElement("en")]
 	public int entryNID;
+	
+	public StoryNodeEntry() {
+		this.entryNID = -1;
+	}
 }
 
 [System.Serializable]
@@ -45,6 +49,12 @@ public class NodeEntry {
 	// only used by Check/Set Local/Global Flag Node
 	[XmlElement("f")]
 	public string flag;
+	
+	public NodeEntry() {
+		this.outPointNID = -1;
+		this.outPointPosNID = -1;
+		this.outPointNegNID = -1;
+	}
 }
 
 [System.Serializable]
@@ -63,6 +73,10 @@ public class ChildEntry {
 	[XmlArray("fs")]
 	[XmlArrayItem("fe")]
 	public List<FlagEntry> flags;
+	
+	public ChildEntry() {
+		this.outPointNID = -1;
+	}
 }
 
 [System.Serializable]
@@ -72,4 +86,8 @@ public class FlagEntry {
 	
 	[XmlElement("op")]
 	public int outPointNID;
+	
+	public FlagEntry() {
+		this.outPointNID = -1;
+	}
 }
