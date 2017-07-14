@@ -6,9 +6,19 @@
       <nt>Dialog</nt>
       <c>
         <c>
-          <op>1</op>
-          <t>test dialog</t>
-          <fs />
+          <c>
+            <op>0</op>
+            <t>cut-off dialog...</t>
+            <fs />
+          </c>
+          <op>0</op>
+          <t>test dialog &lt;1&gt;</t>
+          <fs>
+            <fe>
+              <f>1</f>
+              <op>1</op>
+            </fe>
+          </fs>
         </c>
         <op>0</op>
         <t>&lt;1&gt;&lt;2&gt;&lt;3&gt;</t>
@@ -34,6 +44,18 @@
     <n>
       <id>1</id>
       <nt>Decision</nt>
+      <c>
+        <c>
+          <c>
+            <op>2</op>
+            <t>last decision</t>
+          </c>
+          <op>2</op>
+          <t>test decision 2</t>
+        </c>
+        <op>3</op>
+        <t>test decision 1</t>
+      </c>
       <op>0</op>
       <opp>0</opp>
       <opn>0</opn>
@@ -41,16 +63,18 @@
     <n>
       <id>2</id>
       <nt>SetLocalFlag</nt>
-      <op>0</op>
+      <op>5</op>
       <opp>0</opp>
       <opn>0</opn>
+      <f>new var 0</f>
     </n>
     <n>
       <id>3</id>
       <nt>CheckLocalFlag</nt>
       <op>0</op>
-      <opp>0</opp>
-      <opn>0</opn>
+      <opp>4</opp>
+      <opn>5</opn>
+      <f>new var 0</f>
     </n>
     <n>
       <id>4</id>
@@ -58,13 +82,15 @@
       <op>0</op>
       <opp>0</opp>
       <opn>0</opn>
+      <f>[write flags here]</f>
     </n>
     <n>
       <id>5</id>
       <nt>CheckGlobalFlag</nt>
       <op>0</op>
-      <opp>0</opp>
+      <opp>4</opp>
       <opn>0</opn>
+      <f>[like so]</f>
     </n>
   </ns>
   <en>0</en>

@@ -7,8 +7,8 @@
   <n>
     <nt>Dialog</nt>
     <r>
-      <x>-415</x>
-      <y>268</y>
+      <x>-60</x>
+      <y>253</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -25,10 +25,16 @@
     </ip>
     <cc>
       <c>
+        <c>
+          <op>
+            <id>3</id>
+          </op>
+          <t>cut-off dialog...</t>
+        </c>
         <op>
           <id>2</id>
         </op>
-        <t>test dialog</t>
+        <t>test dialog &lt;1&gt;</t>
       </c>
       <op>
         <id>1</id>
@@ -39,8 +45,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>-235</x>
-      <y>228</y>
+      <x>120</x>
+      <y>213</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -52,7 +58,7 @@
     </sv>
     <bl>false</bl>
     <ip>
-      <id>3</id>
+      <id>4</id>
       <ids>
         <id>1</id>
       </ids>
@@ -61,17 +67,17 @@
       <c>
         <c>
           <op>
-            <id>6</id>
+            <id>7</id>
           </op>
           <t>3</t>
         </c>
         <op>
-          <id>5</id>
+          <id>6</id>
         </op>
         <t>2</t>
       </c>
       <op>
-        <id>4</id>
+        <id>5</id>
       </op>
       <t>1</t>
     </cc>
@@ -79,8 +85,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>-235</x>
-      <y>308</y>
+      <x>120</x>
+      <y>293</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -90,22 +96,25 @@
       <x>0</x>
       <y>0</y>
     </sv>
-    <bl>true</bl>
+    <bl>false</bl>
     <ip>
-      <id>7</id>
+      <id>8</id>
       <ids>
         <id>2</id>
       </ids>
     </ip>
-    <op>
-      <id>8</id>
-    </op>
+    <cc>
+      <op>
+        <id>9</id>
+      </op>
+      <t>1</t>
+    </cc>
   </n>
   <n>
     <nt>Decision</nt>
     <r>
-      <x>-155</x>
-      <y>268</y>
+      <x>200</x>
+      <y>253</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -117,29 +126,29 @@
     </sv>
     <bl>true</bl>
     <ip>
-      <id>9</id>
+      <id>10</id>
       <ids>
-        <id>4</id>
         <id>5</id>
         <id>6</id>
-        <id>8</id>
+        <id>7</id>
+        <id>9</id>
       </ids>
     </ip>
     <cc>
       <c>
         <c>
           <op>
-            <id>12</id>
+            <id>13</id>
           </op>
-          <t />
+          <t>last decision</t>
         </c>
         <op>
-          <id>11</id>
+          <id>12</id>
         </op>
         <t>test decision 2</t>
       </c>
       <op>
-        <id>10</id>
+        <id>11</id>
       </op>
       <t>test decision 1</t>
     </cc>
@@ -147,8 +156,8 @@
   <n>
     <nt>SetLocalFlag</nt>
     <r>
-      <x>65</x>
-      <y>358</y>
+      <x>420</x>
+      <y>343</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -160,21 +169,22 @@
     </sv>
     <bl>true</bl>
     <ip>
-      <id>13</id>
+      <id>14</id>
       <ids>
-        <id>11</id>
+        <id>12</id>
+        <id>13</id>
       </ids>
     </ip>
     <op>
-      <id>14</id>
+      <id>15</id>
     </op>
     <sf>new var 0</sf>
   </n>
   <n>
     <nt>CheckLocalFlag</nt>
     <r>
-      <x>65</x>
-      <y>288</y>
+      <x>420</x>
+      <y>273</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -186,24 +196,24 @@
     </sv>
     <bl>true</bl>
     <ip>
-      <id>15</id>
+      <id>16</id>
       <ids>
-        <id>10</id>
+        <id>11</id>
       </ids>
     </ip>
     <opp>
-      <id>16</id>
+      <id>17</id>
     </opp>
     <opn>
-      <id>17</id>
+      <id>18</id>
     </opn>
     <sf>new var 0</sf>
   </n>
   <n>
     <nt>SetGlobalFlag</nt>
     <r>
-      <x>285</x>
-      <y>288</y>
+      <x>820</x>
+      <y>273</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -215,21 +225,22 @@
     </sv>
     <bl>true</bl>
     <ip>
-      <id>18</id>
+      <id>19</id>
       <ids>
-        <id>16</id>
+        <id>17</id>
+        <id>22</id>
       </ids>
     </ip>
     <op>
-      <id>19</id>
+      <id>20</id>
     </op>
     <sf>[write flags here]</sf>
   </n>
   <n>
     <nt>CheckGlobalFlag</nt>
     <r>
-      <x>285</x>
-      <y>358</y>
+      <x>620</x>
+      <y>303</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -241,22 +252,47 @@
     </sv>
     <bl>true</bl>
     <ip>
-      <id>20</id>
+      <id>21</id>
       <ids>
-        <id>14</id>
-        <id>17</id>
+        <id>15</id>
+        <id>18</id>
       </ids>
     </ip>
     <opp>
-      <id>21</id>
+      <id>22</id>
     </opp>
     <opn>
-      <id>22</id>
+      <id>23</id>
     </opn>
     <sf>[like so]</sf>
   </n>
+  <n>
+    <nt>Interrupt</nt>
+    <r>
+      <x>120</x>
+      <y>333</y>
+      <w>30</w>
+      <h>20</h>
+    </r>
+    <wp>0</wp>
+    <hp>0</hp>
+    <sv>
+      <x>0</x>
+      <y>0</y>
+    </sv>
+    <bl>true</bl>
+    <ip>
+      <id>24</id>
+      <ids>
+        <id>3</id>
+      </ids>
+    </ip>
+    <op>
+      <id>25</id>
+    </op>
+  </n>
   <o>
-    <x>-465</x>
-    <y>98</y>
+    <x>-110</x>
+    <y>83</y>
   </o>
 </EditorStoryNodeEntry>
