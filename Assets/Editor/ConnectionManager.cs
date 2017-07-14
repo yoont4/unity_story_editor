@@ -72,7 +72,7 @@ public static class ConnectionManager {
 	  DrawConnectionHandle() draws a bezier curve from the currently selected 
 	  ConnectionPoint to the cursor.
 	*/
-	public static void DrawConnectionHandle(Event e) {
+	public static void DrawConnectionHandle(Vector2 mousePos) {
 		if (SelectionManager.SelectedComponentType() != SDEComponentType.ConnectionPoint) {
 			ClearConnectionSelection();
 		}
@@ -80,9 +80,9 @@ public static class ConnectionManager {
 		if (selectedInPoint != null && selectedOutPoint == null) {
 			Handles.DrawBezier(
 				selectedInPoint.rect.center,
-				e.mousePosition,
+				mousePos,
 				selectedInPoint.rect.center + Vector2.left * 50f,
-				e.mousePosition - Vector2.left * 50f,
+				mousePos - Vector2.left * 50f,
 				Color.white,
 				null,
 				2f);
@@ -91,9 +91,9 @@ public static class ConnectionManager {
 		if (selectedInPoint == null && selectedOutPoint != null) {
 			Handles.DrawBezier(
 				selectedOutPoint.rect.center,
-				e.mousePosition,
+				mousePos,
 				selectedOutPoint.rect.center - Vector2.left * 50f,
-				e.mousePosition + Vector2.left * 50f,
+				mousePos + Vector2.left * 50f,
 				Color.white,
 				null,
 				2f);

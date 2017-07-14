@@ -148,22 +148,26 @@ public class StoryDialogEditor : EditorWindow {
 		DrawGrid(10, 0.2f, Color.gray);
 		DrawGrid(200, 0.4f, Color.gray);
 		
-		// process events on nodes, than over the entire editor
-		SelectionManager.StartSelectionEventProcessing(Event.current);
-		NodeManager.ProcessEvents(Event.current);
-		ProcessEvents(Event.current);
-		localFlagsMenu.ProcessEvent(Event.current);
-		SelectionManager.EndSelectionEventProcessing(Event.current);
-		
-		// Add to the Undo stack if anything changed
-		HistoryManager.FlushIfDirty();
+		// only process events when the window has focus
+		if (!lostFocus) {
+			// process events on nodes, than over the entire editor
+			SelectionManager.StartSelectionEventProcessing(Event.current);
+			NodeManager.ProcessEvents(Event.current);
+			ProcessEvents(Event.current);
+			localFlagsMenu.ProcessEvent(Event.current);
+			SelectionManager.EndSelectionEventProcessing(Event.current);
+			
+			// Add to the Undo stack if anything changed
+			HistoryManager.FlushIfDirty();
+			
+		}
 		
 		// draw the connections between nodes
 		ConnectionManager.DrawConnections();
 		// draw nodes on top of background
 		NodeManager.DrawNodes();
 		// draw the current connection as it's being selected
-		ConnectionManager.DrawConnectionHandle(Event.current);
+		ConnectionManager.DrawConnectionHandle(Event.current.mousePosition);
 		// draw the local variable menus
 		DrawLocalVariables();
 		// draw the save state
@@ -174,6 +178,11 @@ public class StoryDialogEditor : EditorWindow {
 		if (drawDebug) DrawDebug();
 		
 		if (GUI.changed) Repaint();
+		
+		// always use the key press regardless to prevent event propagation into the Unity Editor
+		if (Event.current.type == EventType.KeyDown) {
+			Event.current.Use();
+		}
 		
 		testTime = testTime * .9d + ((EditorApplication.timeSinceStartup - t)/10);
 	}
@@ -295,7 +304,9 @@ public class StoryDialogEditor : EditorWindow {
 			// internally for it's default tab cycling (which we want to override).
 			if (e.character == '\t') {e.Use();} //eat the input			
 			if (SelectionManager.SelectedComponentType() != SDEComponentType.TextArea) {
-				ProcessKeyboardInput(e.keyCode);
+				if (ProcessKeyboardInput(e.keyCode)) {
+					e.Use();
+				}
 			}
 			break;
 		}
@@ -309,8 +320,12 @@ public class StoryDialogEditor : EditorWindow {
 		return new Vector2(x % GRID_SIZE - offset.x % GRID_SIZE, y % GRID_SIZE - offset.y % GRID_SIZE);
 	}
 	
-	private void ProcessKeyboardInput(KeyCode key) {
-		
+	/*
+	  ProcessKeyboardInput() takes a given key and triggers a process based on the hotkey.
+	
+	  Returns true if a hotkey was given, false otherwise.
+	*/
+	private bool ProcessKeyboardInput(KeyCode key) {
 		// check modifiers
 		if (Event.current.shift) {
 			// shift + 'S' save entry as
@@ -320,16 +335,20 @@ public class StoryDialogEditor : EditorWindow {
 				if (saved) {
 					HistoryManager.needsSave = false;
 				}
+				
+				return true;
 			}
 			
 			// shift + 'N' open new
 			if (key == KeyCode.N) {
 				if (!EditorUtility.DisplayDialog("Start new entry", "Are you sure you want to start a new entry and close the current one?", "yes", "no")) {
-					return;
+					return true;
 				}
 				
 				DestroyScene();
 				HistoryManager.needsSave = false;
+				
+				return true;
 			}
 		} else {
 			// 'C' center on node positions
@@ -348,6 +367,8 @@ public class StoryDialogEditor : EditorWindow {
 				} else {
 					Debug.Log("no nodes to center on");
 				}
+				
+				return true;
 			}
 			
 			// 'D' delete the selected node
@@ -361,7 +382,7 @@ public class StoryDialogEditor : EditorWindow {
 							if (((Node)component).nodeType != NodeType.Interrupt) {
 								NodeManager.RemoveNode((Node)component);
 							}
-							return;
+							return true;
 						}
 						component = component.parent;
 					}
@@ -371,6 +392,8 @@ public class StoryDialogEditor : EditorWindow {
 				} else {
 					Debug.Log("Ignoring 'D'elete, no Node selected!");
 				}
+				
+				return true;
 			}
 			
 			// 'H' show/hide the help box
@@ -382,6 +405,8 @@ public class StoryDialogEditor : EditorWindow {
 					Debug.Log("Displaying Help menu");
 					drawHelp = true;
 				}
+				
+				return true;
 			}
 			
 			// 'Q' show/hide debug information
@@ -393,6 +418,8 @@ public class StoryDialogEditor : EditorWindow {
 					Debug.Log("Displaying Debug info");
 					drawDebug = true;
 				}
+				
+				return true;
 			}
 			
 			// 'S' saves entry
@@ -402,8 +429,12 @@ public class StoryDialogEditor : EditorWindow {
 				if (saved) {
 					HistoryManager.needsSave = false;
 				}
+				
+				return true;
 			}
 		}
+		
+		return false;
 	}
 	
 	private void ProcessContextMenu(Vector2 mousePosition) {
