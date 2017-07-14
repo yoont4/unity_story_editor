@@ -35,14 +35,15 @@ public static class XMLManager {
 		}
 		
 		// --- start building the entry ---
-		Dictionary<Node, int> nodeMap = new Dictionary<Node, int>();
-		
-		// give all the nodes a NID before connecting them
-		AssignNIDs(nodeMap);
 		
 		try {
+			Dictionary<Node, int> nodeMap = new Dictionary<Node, int>();
+			
+			// give all the nodes a NID before connecting them
+			int entryNID = NodePrepass(nodeMap, mainEditor.nodes);
+			
 			// build the story entry
-			StoryNodeEntry storyEntry = GenerateStoryEntry(nodeMap, mainEditor.nodes);
+			StoryNodeEntry storyEntry = GenerateStoryEntry(nodeMap, mainEditor.nodes, entryNID);
 			
 			// write to disk
 			XmlSerializer serializer = new XmlSerializer(typeof(StoryNodeEntry));
@@ -60,15 +61,27 @@ public static class XMLManager {
 		return true;
 	}
 	
-	private static void AssignNIDs(Dictionary<Node, int> nodeMap) {
+	private static int NodePrepass(Dictionary<Node, int> nodeMap, List<Node> nodes) {
+		int entryNID = -1;
+		
 		// assign every node a Node ID (NID)
-		for (int i = 0; i < mainEditor.nodes.Count; i++) {
+		for (int i = 0; i < nodes.Count; i++) {
 			
 			// interrupt nodes are skipped, because their information is merged into dialog nodes
-			if (mainEditor.nodes[i].nodeType != NodeType.Interrupt) {
-				nodeMap[mainEditor.nodes[i]] = GenerateNID();
+			if (nodes[i].nodeType != NodeType.Interrupt) {
+				nodeMap[nodes[i]] = GenerateNID();
+				
+				// look for potential start Node
+				if (nodes[i].inPoint.connections.Count < 1) {
+					if (entryNID != -1) {
+						throw new UnityException("EXPORT ERROR: There are multiple potential starting Nodes!");
+					}
+					entryNID = nodeMap[nodes[i]];
+				}
 			}
 		}
+		
+		return entryNID;
 	}
 	
 	private static int GenerateNID() {
@@ -76,12 +89,16 @@ public static class XMLManager {
 		return NIDCounter-1;
 	}
 	
-	private static StoryNodeEntry GenerateStoryEntry(Dictionary<Node, int> nodeMap, List<Node> nodes) {
+	private static StoryNodeEntry GenerateStoryEntry(Dictionary<Node, int> nodeMap, List<Node> nodes, int entryNID) {
 		StoryNodeEntry storyEntry = new StoryNodeEntry();
 		
 		storyEntry.nodeEntries = GenerateNodeEntries(nodeMap, nodes);
+		storyEntry.entryNID = entryNID;
 		
-		// TODO: implement the rest
+		List<string> flags = new List<string>();
+		for (int i = 0; i < mainEditor.localFlagsMenu.items.Count; i++) {
+			flags.Add(mainEditor.localFlagsMenu.items[i].text);
+		}
 		
 		return storyEntry;
 	}

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using System.Text;
+using UnityEngine;
 using UnityEditor;
 
 /*
@@ -15,6 +17,7 @@ public static class GlobalFlags {
 	
 	static GlobalFlags() {
 		CheckFlags();
+		ExportFlags();
 	}
 	
 	private static void CheckFlags() {
@@ -22,6 +25,42 @@ public static class GlobalFlags {
 			if (flag.Length > ToggleMenu.MAX_TEXT_LENGTH) {
 				EditorApplication.update += () => {throw new UnityException("GLOBAL FLAG LONGER THAN MAX TEXT LENGTH (" + ToggleMenu.MAX_TEXT_LENGTH + ')');};
 			}
+		}
+	}
+	
+	private static void ExportFlags() {
+		string path = Application.dataPath + "/SDE/_GlobalFlagBuild.cs";
+		Encoding encoding = Encoding.GetEncoding("UTF-8");
+		
+		// build the custom class string
+		string output = 
+			"using System.Collections;\n" +
+			"using System.Collections.Generic;\n\n" +
+			"// THIS IS A PROCEDURALLY GENERATED FILE!\n" +
+			"// DO NOT EDIT, MODIFY, OR WRITE TO EXCEPT TO WHEN CHECKING FLAGS!\n" +
+			"public static class GlobalFlagBuild {\n" +
+			"    public static Dictionary<string, bool> flags;\n\n" +
+			"    static GlobalFlagBuild() {\n" +
+			"        flags = new Dictionary<string, bool>() {\n";
+		
+		for (int i = 0; i < flags.Length; i++) {
+			output += 
+				"            {\"" + flags[i] + "\", false}";
+			if (i == flags.Length - 1) {
+				output += "\n";
+			} else {
+				output += ",\n";
+			}
+		}
+		
+		
+		output += 
+			"        };\n" +
+			"    }\n" +
+			"}";
+		
+		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
+			stream.Write(output);
 		}
 	}
 }
