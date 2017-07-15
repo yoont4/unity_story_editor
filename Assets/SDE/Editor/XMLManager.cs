@@ -135,17 +135,14 @@ public static class XMLManager {
 				
 			case NodeType.CheckLocalFlag:
 				PopulateCheckLocalFlagEntry(tempNodeEntry, nodes[i], nodeMap);
-				tempNodeEntry.nodeType = NodeType.CheckLocalFlag;
 				break;
 				
 			case NodeType.SetGlobalFlag:
 				PopulateSetGlobalFlagEntry(tempNodeEntry, nodes[i], nodeMap);
-				tempNodeEntry.nodeType = NodeType.SetGlobalFlag;
 				break;
 				
 			case NodeType.CheckGlobalFlag:
 				PopulateCheckGlobalFlagEntry(tempNodeEntry, nodes[i], nodeMap);
-				tempNodeEntry.nodeType = NodeType.CheckGlobalFlag;
 				break;
 				
 			default:
