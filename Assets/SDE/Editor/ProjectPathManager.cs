@@ -23,6 +23,8 @@ public static class ProjectPathManager {
 	}
 	
 	private static string _resourcePath = "";
+	
+	// returns the relative path to the resources folder
 	public static string ResourcePath {
 		get {
 			if (string.IsNullOrEmpty(_resourcePath)) {
