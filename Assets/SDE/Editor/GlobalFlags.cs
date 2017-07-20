@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -21,9 +22,20 @@ public static class GlobalFlags {
 	}
 	
 	private static void CheckFlags() {
+		// check if any strings are over the Max text length
+		
 		foreach (string flag in flags) {
 			if (flag.Length > ToggleMenu.MAX_TEXT_LENGTH) {
-				EditorApplication.update += () => {throw new UnityException("GLOBAL FLAG LONGER THAN MAX TEXT LENGTH (" + ToggleMenu.MAX_TEXT_LENGTH + ')');};
+				throw new UnityException("GLOBAL FLAG LONGER THAN MAX TEXT LENGTH (" + ToggleMenu.MAX_TEXT_LENGTH + ')');
+			}
+		}
+		
+		// check for duplicates
+		HashSet<string> flagSet = new HashSet<string>();
+		
+		foreach (string flag in flags) {
+			if (!flagSet.Add(flag)) {
+				throw new UnityException("DUPLICATE GLOBAL FLAG FOUND: " + flag);
 			}
 		}
 	}
