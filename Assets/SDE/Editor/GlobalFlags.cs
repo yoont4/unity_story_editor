@@ -41,7 +41,9 @@ public static class GlobalFlags {
 	}
 	
 	private static void ExportFlags() {
-		string path = Application.dataPath + "/SDE/_GlobalFlagBuild.cs";
+		string path = ProjectPathManager.BasePath + "/_GlobalFlagBuild.cs";
+		Debug.Log("exporting global flags to: " + path);
+		
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
 		
 		// build the custom class string
@@ -74,5 +76,7 @@ public static class GlobalFlags {
 		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
 			stream.Write(output);
 		}
+		
+		Debug.Log("global flags exported successfully.");
 	}
 }

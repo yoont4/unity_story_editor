@@ -19,11 +19,11 @@ public static class GlobalVariables {
 	};
 	
 	static GlobalVariables() {
-		CheckFlags();
-		ExportFlags();
+		CheckVariables();
+		ExportVariables();
 	}
 	
-	private static void CheckFlags() {
+	private static void CheckVariables() {
 		// check for duplicates
 		HashSet<string> variableSet = new HashSet<string>();
 
@@ -34,8 +34,10 @@ public static class GlobalVariables {
 		}
 	}
 	
-	private static void ExportFlags() {
-		string path = Application.dataPath + "/SDE/_GlobalVariablesBuild.cs";
+	private static void ExportVariables() {
+		string path = ProjectPathManager.BasePath + "/_GlobalVariablesBuild.cs";
+		Debug.Log("exporting global variables to: " + path);
+		
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
 		
 		// build the custom class string
@@ -68,5 +70,7 @@ public static class GlobalVariables {
 		using (StreamWriter stream = new StreamWriter(path, false, encoding)) {
 			stream.Write(output);
 		}
+		
+		Debug.Log("global variables exported successfully.");
 	}
 }

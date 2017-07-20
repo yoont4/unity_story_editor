@@ -36,20 +36,20 @@ public static class SDEStyles {
 	private static RectOffset nodePadding;
 	
 	// file paths
-	private const string NODE_DEFALT = "Assets/SDE/Editor/Resources/TestNodeBG.png";
-	private const string NODE_HOVER = "Assets/SDE/Editor/Resources/TestNodeHoverBG.png";
-	private const string NODE_SELECT = "Assets/SDE/Editor/Resources/TestNodeSelectedBG.png";
+	private const string NODE_DEFALT = "/TestNodeBG.png";
+	private const string NODE_HOVER = "/TestNodeHoverBG.png";
+	private const string NODE_SELECT = "/TestNodeSelectedBG.png";
 	
-	private const string CONNECTIONPOINT_DEFAULT = "Assets/SDE/Editor/Resources/TestConnectionPointBG.png";
-	private const string CONNECTIONPOINT_HOVER = "Assets/SDE/Editor/Resources/TestConnectionPointHoverBG.png";
-	private const string CONNECTIONPOINT_SELECT = "Assets/SDE/Editor/Resources/TestConnectionPointSelectedBG.png";
+	private const string CONNECTIONPOINT_DEFAULT = "/TestConnectionPointBG.png";
+	private const string CONNECTIONPOINT_HOVER = "/TestConnectionPointHoverBG.png";
+	private const string CONNECTIONPOINT_SELECT = "/TestConnectionPointSelectedBG.png";
 	
-	private const string TOGGLE_UP_DEFAULT = "Assets/SDE/Editor/Resources/TestToggleUpBG.png";
-	private const string TOGGLE_UP_HOVER = "Assets/SDE/Editor/Resources/TestToggleUpHoverBG.png";
-	private const string TOGGLE_DOWN_DEFAULT = "Assets/SDE/Editor/Resources/TestToggleDownBG.png";
-	private const string TOGGLE_DOWN_HOVER = "Assets/SDE/Editor/Resources/TestToggleDownHoverBG.png";
+	private const string TOGGLE_UP_DEFAULT = "/TestToggleUpBG.png";
+	private const string TOGGLE_UP_HOVER = "/TestToggleUpHoverBG.png";
+	private const string TOGGLE_DOWN_DEFAULT = "/TestToggleDownBG.png";
+	private const string TOGGLE_DOWN_HOVER = "/TestToggleDownHoverBG.png";
 	
-	private const string OUTSTREAM_SPLITTER = "Assets/SDE/Editor/Resources/OutstreamSplitter.png";
+	private const string OUTSTREAM_SPLITTER = "/OutstreamSplitter.png";
 	
 	// custom GUI colors
 	private static Color32 AlmostWhite;
@@ -122,9 +122,8 @@ public static class SDEStyles {
 		
 		toggleUpDefault = ToggleUpDefaultStyle();
 		toggleDownDefault = ToggleDownDefaultStyle();
-		
 		// initialize textures
-		outstreamSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(OUTSTREAM_SPLITTER);
+		outstreamSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + OUTSTREAM_SPLITTER);
 	}
 	
 	// ------------------------------------------------------------------------------------------ //
@@ -133,8 +132,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle NodeDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_HOVER);
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -147,7 +146,7 @@ public static class SDEStyles {
 	
 	private static GUIStyle NodeSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_SELECT);
 		style.border = nodeBorder;
 		style.padding = nodePadding;
 		
@@ -171,15 +170,15 @@ public static class SDEStyles {
 	
 	private static GUIStyle ConnectionPointDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_DEFAULT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_HOVER);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + CONNECTIONPOINT_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + CONNECTIONPOINT_HOVER);
 		style.border = connectionPointBorder;
 		return style;
 	}
 	
 	private static GUIStyle ConnectionPointSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(CONNECTIONPOINT_SELECT);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + CONNECTIONPOINT_SELECT);
 		style.border = connectionPointBorder;
 		return style;
 	}
@@ -206,24 +205,24 @@ public static class SDEStyles {
 	
 	private static GUIStyle TextBoxDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_HOVER);
 		style.border = textAreaBorder;
 		return style;
 	}
 	
 	private static GUIStyle TextBoxSelectedStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_SELECT);
 		style.border = textAreaBorder;
 		return style;
 	}
 	
 	private static GUIStyle TextButtonDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_HOVER);
-		style.active.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_SELECT);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_DEFALT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_HOVER);
+		style.active.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_SELECT);
 		style.border = nodeBorder;
 		
 		style.fontSize = 10;
@@ -236,7 +235,7 @@ public static class SDEStyles {
 	
 	private static GUIStyle LabelDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(NODE_DEFALT);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + NODE_DEFALT);
 		style.border = nodeBorder;
 		
 		style.fontSize = 10;
@@ -247,8 +246,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle ToggleUpDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_UP_DEFAULT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_UP_HOVER);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + TOGGLE_UP_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + TOGGLE_UP_HOVER);
 		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;
@@ -259,8 +258,8 @@ public static class SDEStyles {
 	
 	private static GUIStyle ToggleDownDefaultStyle() {
 		GUIStyle style = new GUIStyle();
-		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_DOWN_DEFAULT);
-		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(TOGGLE_DOWN_HOVER);
+		style.normal.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + TOGGLE_DOWN_DEFAULT);
+		style.hover.background = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + TOGGLE_DOWN_HOVER);
 		style.border = connectionPointBorder;
 		
 		style.normal.textColor = AlmostWhite;
