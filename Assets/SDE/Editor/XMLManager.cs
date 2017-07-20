@@ -350,11 +350,11 @@ public static class XMLManager {
 			nodeEntry.outPointNID = nodeMap[(Node)node.outPoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalFlagDropdown.selectedItem;
+		nodeEntry.flag = node.globalItemDropdown.selectedItem;
 	}
 	
 	private static void ValidateSetGlobalFlag(Node node) {
-		if (string.IsNullOrEmpty(node.globalFlagDropdown.selectedItem)) {
+		if (string.IsNullOrEmpty(node.globalItemDropdown.selectedItem)) {
 			throw new UnityException("EXPORT ERROR: GlobalFlagNode missing selected flag!");
 		}
 	}
@@ -374,7 +374,7 @@ public static class XMLManager {
 			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalFlagDropdown.selectedItem;
+		nodeEntry.flag = node.globalItemDropdown.selectedItem;
 	}
 	
 	private static void ValidateCheckGlobalFlag(Node node) {
@@ -382,7 +382,7 @@ public static class XMLManager {
 			throw new UnityException("EXPORT ERROR: GlobalFlagNode must have at least 1 out-connection!");
 		}
 		
-		if (string.IsNullOrEmpty(node.globalFlagDropdown.selectedItem)) {
+		if (string.IsNullOrEmpty(node.globalItemDropdown.selectedItem)) {
 			throw new UnityException("EXPORT ERROR: GlobalFlagNode missing selected flag!");
 		}
 	}

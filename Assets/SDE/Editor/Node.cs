@@ -31,8 +31,8 @@ public class Node : SDEComponent {
 	// used for local flag Nodes
 	public DropdownLocalFlagBox localFlagDropdown;
 	
-	// used for global flag Nodes
-	public DropdownGlobalFlagBox globalFlagDropdown;
+	// used for global flag AND variable Nodes
+	public DropdownGlobalFlagBox globalItemDropdown;
 	
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
@@ -75,24 +75,39 @@ public class Node : SDEComponent {
 		case NodeType.Dialog:
 			ToggleDialog(record:false);
 			break;
+			
 		case NodeType.Decision:
 			ToggleDecision(record:false);
 			break;
+			
 		case NodeType.Interrupt:
 			ToggleInterrupt();
 			break;
+			
 		case NodeType.SetLocalFlag:
 			ToggleSetLocalFlag(record:false);
 			break;
+			
 		case NodeType.CheckLocalFlag:
 			ToggleCheckLocalFlag(record:false);
 			break;
+			
 		case NodeType.SetGlobalFlag:
 			ToggleSetGlobalFlag(record:false);
 			break;
+			
 		case NodeType.CheckGlobalFlag:
 			ToggleCheckGlobalFlag(record:false);
 			break;
+			
+		case NodeType.SetGlobalVariable:
+			ToggleSetGlobalVariable(record:false);
+			break;
+			
+		case NodeType.CheckGlobalVariable:
+			ToggleCheckGlobalVariable(record:false);
+			break;
+			
 		default:
 			break;
 		}
@@ -155,6 +170,14 @@ public class Node : SDEComponent {
 			DrawCheckGlobalFlag();
 			break;
 			
+		case NodeType.SetGlobalVariable:
+			DrawSetGlobalVariable();
+			break;
+			
+		case NodeType.CheckGlobalVariable:
+			DrawCheckGlobalVariable();
+			break;
+			
 		case NodeType.Interrupt:
 			DrawInterrupt();
 			break;
@@ -169,11 +192,11 @@ public class Node : SDEComponent {
 	public void DrawStartOptions() {
 		// TODO: these should be icons instead of text buttons
 		
-		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 25), "T", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x, rect.y + rect.height, 25, 25), "Di", SDEStyles.textButtonDefault)) {
 			ToggleDialog();
 		}
 		
-		if (GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 25), "D", SDEStyles.textButtonDefault)) {
+		if (GUI.Button(new Rect(rect.x+25, rect.y + rect.height, 25, 25), "De", SDEStyles.textButtonDefault)) {
 			ToggleDecision();
 		}
 		
@@ -191,6 +214,14 @@ public class Node : SDEComponent {
 		
 		if (GUI.Button(new Rect(rect.x+125, rect.y + rect.height, 25, 25), "CG", SDEStyles.textButtonDefault)) {
 			ToggleCheckGlobalFlag();
+		}
+		
+		if (GUI.Button(new Rect(rect.x+150, rect.y + rect.height, 25, 25), "SV", SDEStyles.textButtonDefault)) {
+			ToggleSetGlobalVariable();
+		}
+		
+		if (GUI.Button(new Rect(rect.x+175, rect.y + rect.height, 25, 25), "CV", SDEStyles.textButtonDefault)) {
+			ToggleCheckGlobalVariable();
 		}
 	} 
 	
@@ -292,8 +323,8 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawSetGlobalFlag() {
-		globalFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
-		globalFlagDropdown.Draw();
+		globalItemDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalItemDropdown.Draw();
 		
 		if (outPoint != null) {
 			outPoint.Draw();
@@ -304,8 +335,16 @@ public class Node : SDEComponent {
 		splitter.SetPosition(rect.x+rect.width+1, rect.y+7);
 		splitter.Draw();
 		
-		globalFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
-		globalFlagDropdown.Draw();
+		globalItemDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalItemDropdown.Draw();
+	}
+	
+	private void DrawSetGlobalVariable() {
+		// TODO: implement this
+	}
+	
+	private void DrawCheckGlobalVariable() {
+		// TODO: implement this
 	}
 	
 	/*
@@ -458,11 +497,11 @@ public class Node : SDEComponent {
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		outPoint.Init(this, ConnectionPointType.Out);
 		
-		globalFlagDropdown =  ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
-		globalFlagDropdown.Init();
+		globalItemDropdown =  ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
+		globalItemDropdown.Init();
 		
 		// bind the dropdown to the global flag list
-		globalFlagDropdown.LoadItems(GlobalFlags.flags);
+		globalItemDropdown.LoadItems(GlobalFlags.flags);
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
@@ -480,14 +519,14 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
-		globalFlagDropdown = ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
-		globalFlagDropdown.Init();
+		globalItemDropdown = ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
+		globalItemDropdown.Init();
 		
 		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
 		splitter.Init();
 		
 		// bind the dropdown to the global flag list
-		globalFlagDropdown.LoadItems(GlobalFlags.flags);
+		globalItemDropdown.LoadItems(GlobalFlags.flags);
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
@@ -498,6 +537,22 @@ public class Node : SDEComponent {
 		
 		rect.width = NodeManager.FLAG_WIDTH;
 		rect.height = NodeManager.FLAG_HEIGHT;
+	}
+	
+	private void ToggleSetGlobalVariable(bool record=true) {
+		if (record) {
+			HistoryManager.RecordNode(this);
+		}
+		
+		// TODO: implement this
+	}
+	
+	private void ToggleCheckGlobalVariable(bool record=true) {
+		if (record) {
+			HistoryManager.RecordNode(this);
+		}
+		
+		// TODO: implement this
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {

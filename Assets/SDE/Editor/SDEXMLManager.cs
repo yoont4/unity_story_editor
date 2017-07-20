@@ -96,7 +96,7 @@ public static class SDEXMLManager {
 			if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.CheckLocalFlag) {
 				tempNode.localFlagDropdown.selectedItem = mainEditor.localFlagsMenu.GetTextArea(entry.selectedFlag);
 			} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
-				tempNode.globalFlagDropdown.selectedItem = entry.selectedFlag;
+				tempNode.globalItemDropdown.selectedItem = entry.selectedFlag;
 			}
 			
 			// map Node outpoint/splitter depending on NodeType
@@ -341,7 +341,7 @@ public static class SDEXMLManager {
 				entry.selectedFlag = node.localFlagDropdown.selectedItem.text;
 			}
 		} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
-			entry.selectedFlag = node.globalFlagDropdown.selectedItem;
+			entry.selectedFlag = node.globalItemDropdown.selectedItem;
 		}
 		
 		// assign inPoint links
