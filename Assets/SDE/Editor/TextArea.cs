@@ -16,6 +16,9 @@ public class TextArea : SDEComponent {
 	private GUIContent textContent;
 	private float contentHeight;
 	
+	// used to apply an offset from the parent
+	public Vector2 parentOffset;
+	
 	public GUIStyle textAreaStyle;
 	public GUIStyle textButtonStyle;
 	
@@ -110,6 +113,10 @@ public class TextArea : SDEComponent {
 			// TOOD: figure out if we need this or not. What if we just want a TextArea that floats?
 			//throw new UnityException("Tried to draw TextArea without container or parent!");
 		}
+		
+		// apply the parent offsets
+		clickRect.position += parentOffset;
+		rect.position += parentOffset;
 		
 		GUI.Box(clickRect, "", style);
 		

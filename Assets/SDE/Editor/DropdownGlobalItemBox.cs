@@ -8,12 +8,12 @@ using UnityEngine;
   
   GlobalFlags are accessed through a global constant file
 */
-public class DropdownGlobalFlagBox : ToggleMenu {
+public class DropdownGlobalItemBox : ToggleMenu {
 	private List<string> items;
 	
 	public string selectedItem = "---";
 	
-	public DropdownGlobalFlagBox(){}
+	public DropdownGlobalItemBox(){}
 	public override void Init() {
 		base.Init();
 		

@@ -23,7 +23,7 @@ public abstract class DBox : SDEContainer {
 	
 	private void Init(string text) {
 		this.textArea = ScriptableObject.CreateInstance<TextArea>();
-		this.textArea.Init(this, text, NodeManager.NODE_WIDTH);
+		this.textArea.Init(this, text, NodeManager.TEXT_NODE_WIDTH);
 		
 		// make the outpoint a child of the textArea, so it's bound to that field.
 		this.outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();

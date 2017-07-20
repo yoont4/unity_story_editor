@@ -18,7 +18,7 @@ public class OutstreamSplitter : ScriptableObject {
 	
 	public OutstreamSplitter(){}
 	
-	public void Init() {
+	public void Init(SplitterType type) {
 		this.positiveOutpoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		this.positiveOutpoint.Init(null, ConnectionPointType.Out);
 		this.positiveOutpoint.anchored = true;
@@ -32,7 +32,11 @@ public class OutstreamSplitter : ScriptableObject {
 		this.rect.height = 32f;
 		
 		// get the texture
-		this.image = SDEStyles.outstreamSplitterTexture;
+		if (type == SplitterType.Flag) {
+			this.image = SDEStyles.outstreamFlagSplitterTexture;
+		} else {
+			// TODO: get the variable splitter texture in
+		}
 	}
 	
 	public void Draw() {

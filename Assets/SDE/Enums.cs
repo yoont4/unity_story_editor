@@ -33,3 +33,8 @@ public enum ConnectionPointType {
 	In,
 	Out
 }
+
+public enum SplitterType {
+	Flag,
+	Variable
+}

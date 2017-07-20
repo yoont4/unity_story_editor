@@ -18,10 +18,14 @@ public static class NodeManager {
 	// defines Node dimensions
 	public const int NODE_WIDTH = 200;
 	public const int NODE_HEIGHT = 30;
+	public const int TEXT_NODE_WIDTH = 150;
+	public const int TEXT_NODE_HEIGHT = 30;
 	public const int INTERRUPT_WIDTH = 30;
 	public const int INTERRUPT_HEIGHT = 20;
 	public const int FLAG_WIDTH = 140;
 	public const int FLAG_HEIGHT = 26;
+	public const int VARIABLE_WIDTH = 190;
+	public const int VARIABLE_HEIGHT = 26;
 	
 	/*
 	  DrawNodes() draws all the mainEditor.nodes in the StoryDialogEditor window.

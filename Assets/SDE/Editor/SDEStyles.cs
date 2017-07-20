@@ -32,7 +32,7 @@ public static class SDEStyles {
 	private const string TOGGLE_DOWN_DEFAULT = "/TestToggleDownBG.png";
 	private const string TOGGLE_DOWN_HOVER = "/TestToggleDownHoverBG.png";
 	
-	private const string OUTSTREAM_SPLITTER = "/OutstreamSplitter.png";
+	private const string OUTSTREAM_FLAG_SPLITTER = "/OutstreamFlagSplitter.png";
 	
 	// custom GUI colors
 	private static Color32 AlmostWhite;
@@ -64,7 +64,7 @@ public static class SDEStyles {
 	// ----------- style references -----------
 	
 	// ---------- texture references ----------
-	public static Texture2D outstreamSplitterTexture;
+	public static Texture2D outstreamFlagSplitterTexture;
 	// ---------- texture references ----------
 	
 	/*
@@ -106,7 +106,7 @@ public static class SDEStyles {
 		toggleUpDefault = ToggleUpDefaultStyle();
 		toggleDownDefault = ToggleDownDefaultStyle();
 		// initialize textures
-		outstreamSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + OUTSTREAM_SPLITTER);
+		outstreamFlagSplitterTexture= AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectPathManager.ResourcePath + OUTSTREAM_FLAG_SPLITTER);
 	}
 	
 	// ------------------------------------------------------------------------------------------ //

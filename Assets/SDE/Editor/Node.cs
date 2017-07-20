@@ -32,7 +32,10 @@ public class Node : SDEComponent {
 	public DropdownLocalFlagBox localFlagDropdown;
 	
 	// used for global flag AND variable Nodes
-	public DropdownGlobalFlagBox globalItemDropdown;
+	public DropdownGlobalItemBox globalItemDropdown;
+	
+	// used for global variable Nodes to determine what value to check against/set
+	public TextArea globalVariableField;
 	
 	// the action for handling node removal
 	private Action<Node> OnRemoveNode;
@@ -309,9 +312,7 @@ public class Node : SDEComponent {
 		localFlagDropdown.SetPosition(rect.x, rect.y + rect.height);
 		localFlagDropdown.Draw();
 		
-		if (outPoint != null) {
-			outPoint.Draw();
-		}
+		outPoint.Draw();
 	}
 	
 	private void DrawCheckLocalFlag() {
@@ -326,9 +327,7 @@ public class Node : SDEComponent {
 		globalItemDropdown.SetPosition(rect.x, rect.y + rect.height);
 		globalItemDropdown.Draw();
 		
-		if (outPoint != null) {
-			outPoint.Draw();
-		}
+		outPoint.Draw();
 	}
 	
 	private void DrawCheckGlobalFlag() {
@@ -340,7 +339,12 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawSetGlobalVariable() {
-		// TODO: implement this
+		globalItemDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalItemDropdown.Draw();
+		
+		globalVariableField.Draw();
+		
+		outPoint.Draw();
 	}
 	
 	private void DrawCheckGlobalVariable() {
@@ -360,6 +364,7 @@ public class Node : SDEComponent {
 		if (outPoint != null) outPoint.ProcessEvent(e);
 		if (childContainer != null) childContainer.ProcessEvent(e);
 		if (splitter != null) splitter.ProcessEvent(e);
+		if (globalVariableField != null) globalVariableField.ProcessEvent(e);
 		
 		base.ProcessEvent(e);
 		
@@ -405,13 +410,18 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
+		nodeType = NodeType.Dialog;
+		title = "DIALOG";
+		
+		rect.width = NodeManager.TEXT_NODE_WIDTH;
+		rect.height = NodeManager.TEXT_NODE_HEIGHT;
+		clickRect.width = NodeManager.TEXT_NODE_WIDTH;
+		clickRect.height = NodeManager.TEXT_NODE_HEIGHT;
+		
 		// create a child DialogBox
 		this.childContainer = ScriptableObject.CreateInstance<DialogBox>();
 		((DialogBox)this.childContainer).Init(this, "");
 		
-		
-		nodeType = NodeType.Dialog;
-		title = "DIALOG";
 	}
 	
 	private void ToggleDecision(bool record=true) {
@@ -419,24 +429,30 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
+		nodeType = NodeType.Decision;
+		title = "DECISION";
+		
+		rect.width = NodeManager.TEXT_NODE_WIDTH;
+		rect.height = NodeManager.TEXT_NODE_HEIGHT;
+		clickRect.width = NodeManager.TEXT_NODE_WIDTH;
+		clickRect.height = NodeManager.TEXT_NODE_HEIGHT;
+		
 		// create a child DecisionBox
 		this.childContainer = ScriptableObject.CreateInstance<DecisionBox>();
 		((DecisionBox)this.childContainer).Init(this, "");
 		
-		nodeType = NodeType.Decision;
-		title = "DECISION";
 	}
 	
 	private void ToggleInterrupt() {
-		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		outPoint.Init(this, ConnectionPointType.Out);
+		nodeType = NodeType.Interrupt;
+		title = "-->";
 		
 		style = SDEStyles.nodeSmallDefault;
 		defaultStyle = SDEStyles.nodeSmallDefault;
 		selectedStyle = SDEStyles.nodeSmallSelected;
 		
-		nodeType = NodeType.Interrupt;
-		title = "-->";
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint.Init(this, ConnectionPointType.Out);
 	}
 	
 	private void ToggleSetLocalFlag(bool record=true) {
@@ -444,6 +460,18 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
+		nodeType = NodeType.SetLocalFlag;
+		title = "SET LOCAL FLAG";
+		
+		style = new GUIStyle(SDEStyles.nodeSmallDefault);
+		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
+		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
+		
+		rect.width = NodeManager.FLAG_WIDTH;
+		rect.height = NodeManager.FLAG_HEIGHT;
+		clickRect.width = NodeManager.FLAG_WIDTH;
+		clickRect.height = NodeManager.FLAG_HEIGHT;
+		
 		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
 		outPoint.Init(this, ConnectionPointType.Out);
 		
@@ -452,16 +480,6 @@ public class Node : SDEComponent {
 		
 		// bind the dropdown menu to the main editor's local flag list
 		localFlagDropdown.LinkFlags(NodeManager.mainEditor.localFlagsMenu.items);
-		
-		style = new GUIStyle(SDEStyles.nodeSmallDefault);
-		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
-		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
-		
-		nodeType = NodeType.SetLocalFlag;
-		title = "SET LOCAL FLAG";
-		
-		rect.width = NodeManager.FLAG_WIDTH;
-		rect.height = NodeManager.FLAG_HEIGHT;
 	}
 	
 	private void ToggleCheckLocalFlag(bool record=true) {
@@ -469,24 +487,26 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
-		localFlagDropdown = ScriptableObject.CreateInstance<DropdownLocalFlagBox>();
-		localFlagDropdown.Init();
-		
-		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
-		splitter.Init();
-		
-		// bind the dropdown menu to the main editor's local flag list
-		localFlagDropdown.LinkFlags(NodeManager.mainEditor.localFlagsMenu.items);
+		nodeType = NodeType.CheckLocalFlag;
+		title = "CHECK LOCAL FLAG";
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
 		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
 		
-		nodeType = NodeType.CheckLocalFlag;
-		title = "CHECK LOCAL FLAG";
-		
 		rect.width = NodeManager.FLAG_WIDTH;
 		rect.height = NodeManager.FLAG_HEIGHT;
+		clickRect.width = NodeManager.FLAG_WIDTH;
+		clickRect.height = NodeManager.FLAG_HEIGHT;
+		
+		localFlagDropdown = ScriptableObject.CreateInstance<DropdownLocalFlagBox>();
+		localFlagDropdown.Init();
+		
+		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
+		splitter.Init(SplitterType.Flag);
+		
+		// bind the dropdown menu to the main editor's local flag list
+		localFlagDropdown.LinkFlags(NodeManager.mainEditor.localFlagsMenu.items);
 	}
 	
 	private void ToggleSetGlobalFlag(bool record=true) {
@@ -494,24 +514,26 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
-		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		outPoint.Init(this, ConnectionPointType.Out);
-		
-		globalItemDropdown =  ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
-		globalItemDropdown.Init();
-		
-		// bind the dropdown to the global flag list
-		globalItemDropdown.LoadItems(GlobalFlags.flags);
+		nodeType = NodeType.SetGlobalFlag;
+		title = "SET GLOBAL FLAG";
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
 		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
 		
-		nodeType = NodeType.SetGlobalFlag;
-		title = "SET GLOBAL FLAG";
-		
 		rect.width = NodeManager.FLAG_WIDTH;
 		rect.height = NodeManager.FLAG_HEIGHT;
+		clickRect.width = NodeManager.FLAG_WIDTH;
+		clickRect.height = NodeManager.FLAG_HEIGHT;
+		
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint.Init(this, ConnectionPointType.Out);
+		
+		globalItemDropdown =  ScriptableObject.CreateInstance<DropdownGlobalItemBox>();
+		globalItemDropdown.Init();
+		
+		// bind the dropdown to the global flag list
+		globalItemDropdown.LoadItems(GlobalFlags.flags);
 	}
 	
 	private void ToggleCheckGlobalFlag(bool record=true) {
@@ -519,24 +541,26 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
-		globalItemDropdown = ScriptableObject.CreateInstance<DropdownGlobalFlagBox>();
-		globalItemDropdown.Init();
-		
-		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
-		splitter.Init();
-		
-		// bind the dropdown to the global flag list
-		globalItemDropdown.LoadItems(GlobalFlags.flags);
+		nodeType = NodeType.CheckGlobalFlag;
+		title = "CHECK GLOBAL FLAG";
 		
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
 		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
 		
-		nodeType = NodeType.CheckGlobalFlag;
-		title = "CHECK GLOBAL FLAG";
-		
 		rect.width = NodeManager.FLAG_WIDTH;
 		rect.height = NodeManager.FLAG_HEIGHT;
+		clickRect.width = NodeManager.FLAG_WIDTH;
+		clickRect.height = NodeManager.FLAG_HEIGHT;
+		
+		globalItemDropdown = ScriptableObject.CreateInstance<DropdownGlobalItemBox>();
+		globalItemDropdown.Init();
+		
+		// bind the dropdown to the global flag list
+		globalItemDropdown.LoadItems(GlobalFlags.flags);
+		
+		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
+		splitter.Init(SplitterType.Flag);
 	}
 	
 	private void ToggleSetGlobalVariable(bool record=true) {
@@ -544,7 +568,34 @@ public class Node : SDEComponent {
 			HistoryManager.RecordNode(this);
 		}
 		
-		// TODO: implement this
+		nodeType = NodeType.SetGlobalVariable;
+		title = "SET GLOBAL VARIABLE";
+		
+		style = new GUIStyle(SDEStyles.nodeSmallDefault);
+		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
+		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
+		
+		rect.width = NodeManager.VARIABLE_WIDTH;
+		rect.height = NodeManager.VARIABLE_HEIGHT;
+		clickRect.width = NodeManager.VARIABLE_WIDTH;;
+		clickRect.height = NodeManager.VARIABLE_HEIGHT;
+		
+		globalItemDropdown = ScriptableObject.CreateInstance<DropdownGlobalItemBox>();
+		globalItemDropdown.Init();
+		
+		// bind the dropdown to the global variables list
+		globalItemDropdown.LoadItems(GlobalVariables.variables);
+		
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint.Init(this, ConnectionPointType.Out);
+		
+		// TODO: needs special splitter (>= || <)
+		
+		// instantiate the check field
+		globalVariableField = ScriptableObject.CreateInstance<TextArea>();
+		globalVariableField.Init(this, "+0", 50);
+		globalVariableField.parentOffset = new Vector2(140, -1);
+		globalVariableField.maxLength = 4;
 	}
 	
 	private void ToggleCheckGlobalVariable(bool record=true) {
