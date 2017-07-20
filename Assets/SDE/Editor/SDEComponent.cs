@@ -2,8 +2,6 @@
 using UnityEngine;
 using UnityEditor;
 
-public enum SDEComponentType {Nothing, Node, ConnectionPoint, TextArea, Label}
-
 /*
   SDEComponent is the parent class of all components spawned in the StoryDialogEditor.
   

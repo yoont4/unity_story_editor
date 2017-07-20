@@ -3,23 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-// TODO: figure out if this is a necessary design component
-public enum Style {
-	NodeDefault,
-	NodeSelected,
-	NodeInterruptDefault,
-	NodeInterruptSelected,
-	ConnectionPointDefault,
-	ConnectionPointSelected,
-	TextAreaDefault,
-	TextBoxDefault,
-	TextBoxSelected,
-	TextAreaButtonDefault,
-	LabelDefault,
-	ToggleUpDefault,
-	ToggleDownDefault,
-}
-
 /*
   SDEStyles is where all predefined styles are kept.
   

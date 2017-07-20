@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SDEContainerType {DialogBox, DialogInterrupt, DecisionBox}
-
 public abstract class SDEContainer : ScriptableObject {
 	
 	// set if this container is the child of a Node

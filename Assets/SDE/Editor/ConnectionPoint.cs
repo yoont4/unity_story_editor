@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ConnectionPointType { In, Out }
-
 /*
   ConnectionPoints represent the in/out handles of a Node, allowing
   Nodes to connect to each other.

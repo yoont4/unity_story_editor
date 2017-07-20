@@ -57,6 +57,7 @@ public class DropdownGlobalFlagBox : ToggleMenu {
 	}
 	
 	public void LoadItems(string[] itemList) {
+		items.Clear();
 		foreach (string item in itemList) {
 			items.Add(item);
 			
