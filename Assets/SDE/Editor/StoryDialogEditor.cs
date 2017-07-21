@@ -59,13 +59,6 @@ public class StoryDialogEditor : EditorWindow {
 		window.titleContent = new GUIContent("Story & Dialog Editor");
 	}
 	
-	/*
-	  Init() should be used when opening a window with a given .sn (StoryNode) file.
-	*/
-	public static void Init() {
-		// TODO: implement this
-	}
-	
 	// TEST CODE: CLEARS THE CONSOLE
 	private void ClearConsole () {
          // This simply does "LogEntries.Clear()" the long way:

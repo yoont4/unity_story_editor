@@ -35,7 +35,7 @@ public class OutstreamSplitter : ScriptableObject {
 		if (type == SplitterType.Flag) {
 			this.image = SDEStyles.outstreamFlagSplitterTexture;
 		} else {
-			// TODO: get the variable splitter texture in
+			this.image = SDEStyles.outstreamVariableSplitterTexture;
 		}
 	}
 	

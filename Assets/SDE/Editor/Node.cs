@@ -348,7 +348,13 @@ public class Node : SDEComponent {
 	}
 	
 	private void DrawCheckGlobalVariable() {
-		// TODO: implement this
+		globalItemDropdown.SetPosition(rect.x, rect.y + rect.height);
+		globalItemDropdown.Draw();
+		
+		globalVariableField.Draw();
+		
+		splitter.SetPosition(rect.x+rect.width+1, rect.y+7);
+		splitter.Draw();
 	}
 	
 	/*
@@ -571,6 +577,28 @@ public class Node : SDEComponent {
 		nodeType = NodeType.SetGlobalVariable;
 		title = "SET GLOBAL VARIABLE";
 		
+		ToggleGlobalVariable();
+		
+		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
+		outPoint.Init(this, ConnectionPointType.Out);
+	}
+	
+	private void ToggleCheckGlobalVariable(bool record=true) {
+		if (record) {
+			HistoryManager.RecordNode(this);
+		}
+		
+		nodeType = NodeType.CheckGlobalVariable;
+		title = "CHECK GLOBAL VARIABLE";
+		
+		ToggleGlobalVariable();
+		
+		splitter = ScriptableObject.CreateInstance<OutstreamSplitter>();
+		splitter.Init(SplitterType.Variable);
+	}
+	
+	// helper function of ToggleSetGlobalVariable() and ToggleCheckGlobalVariable()
+	private void ToggleGlobalVariable() {
 		style = new GUIStyle(SDEStyles.nodeSmallDefault);
 		defaultStyle = new GUIStyle(SDEStyles.nodeSmallDefault);
 		selectedStyle = new GUIStyle(SDEStyles.nodeSmallSelected);
@@ -586,24 +614,11 @@ public class Node : SDEComponent {
 		// bind the dropdown to the global variables list
 		globalItemDropdown.LoadItems(GlobalVariables.variables);
 		
-		outPoint = ScriptableObject.CreateInstance<ConnectionPoint>();
-		outPoint.Init(this, ConnectionPointType.Out);
-		
-		// TODO: needs special splitter (>= || <)
-		
 		// instantiate the check field
 		globalVariableField = ScriptableObject.CreateInstance<TextArea>();
-		globalVariableField.Init(this, "+0", 50);
+		globalVariableField.Init(this, "0", 50);
 		globalVariableField.parentOffset = new Vector2(140, -1);
 		globalVariableField.maxLength = 4;
-	}
-	
-	private void ToggleCheckGlobalVariable(bool record=true) {
-		if (record) {
-			HistoryManager.RecordNode(this);
-		}
-		
-		// TODO: implement this
 	}
 	
 	public void SetBottomLevelInterrupt(bool bottomLevel) {
