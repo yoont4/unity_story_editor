@@ -12,10 +12,10 @@ public static class GlobalVariables {
 	
 	public static readonly string[] variables =
 	{
-		"write variables here",
+		"write variables",
 		"like so",
-		"these are NOT flags",
-		"these have point values"
+		"NOT flags",
+		"value based"
 	};
 	
 	static GlobalVariables() {
@@ -24,6 +24,13 @@ public static class GlobalVariables {
 	}
 	
 	private static void CheckVariables() {
+		// check if any strings are over the Max text length
+		foreach (string variable in variables) {
+			if (variable.Length > ToggleMenu.MAX_TEXT_LENGTH) {
+				throw new UnityException("GLOBAL VARIABLE LONGER THAN MAX TEXT LENGTH (" + ToggleMenu.MAX_TEXT_LENGTH + "): " + variable);
+			}
+		}
+		
 		// check for duplicates
 		HashSet<string> variableSet = new HashSet<string>();
 

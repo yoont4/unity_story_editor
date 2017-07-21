@@ -153,7 +153,6 @@ public class StoryDialogEditor : EditorWindow {
 			
 			// Add to the Undo stack if anything changed
 			HistoryManager.FlushIfDirty();
-			
 		}
 		
 		// draw the connections between nodes

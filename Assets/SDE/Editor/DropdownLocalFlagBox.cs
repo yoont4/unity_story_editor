@@ -53,7 +53,7 @@ public class DropdownLocalFlagBox : ToggleMenu {
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// TODO: implement this
+		base.ProcessEvent(e);
 	}
 	
 	public void LinkFlags(List<TextArea> listReference) {

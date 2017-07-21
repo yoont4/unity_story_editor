@@ -7,8 +7,8 @@
   <n>
     <nt>Dialog</nt>
     <r>
-      <x>-60</x>
-      <y>253</y>
+      <x>-839</x>
+      <y>284</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -45,8 +45,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>120</x>
-      <y>213</y>
+      <x>-659</x>
+      <y>244</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -85,8 +85,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>120</x>
-      <y>293</y>
+      <x>-659</x>
+      <y>324</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -113,8 +113,8 @@
   <n>
     <nt>Decision</nt>
     <r>
-      <x>200</x>
-      <y>253</y>
+      <x>-579</x>
+      <y>284</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -156,8 +156,8 @@
   <n>
     <nt>SetLocalFlag</nt>
     <r>
-      <x>420</x>
-      <y>343</y>
+      <x>-359</x>
+      <y>374</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -183,8 +183,8 @@
   <n>
     <nt>CheckLocalFlag</nt>
     <r>
-      <x>420</x>
-      <y>273</y>
+      <x>-359</x>
+      <y>304</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -212,8 +212,8 @@
   <n>
     <nt>SetGlobalFlag</nt>
     <r>
-      <x>820</x>
-      <y>273</y>
+      <x>41</x>
+      <y>304</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -239,8 +239,8 @@
   <n>
     <nt>CheckGlobalFlag</nt>
     <r>
-      <x>620</x>
-      <y>303</y>
+      <x>-159</x>
+      <y>334</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -269,8 +269,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>120</x>
-      <y>333</y>
+      <x>-659</x>
+      <y>364</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -291,8 +291,93 @@
       <id>25</id>
     </op>
   </n>
+  <n>
+    <nt>SetGlobalVariable</nt>
+    <r>
+      <x>471</x>
+      <y>364</y>
+      <w>190</w>
+      <h>26</h>
+    </r>
+    <wp>0</wp>
+    <hp>0</hp>
+    <sv>
+      <x>0</x>
+      <y>0</y>
+    </sv>
+    <bl>true</bl>
+    <ip>
+      <id>26</id>
+      <ids>
+        <id>23</id>
+        <id>30</id>
+      </ids>
+    </ip>
+    <op>
+      <id>27</id>
+    </op>
+    <sf>[these are NOT flags]</sf>
+    <gv>5</gv>
+  </n>
+  <n>
+    <nt>CheckGlobalVariable</nt>
+    <r>
+      <x>221</x>
+      <y>304</y>
+      <w>190</w>
+      <h>26</h>
+    </r>
+    <wp>0</wp>
+    <hp>0</hp>
+    <sv>
+      <x>0</x>
+      <y>0</y>
+    </sv>
+    <bl>true</bl>
+    <ip>
+      <id>28</id>
+      <ids>
+        <id>20</id>
+      </ids>
+    </ip>
+    <opp>
+      <id>29</id>
+    </opp>
+    <opn>
+      <id>30</id>
+    </opn>
+    <sf>[write variables here]</sf>
+    <gv>5</gv>
+  </n>
+  <n>
+    <nt>SetGlobalVariable</nt>
+    <r>
+      <x>471</x>
+      <y>264</y>
+      <w>190</w>
+      <h>26</h>
+    </r>
+    <wp>0</wp>
+    <hp>0</hp>
+    <sv>
+      <x>0</x>
+      <y>0</y>
+    </sv>
+    <bl>true</bl>
+    <ip>
+      <id>31</id>
+      <ids>
+        <id>29</id>
+      </ids>
+    </ip>
+    <op>
+      <id>32</id>
+    </op>
+    <sf>[these have point values]</sf>
+    <gv>0</gv>
+  </n>
   <o>
-    <x>-110</x>
-    <y>83</y>
+    <x>-889</x>
+    <y>114</y>
   </o>
 </EditorStoryNodeEntry>

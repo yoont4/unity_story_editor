@@ -53,7 +53,7 @@ public class DropdownGlobalItemBox : ToggleMenu {
 	}
 	
 	public override void ProcessEvent(Event e) {
-		// TODO: implement this
+		base.ProcessEvent(e);
 	}
 	
 	public void LoadItems(string[] itemList) {

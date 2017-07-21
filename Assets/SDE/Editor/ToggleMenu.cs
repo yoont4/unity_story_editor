@@ -47,7 +47,15 @@ public abstract class ToggleMenu : ScriptableObject {
 		outerViewRect.y = rect.y + 20;
 	}
 	
-	public abstract void ProcessEvent(Event e);
+	public virtual void ProcessEvent(Event e) {
+		switch(e.type) {
+		case EventType.MouseDown:
+			if (!toggleRect.Contains(e.mousePosition) && !rect.Contains(e.mousePosition) && !outerViewRect.Contains(e.mousePosition)) {
+				Close();
+			}
+			break;
+		}
+	}
 	
 	public void Expand() {
 		toggleStyle = toggleUpStyle;

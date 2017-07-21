@@ -97,14 +97,26 @@ public static class SDEXMLManager {
 				tempNode.localFlagDropdown.selectedItem = mainEditor.localFlagsMenu.GetTextArea(entry.selectedFlag);
 			} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
 				tempNode.globalItemDropdown.selectedItem = entry.selectedFlag;
+			} else if (entry.nodeType == NodeType.SetGlobalVariable || entry.nodeType == NodeType.CheckGlobalVariable) {
+				tempNode.globalItemDropdown.selectedItem = entry.selectedFlag;
+				tempNode.globalVariableField.text = entry.globalVariableValue;
 			}
 			
 			// map Node outpoint/splitter depending on NodeType
-			if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.Interrupt) {
+			if (entry.nodeType == NodeType.SetLocalFlag || 
+				entry.nodeType == NodeType.SetGlobalFlag || 
+				entry.nodeType == NodeType.SetGlobalVariable || 
+				entry.nodeType == NodeType.Interrupt)
+			{
+				// add outpoint entry if available
 				if (tempNode.outPoint != null && entry.outPoint != null) {
 					connectionPointMap[entry.outPoint.CPEID] = tempNode.outPoint;
 				}
-			} else if (entry.nodeType == NodeType.CheckLocalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
+			} else if (entry.nodeType == NodeType.CheckLocalFlag || 
+				entry.nodeType == NodeType.CheckGlobalFlag || 
+				entry.nodeType == NodeType.CheckGlobalVariable)
+			{
+				// add splitter entries if available
 				if (tempNode.splitter != null && entry.outPos != null && entry.outNeg != null) {
 					connectionPointMap[entry.outPos.CPEID] = tempNode.splitter.positiveOutpoint;
 					connectionPointMap[entry.outNeg.CPEID] = tempNode.splitter.negativeOutpoint;
@@ -261,7 +273,8 @@ public static class SDEXMLManager {
 			NodeType type = nodes[i].nodeType;
 			if ((type == NodeType.Interrupt ||
 				type == NodeType.SetGlobalFlag ||
-				type == NodeType.SetLocalFlag) &&
+				type == NodeType.SetLocalFlag ||
+				type == NodeType.SetGlobalVariable) &&
 				nodes[i].outPoint != null) 
 			{
 				tempNode.outPoint = new ConnectionPointEntry();
@@ -270,7 +283,8 @@ public static class SDEXMLManager {
 			}
 			
 			if ((type == NodeType.CheckGlobalFlag ||
-				type == NodeType.CheckLocalFlag) &&
+				type == NodeType.CheckLocalFlag ||
+				type == NodeType.CheckGlobalVariable) &&
 				nodes[i].splitter != null)
 			{
 				tempNode.outPos = new ConnectionPointEntry();
@@ -337,11 +351,17 @@ public static class SDEXMLManager {
 		entry.bottomLevel = node.bottomLevel;
 		
 		if (entry.nodeType == NodeType.SetLocalFlag || entry.nodeType == NodeType.CheckLocalFlag){
+			// populate the selected item of the local flag entry
 			if (node.localFlagDropdown.selectedItem != null) {
 				entry.selectedFlag = node.localFlagDropdown.selectedItem.text;
 			}
 		} else if (entry.nodeType == NodeType.SetGlobalFlag || entry.nodeType == NodeType.CheckGlobalFlag) {
+			// populate the selected item of the global flag entry
 			entry.selectedFlag = node.globalItemDropdown.selectedItem;
+		} else if (entry.nodeType == NodeType.SetGlobalVariable || entry.nodeType == NodeType.CheckGlobalVariable) {
+			// populate the selected item and the global variable value of the global variable entry
+			entry.selectedFlag = node.globalItemDropdown.selectedItem;
+			entry.globalVariableValue = node.globalVariableField.text;
 		}
 		
 		// assign inPoint links

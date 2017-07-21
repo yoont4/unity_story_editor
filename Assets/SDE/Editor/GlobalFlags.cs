@@ -23,7 +23,6 @@ public static class GlobalFlags {
 	
 	private static void CheckFlags() {
 		// check if any strings are over the Max text length
-		
 		foreach (string flag in flags) {
 			if (flag.Length > ToggleMenu.MAX_TEXT_LENGTH) {
 				throw new UnityException("GLOBAL FLAG LONGER THAN MAX TEXT LENGTH (" + ToggleMenu.MAX_TEXT_LENGTH + ')');

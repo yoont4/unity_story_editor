@@ -63,6 +63,9 @@ public class EditorNodeEntry {
 	
 	[XmlElement("sf")]
 	public string selectedFlag;
+	
+	[XmlElement("gv")]
+	public string globalVariableValue;
 }
 
 [System.Serializable]

@@ -370,6 +370,8 @@ public class Node : SDEComponent {
 		if (outPoint != null) outPoint.ProcessEvent(e);
 		if (childContainer != null) childContainer.ProcessEvent(e);
 		if (splitter != null) splitter.ProcessEvent(e);
+		if (localFlagDropdown != null) localFlagDropdown.ProcessEvent(e);
+		if (globalItemDropdown != null) globalItemDropdown.ProcessEvent(e);
 		if (globalVariableField != null) globalVariableField.ProcessEvent(e);
 		
 		base.ProcessEvent(e);
