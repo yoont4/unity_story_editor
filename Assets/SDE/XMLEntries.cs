@@ -46,9 +46,13 @@ public class NodeEntry {
 	[XmlElement("opn")]
 	public int outPointNegNID;
 	
-	// only used by Check/Set Local/Global Flag Node
+	// only used by Check/Set Local/Global Flag/Variable Node
 	[XmlElement("f")]
 	public string flag;
+	
+	// only used by Set/Check Global Variable Node
+	[XmlElement("v")]
+	public string variableValue;
 	
 	public NodeEntry() {
 		this.outPointNID = -1;

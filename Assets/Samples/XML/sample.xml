@@ -2,7 +2,7 @@
 <StoryNodeEntry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ns>
     <n>
-      <id>0</id>
+      <id>9</id>
       <nt>Dialog</nt>
       <c>
         <c>
@@ -16,7 +16,7 @@
           <fs>
             <fe>
               <f>1</f>
-              <op>1</op>
+              <op>10</op>
             </fe>
           </fs>
         </c>
@@ -25,15 +25,15 @@
         <fs>
           <fe>
             <f>1</f>
-            <op>1</op>
+            <op>10</op>
           </fe>
           <fe>
             <f>2</f>
-            <op>1</op>
+            <op>10</op>
           </fe>
           <fe>
             <f>3</f>
-            <op>1</op>
+            <op>10</op>
           </fe>
         </fs>
       </c>
@@ -42,18 +42,18 @@
       <opn>-1</opn>
     </n>
     <n>
-      <id>1</id>
+      <id>10</id>
       <nt>Decision</nt>
       <c>
         <c>
           <c>
-            <op>2</op>
+            <op>11</op>
             <t>last decision</t>
           </c>
-          <op>2</op>
+          <op>11</op>
           <t>test decision 2</t>
         </c>
-        <op>3</op>
+        <op>12</op>
         <t>test decision 1</t>
       </c>
       <op>-1</op>
@@ -61,37 +61,64 @@
       <opn>-1</opn>
     </n>
     <n>
-      <id>2</id>
+      <id>11</id>
       <nt>SetLocalFlag</nt>
-      <op>5</op>
+      <op>14</op>
       <opp>-1</opp>
       <opn>-1</opn>
       <f>new var 0</f>
     </n>
     <n>
-      <id>3</id>
+      <id>12</id>
       <nt>CheckLocalFlag</nt>
       <op>-1</op>
-      <opp>4</opp>
-      <opn>5</opn>
+      <opp>13</opp>
+      <opn>14</opn>
       <f>new var 0</f>
     </n>
     <n>
-      <id>4</id>
+      <id>13</id>
       <nt>SetGlobalFlag</nt>
-      <op>-1</op>
+      <op>16</op>
       <opp>-1</opp>
       <opn>-1</opn>
       <f>[write flags here]</f>
     </n>
     <n>
-      <id>5</id>
+      <id>14</id>
       <nt>CheckGlobalFlag</nt>
       <op>-1</op>
-      <opp>4</opp>
-      <opn>-1</opn>
+      <opp>13</opp>
+      <opn>15</opn>
       <f>[like so]</f>
     </n>
+    <n>
+      <id>15</id>
+      <nt>SetGlobalVariable</nt>
+      <op>-1</op>
+      <opp>-1</opp>
+      <opn>-1</opn>
+      <f>[NOT flags]</f>
+      <v>+5</v>
+    </n>
+    <n>
+      <id>16</id>
+      <nt>CheckGlobalVariable</nt>
+      <op>-1</op>
+      <opp>17</opp>
+      <opn>15</opn>
+      <f>[write variables here]</f>
+      <v>5</v>
+    </n>
+    <n>
+      <id>17</id>
+      <nt>SetGlobalVariable</nt>
+      <op>-1</op>
+      <opp>-1</opp>
+      <opn>-1</opn>
+      <f>[write variables]</f>
+      <v>-2</v>
+    </n>
   </ns>
-  <en>0</en>
+  <en>9</en>
 </StoryNodeEntry>

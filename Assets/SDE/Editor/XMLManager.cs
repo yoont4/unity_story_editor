@@ -4,6 +4,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
@@ -142,6 +143,14 @@ public static class XMLManager {
 				
 			case NodeType.CheckGlobalFlag:
 				PopulateCheckGlobalFlagEntry(tempNodeEntry, nodes[i], nodeMap);
+				break;
+				
+			case NodeType.SetGlobalVariable:
+				PopulateSetGlobalVariableEntry(tempNodeEntry, nodes[i], nodeMap);
+				break;
+				
+			case NodeType.CheckGlobalVariable:
+				PopulateCheckGlobalVariableEntry(tempNodeEntry, nodes[i], nodeMap);
 				break;
 				
 			default:
@@ -384,6 +393,75 @@ public static class XMLManager {
 		
 		if (string.IsNullOrEmpty(node.globalItemDropdown.selectedItem)) {
 			throw new UnityException("EXPORT ERROR: GlobalFlagNode missing selected flag!");
+		}
+	}
+	
+	private static void PopulateSetGlobalVariableEntry(NodeEntry nodeEntry, Node node, Dictionary<Node, int> nodeMap) {
+		ValidateSetGlobalVariable(node);
+		
+		// assign node entry data if validated
+		nodeEntry.nodeType = NodeType.SetGlobalVariable;
+		nodeEntry.NID = nodeMap[node];
+		
+		// assign outpoint if there is one
+		if (node.outPoint.connections.Count > 0) {
+			nodeEntry.outPointNID = nodeMap[(Node)node.outPoint.connections[0].inPoint.parent];
+		}
+		
+		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		if (string.IsNullOrEmpty(node.globalVariableField.text)) {
+			nodeEntry.variableValue = "+0";
+		} else {
+			nodeEntry.variableValue = node.globalVariableField.text;
+		}
+	}
+	
+	private static void ValidateSetGlobalVariable(Node node) {
+		if (string.IsNullOrEmpty(node.globalItemDropdown.selectedItem)) {
+			throw new UnityException("EXPORT ERROR: GlobalVariableNode missing selected flag!");
+		}
+		
+		string regPattern = "^[+-=]?\\d{0,}$";
+		if (!Regex.IsMatch(node.globalVariableField.text, regPattern)) {
+			throw new UnityException("EXPORT ERROR: GlobalVariableNode has invalid variable value!");
+		}
+	}
+	
+	private static void PopulateCheckGlobalVariableEntry(NodeEntry nodeEntry, Node node, Dictionary<Node, int> nodeMap) {
+		ValidateCheckGlobalVariable(node);
+		
+		// assign node entry data if validated
+		nodeEntry.nodeType = NodeType.CheckGlobalVariable;
+		nodeEntry.NID = nodeMap[node];
+		
+		// assign connected outpoints
+		if (node.splitter.positiveOutpoint.connections.Count > 0) {
+			nodeEntry.outPointPosNID = nodeMap[(Node)node.splitter.positiveOutpoint.connections[0].inPoint.parent];
+		}
+		if (node.splitter.negativeOutpoint.connections.Count > 0) {
+			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
+		}
+		
+		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		if (string.IsNullOrEmpty(node.globalVariableField.text)) {
+			nodeEntry.variableValue = "0";
+		} else {
+			nodeEntry.variableValue = node.globalVariableField.text;
+		}
+	}
+	
+	private static void ValidateCheckGlobalVariable(Node node) {
+		if (node.splitter.positiveOutpoint.connections.Count < 1 && node.splitter.negativeOutpoint.connections.Count < 1) {
+			throw new UnityException("EXPORT ERROR: GlobalVariableNode must have at least 1 out-connection!");
+		}
+		
+		if (string.IsNullOrEmpty(node.globalItemDropdown.selectedItem)) {
+			throw new UnityException("EXPORT ERROR: GlobalVariableNode missing selected variable!");
+		}
+		
+		string regPattern = "^[+-=]?\\d{0,}$";
+		if (!Regex.IsMatch(node.globalVariableField.text, regPattern)) {
+			throw new UnityException("EXPORT ERROR: GlobalVariableNode has invalid variable value!");
 		}
 	}
 }

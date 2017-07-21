@@ -7,8 +7,8 @@
   <n>
     <nt>Dialog</nt>
     <r>
-      <x>-839</x>
-      <y>284</y>
+      <x>-737</x>
+      <y>274</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -45,8 +45,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>-659</x>
-      <y>244</y>
+      <x>-557</x>
+      <y>234</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -85,8 +85,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>-659</x>
-      <y>324</y>
+      <x>-557</x>
+      <y>314</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -113,8 +113,8 @@
   <n>
     <nt>Decision</nt>
     <r>
-      <x>-579</x>
-      <y>284</y>
+      <x>-477</x>
+      <y>274</y>
       <w>150</w>
       <h>30</h>
     </r>
@@ -156,8 +156,8 @@
   <n>
     <nt>SetLocalFlag</nt>
     <r>
-      <x>-359</x>
-      <y>374</y>
+      <x>-257</x>
+      <y>364</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -183,8 +183,8 @@
   <n>
     <nt>CheckLocalFlag</nt>
     <r>
-      <x>-359</x>
-      <y>304</y>
+      <x>-257</x>
+      <y>294</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -212,8 +212,8 @@
   <n>
     <nt>SetGlobalFlag</nt>
     <r>
-      <x>41</x>
-      <y>304</y>
+      <x>143</x>
+      <y>294</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -239,8 +239,8 @@
   <n>
     <nt>CheckGlobalFlag</nt>
     <r>
-      <x>-159</x>
-      <y>334</y>
+      <x>-57</x>
+      <y>324</y>
       <w>140</w>
       <h>26</h>
     </r>
@@ -269,8 +269,8 @@
   <n>
     <nt>Interrupt</nt>
     <r>
-      <x>-659</x>
-      <y>364</y>
+      <x>-557</x>
+      <y>354</y>
       <w>30</w>
       <h>20</h>
     </r>
@@ -294,8 +294,8 @@
   <n>
     <nt>SetGlobalVariable</nt>
     <r>
-      <x>471</x>
-      <y>364</y>
+      <x>573</x>
+      <y>344</y>
       <w>190</w>
       <h>26</h>
     </r>
@@ -316,14 +316,14 @@
     <op>
       <id>27</id>
     </op>
-    <sf>[these are NOT flags]</sf>
-    <gv>5</gv>
+    <sf>[NOT flags]</sf>
+    <gv>+5</gv>
   </n>
   <n>
     <nt>CheckGlobalVariable</nt>
     <r>
-      <x>221</x>
-      <y>304</y>
+      <x>323</x>
+      <y>294</y>
       <w>190</w>
       <h>26</h>
     </r>
@@ -352,8 +352,8 @@
   <n>
     <nt>SetGlobalVariable</nt>
     <r>
-      <x>471</x>
-      <y>264</y>
+      <x>573</x>
+      <y>294</y>
       <w>190</w>
       <h>26</h>
     </r>
@@ -373,11 +373,11 @@
     <op>
       <id>32</id>
     </op>
-    <sf>[these have point values]</sf>
-    <gv>0</gv>
+    <sf>[write variables]</sf>
+    <gv>-2</gv>
   </n>
   <o>
-    <x>-889</x>
-    <y>114</y>
+    <x>-787</x>
+    <y>104</y>
   </o>
 </EditorStoryNodeEntry>
