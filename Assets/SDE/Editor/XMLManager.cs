@@ -64,22 +64,50 @@ public static class XMLManager {
 	private static int NodePrepass(Dictionary<Node, int> nodeMap, List<Node> nodes) {
 		int entryNID = -1;
 		
-		// assign every node a Node ID (NID)
-		for (int i = 0; i < nodes.Count; i++) {
+		// if there is only 1 dialog node, with 1 dialog box (and 1 interrupt), it will always be the entry Node, even if it loops.
+		// NOTE: set, check flags should never loop, and Decision nodes should never loop alone, so only Dialog 
+		// Nodes should be able to be alone and loop.
+		bool assigned = false;
+		if (nodes.Count == 2) {
+			// validate that the only 2 nodes are a Dialog and Interrupt Node
+			if (nodes[0].nodeType == NodeType.Dialog && nodes[1].nodeType == NodeType.Interrupt) {
+				nodeMap[nodes[0]] = GenerateNID();
+				entryNID = nodeMap[nodes[0]];
+				assigned = true;
+			} else if (nodes[0].nodeType == NodeType.Interrupt && nodes[1].nodeType == NodeType.Dialog) {
+				nodeMap[nodes[1]] = GenerateNID();
+				entryNID = nodeMap[nodes[1]];
+				assigned = true;
+			}
+		} 
+		
+		if (!assigned) {
+			// used to check if there was a valid entry Node
+			bool entryNIDFound = false;
 			
-			// interrupt nodes are skipped, because their information is merged into dialog nodes
-			if (nodes[i].nodeType != NodeType.Interrupt) {
-				nodeMap[nodes[i]] = GenerateNID();
+			// assign every node a Node ID (NID)
+			for (int i = 0; i < nodes.Count; i++) {
 				
-				// look for potential start Node
-				if (nodes[i].inPoint.connections.Count < 1) {
-					if (entryNID != -1) {
-						throw new UnityException("EXPORT ERROR: There are multiple potential starting Nodes!");
+				// interrupt nodes are skipped, because their information is merged into dialog nodes
+				if (nodes[i].nodeType != NodeType.Interrupt) {
+					nodeMap[nodes[i]] = GenerateNID();
+					
+					// look for potential start Node
+					if (nodes[i].inPoint.connections.Count < 1) {
+						if (entryNID != -1) {
+							throw new UnityException("EXPORT ERROR: There are multiple potential starting Nodes!");
+						}
+						entryNID = nodeMap[nodes[i]];
+						entryNIDFound = true;
 					}
-					entryNID = nodeMap[nodes[i]];
 				}
 			}
+			
+			if (!entryNIDFound) {
+				throw new UnityException("EXPORT ERROR: No valid starting Nodes!");
+			}
 		}
+		
 		
 		return entryNID;
 	}
@@ -188,6 +216,10 @@ public static class XMLManager {
 				// get dialog flags
 				tempDialogEntry.flags = new List<FlagEntry>();
 				Node interruptNode = DialogBoxManager.GetInterruptNode(tempChild.outPoint);
+				
+				if (interruptNode == null) {
+					throw new UnityException("EXPORT ERROR: Dialog Node is missing attached Interrupt Node!");
+				}
 				
 				ValidateInterrupt(interruptNode);
 				
