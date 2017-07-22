@@ -2,98 +2,102 @@
 <StoryNodeEntry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ns>
     <n>
-      <id>9</id>
+      <id>0</id>
       <nt>Dialog</nt>
-      <c>
-        <c>
-          <c>
-            <op>-1</op>
-            <t>cut-off dialog...</t>
-            <fs />
-          </c>
+      <op>-1</op>
+      <opp>-1</opp>
+      <opn>-1</opn>
+      <dis>
+        <d>
+          <op>-1</op>
+          <t>&lt;1&gt;&lt;2&gt;&lt;3&gt;</t>
+          <fs>
+            <fe>
+              <f>1</f>
+              <op>1</op>
+            </fe>
+            <fe>
+              <f>2</f>
+              <op>1</op>
+            </fe>
+            <fe>
+              <f>3</f>
+              <op>1</op>
+            </fe>
+          </fs>
+        </d>
+        <d>
           <op>-1</op>
           <t>test dialog &lt;1&gt;</t>
           <fs>
             <fe>
               <f>1</f>
-              <op>10</op>
+              <op>1</op>
             </fe>
           </fs>
-        </c>
-        <op>-1</op>
-        <t>&lt;1&gt;&lt;2&gt;&lt;3&gt;</t>
-        <fs>
-          <fe>
-            <f>1</f>
-            <op>10</op>
-          </fe>
-          <fe>
-            <f>2</f>
-            <op>10</op>
-          </fe>
-          <fe>
-            <f>3</f>
-            <op>10</op>
-          </fe>
-        </fs>
-      </c>
-      <op>-1</op>
-      <opp>-1</opp>
-      <opn>-1</opn>
+        </d>
+        <d>
+          <op>-1</op>
+          <t>cut-off dialog...</t>
+          <fs />
+        </d>
+      </dis>
     </n>
     <n>
-      <id>10</id>
+      <id>1</id>
       <nt>Decision</nt>
-      <c>
-        <c>
-          <c>
-            <op>11</op>
-            <t>last decision</t>
-          </c>
-          <op>11</op>
-          <t>test decision 2</t>
-        </c>
-        <op>12</op>
-        <t>test decision 1</t>
-      </c>
       <op>-1</op>
       <opp>-1</opp>
       <opn>-1</opn>
+      <des>
+        <d>
+          <op>3</op>
+          <t>test decision 1</t>
+        </d>
+        <d>
+          <op>2</op>
+          <t>test decision 2</t>
+        </d>
+        <d>
+          <op>2</op>
+          <t>last decision</t>
+        </d>
+      </des>
     </n>
     <n>
-      <id>11</id>
+      <id>2</id>
       <nt>SetLocalFlag</nt>
-      <op>14</op>
+      <op>5</op>
       <opp>-1</opp>
       <opn>-1</opn>
       <f>new var 0</f>
     </n>
     <n>
-      <id>12</id>
+      <id>3</id>
       <nt>CheckLocalFlag</nt>
       <op>-1</op>
-      <opp>13</opp>
-      <opn>14</opn>
+      <opp>4</opp>
+      <opn>5</opn>
       <f>new var 0</f>
     </n>
     <n>
-      <id>13</id>
+      <id>4</id>
       <nt>SetGlobalFlag</nt>
-      <op>16</op>
+      <op>7</op>
       <opp>-1</opp>
       <opn>-1</opn>
       <f>[write flags here]</f>
     </n>
     <n>
-      <id>14</id>
+      <id>5</id>
       <nt>CheckGlobalFlag</nt>
       <op>-1</op>
-      <opp>13</opp>
-      <opn>15</opn>
+      <opp>4</opp>
+      <opn>6</opn>
       <f>[like so]</f>
     </n>
     <n>
-      <id>15</id>
+      <id>6</id>
       <nt>SetGlobalVariable</nt>
       <op>-1</op>
       <opp>-1</opp>
@@ -102,16 +106,16 @@
       <v>+5</v>
     </n>
     <n>
-      <id>16</id>
+      <id>7</id>
       <nt>CheckGlobalVariable</nt>
       <op>-1</op>
-      <opp>17</opp>
-      <opn>15</opn>
+      <opp>8</opp>
+      <opn>6</opn>
       <f>[write variables here]</f>
       <v>5</v>
     </n>
     <n>
-      <id>17</id>
+      <id>8</id>
       <nt>SetGlobalVariable</nt>
       <op>-1</op>
       <opp>-1</opp>
@@ -120,5 +124,5 @@
       <v>-2</v>
     </n>
   </ns>
-  <en>9</en>
+  <en>0</en>
 </StoryNodeEntry>

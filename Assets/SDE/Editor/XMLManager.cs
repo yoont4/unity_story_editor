@@ -171,27 +171,29 @@ public static class XMLManager {
 		nodeEntry.nodeType = NodeType.Dialog;
 		nodeEntry.NID = nodeMap[node];
 		
-		ChildEntry tempChildEntry = new ChildEntry();
+		nodeEntry.dialogs = new List<DialogEntry>();
+		
+		DialogEntry tempDialogEntry = new DialogEntry();
 		SDEContainer tempChild = node.childContainer;
 		if (tempChild != null) {
-			nodeEntry.child = tempChildEntry;
+			nodeEntry.dialogs.Add(tempDialogEntry);
 			
 			while(tempChild != null) {
 				// validate every DialogBox
 				ValidateDialogBox((DialogBox)tempChild);
 				
 				// assign values if validated
-				tempChildEntry.text = ((DialogBox)tempChild).textArea.text;
+				tempDialogEntry.text = ((DialogBox)tempChild).textArea.text;
 				
 				// get dialog flags
-				tempChildEntry.flags = new List<FlagEntry>();
+				tempDialogEntry.flags = new List<FlagEntry>();
 				Node interruptNode = DialogBoxManager.GetInterruptNode(tempChild.outPoint);
 				
 				ValidateInterrupt(interruptNode);
 				
 				// set the default outpoint if there is one and if it's connected
 				if (interruptNode.outPoint != null && interruptNode.outPoint.connections.Count > 0) {
-					tempChildEntry.outPointNID = nodeMap[(Node)interruptNode.outPoint.connections[0].inPoint.parent];
+					tempDialogEntry.outPointNID = nodeMap[(Node)interruptNode.outPoint.connections[0].inPoint.parent];
 				}
 				
 				SDEContainer interrupt = interruptNode.childContainer;
@@ -205,7 +207,7 @@ public static class XMLManager {
 					tempFlagEntry.outPointNID = nodeMap[(Node)interrupt.outPoint.connections[0].inPoint.parent];
 					
 					// add the completed entry to the current dialog entry's flaglist
-					tempChildEntry.flags.Add(tempFlagEntry);
+					tempDialogEntry.flags.Add(tempFlagEntry);
 					
 					// assign to continue traversal
 					interrupt = interrupt.child;
@@ -214,8 +216,8 @@ public static class XMLManager {
 				// assign to continue traversal
 				tempChild = tempChild.child;
 				if (tempChild != null) {
-					tempChildEntry.child = new ChildEntry();
-					tempChildEntry = tempChildEntry.child;
+					tempDialogEntry = new DialogEntry();
+					nodeEntry.dialogs.Add(tempDialogEntry);
 				}
 			}
 		}
@@ -260,23 +262,25 @@ public static class XMLManager {
 		nodeEntry.nodeType = NodeType.Decision;
 		nodeEntry.NID = nodeMap[node];
 		
-		ChildEntry tempChildEntry = new ChildEntry();
+		nodeEntry.decisions = new List<DecisionEntry>();
+		
+		DecisionEntry tempDecisionEntry = new DecisionEntry();
 		SDEContainer tempChild = node.childContainer;
 		if (tempChild != null) {
-			nodeEntry.child = tempChildEntry;
+			nodeEntry.decisions.Add(tempDecisionEntry);
 			
 			while(tempChild != null) {
 				// validate each DecisionBox
 				ValidateDecisionBox((DecisionBox)tempChild);
 				
 				// assign child entry data if validated
-				tempChildEntry.text = ((DecisionBox)tempChild).textArea.text;
-				tempChildEntry.outPointNID = nodeMap[(Node)tempChild.outPoint.connections[0].inPoint.parent];
+				tempDecisionEntry.text = ((DecisionBox)tempChild).textArea.text;
+				tempDecisionEntry.outPointNID = nodeMap[(Node)tempChild.outPoint.connections[0].inPoint.parent];
 				
 				tempChild = tempChild.child;
 				if (tempChild != null) {
-					tempChildEntry.child = new ChildEntry();
-					tempChildEntry = tempChildEntry.child;
+					tempDecisionEntry = new DecisionEntry();
+					nodeEntry.decisions.Add(tempDecisionEntry);
 				}
 			}
 		}

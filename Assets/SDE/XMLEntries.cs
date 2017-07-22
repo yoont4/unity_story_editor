@@ -31,9 +31,6 @@ public class NodeEntry {
 	[XmlElement("nt")]
 	public NodeType nodeType;
 	
-	[XmlElement("c")]
-	public ChildEntry child;
-	
 	// only used by Set Local/Global Flag + Interrupt Nodes
 	[XmlElement("op")]
 	public int outPointNID;
@@ -54,6 +51,14 @@ public class NodeEntry {
 	[XmlElement("v")]
 	public string variableValue;
 	
+	[XmlArray("dis")]
+	[XmlArrayItem("d")]
+	public List<DialogEntry> dialogs;
+	
+	[XmlArray("des")]
+	[XmlArrayItem("d")]
+	public List<DecisionEntry> decisions;
+	
 	public NodeEntry() {
 		this.outPointNID = -1;
 		this.outPointPosNID = -1;
@@ -62,23 +67,31 @@ public class NodeEntry {
 }
 
 [System.Serializable]
-public class ChildEntry {
-	[XmlElement("c")]
-	public ChildEntry child;
-	
-	// not used by Dialog Box
+public class DialogEntry {
 	[XmlElement("op")]
 	public int outPointNID;
 	
 	[XmlElement("t")]
 	public string text;
 	
-	// only used by Dialog Box
 	[XmlArray("fs")]
 	[XmlArrayItem("fe")]
 	public List<FlagEntry> flags;
 	
-	public ChildEntry() {
+	public DialogEntry() {
+		this.outPointNID = -1;
+	}
+}
+
+[System.Serializable]
+public class DecisionEntry {
+	[XmlElement("op")]
+	public int outPointNID;
+	
+	[XmlElement("t")]
+	public string text;
+	
+	public DecisionEntry() {
 		this.outPointNID = -1;
 	}
 }
