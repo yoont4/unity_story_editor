@@ -372,7 +372,7 @@ public static class XMLManager {
 			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.localFlagDropdown.selectedItem.text;
+		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
 	}
 	
 	private static void ValidateCheckLocalFlag(Node node) {
@@ -397,7 +397,7 @@ public static class XMLManager {
 			nodeEntry.outPointNID = nodeMap[(Node)node.outPoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
 	}
 	
 	private static void ValidateSetGlobalFlag(Node node) {
@@ -446,7 +446,7 @@ public static class XMLManager {
 			nodeEntry.outPointNID = nodeMap[(Node)node.outPoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
 		if (string.IsNullOrEmpty(node.globalVariableField.text)) {
 			nodeEntry.variableValue = "+0";
 		} else {
@@ -480,7 +480,7 @@ public static class XMLManager {
 			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
 		if (string.IsNullOrEmpty(node.globalVariableField.text)) {
 			nodeEntry.variableValue = "0";
 		} else {
@@ -501,5 +501,18 @@ public static class XMLManager {
 		if (!Regex.IsMatch(node.globalVariableField.text, regPattern)) {
 			throw new UnityException("EXPORT ERROR: GlobalVariableNode has invalid variable value!");
 		}
+	}
+	
+	private static string TrimGlobalItem(string item) {
+		string trimmedString = item;
+		if (trimmedString[0] == '[') {
+			trimmedString = trimmedString.Substring(1);
+		}
+		
+		if (trimmedString[trimmedString.Length-1] == ']') {
+			trimmedString = trimmedString.Substring(0, trimmedString.Length-1);
+		}
+		
+		return trimmedString;
 	}
 }
