@@ -372,7 +372,7 @@ public static class XMLManager {
 			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
+		nodeEntry.flag = node.localFlagDropdown.selectedItem.text;
 	}
 	
 	private static void ValidateCheckLocalFlag(Node node) {
@@ -421,7 +421,7 @@ public static class XMLManager {
 			nodeEntry.outPointNegNID = nodeMap[(Node)node.splitter.negativeOutpoint.connections[0].inPoint.parent];
 		}
 		
-		nodeEntry.flag = node.globalItemDropdown.selectedItem;
+		nodeEntry.flag = TrimGlobalItem(node.globalItemDropdown.selectedItem);
 	}
 	
 	private static void ValidateCheckGlobalFlag(Node node) {
