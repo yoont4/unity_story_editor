@@ -128,6 +128,8 @@ public static class XMLManager {
 			flags.Add(mainEditor.localFlagsMenu.items[i].text);
 		}
 		
+		storyEntry.localFlags = flags;
+		
 		return storyEntry;
 	}
 	
@@ -457,7 +459,7 @@ public static class XMLManager {
 			throw new UnityException("EXPORT ERROR: GlobalVariableNode missing selected flag!");
 		}
 		
-		string regPattern = "^[+-=]?\\d{0,}$";
+		string regPattern = "^[+-=]?\\d{1,}$";
 		if (!Regex.IsMatch(node.globalVariableField.text, regPattern)) {
 			throw new UnityException("EXPORT ERROR: GlobalVariableNode has invalid variable value!");
 		}
@@ -495,7 +497,7 @@ public static class XMLManager {
 			throw new UnityException("EXPORT ERROR: GlobalVariableNode missing selected variable!");
 		}
 		
-		string regPattern = "^[+-=]?\\d{0,}$";
+		string regPattern = "^\\d{1,}$";
 		if (!Regex.IsMatch(node.globalVariableField.text, regPattern)) {
 			throw new UnityException("EXPORT ERROR: GlobalVariableNode has invalid variable value!");
 		}
