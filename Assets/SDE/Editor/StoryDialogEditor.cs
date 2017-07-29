@@ -271,7 +271,7 @@ public class StoryDialogEditor : EditorWindow {
 	
 	private void DrawExport() {
 		if (GUI.Button(new Rect(position.width-82, position.height-42, 80, 40), "-EXPORT-", SDEStyles.textButtonDefault))  {
-			if (XMLManager.SaveXML("test")) {
+			if (XMLManager.SaveXML()) {
 				EditorUtility.DisplayDialog("Export Success!", "Story node was exported successfully!", "nice job");
 			} else {
 				Debug.Log("EXPORT FAILED");

@@ -20,7 +20,7 @@ public static class XMLManager {
 	
 	private static int NIDCounter = 0;
 	
-	public static bool SaveXML(string filename) {
+	public static bool SaveXML() {
 		Debug.Log("exporting...");
 		
 		if (mainEditor == null || mainEditor.nodes == null || mainEditor.nodes.Count < 1) {
@@ -376,7 +376,7 @@ public static class XMLManager {
 	}
 	
 	private static void ValidateCheckLocalFlag(Node node) {
-		if (node.splitter.positiveOutpoint.connections.Count < 1 || node.splitter.negativeOutpoint.connections.Count < 1) {	
+		if (node.splitter.positiveOutpoint.connections.Count < 1 && node.splitter.negativeOutpoint.connections.Count < 1) {	
 			throw new UnityException("EXPORT ERROR: LocalFlagNode must have at least 1 out-connection!");
 		} 
 		
