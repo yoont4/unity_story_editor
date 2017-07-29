@@ -29,7 +29,7 @@ public static class XMLManager {
 		}
 		
 		// open the file explorer save window if on a new file
-		string path = EditorUtility.SaveFilePanel("Export Story Entry", "Assets", "entry", "xml");
+		string path = EditorUtility.SaveFilePanel("Export Story Entry", ProjectPathManager.LastExportPath, "entry", "xml");
 		if (string.IsNullOrEmpty(path)) {
 			Debug.Log("canceled save");
 			return false;
@@ -58,6 +58,7 @@ public static class XMLManager {
 		
 		// success!
 		Debug.Log("exported to: " + path);
+		ProjectPathManager.LastExportPath = path;
 		return true;
 	}
 	

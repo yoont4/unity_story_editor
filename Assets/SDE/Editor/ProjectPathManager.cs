@@ -9,6 +9,22 @@ using UnityEditor;
 */
 public static class ProjectPathManager {
 	
+	private static string _lastExportPath = "";
+	
+	public static string LastExportPath {
+		get {
+			if (string.IsNullOrEmpty(_lastExportPath)) {
+				_lastExportPath = BasePath;
+			}
+			
+			return _lastExportPath;
+		}
+		
+		set {
+			_lastExportPath = value;
+		}
+	}
+	
 	private static string _basePath = "";
 	
 	// returns the absolute path to the root of the StoryEditor project
@@ -32,16 +48,6 @@ public static class ProjectPathManager {
 			}
 			
 			return _resourcePath;
-		}
-	}
-	
-	static ProjectPathManager() {
-		if (string.IsNullOrEmpty(_basePath)) {
-			CalculateBasePath();
-		}
-		
-		if (string.IsNullOrEmpty(_resourcePath)) {
-			CalculateResourcePath();
 		}
 	}
 	

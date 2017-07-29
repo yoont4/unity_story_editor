@@ -206,7 +206,7 @@ public static class SDEXMLManager {
 		// otherwise, save to the current file
 		string path;
 		if (saveAs || (!saveAs && string.IsNullOrEmpty(mainEditor.fileName))) {
-			path = EditorUtility.SaveFilePanel("Save Story Entry", "Assets", "entry", "sdexml");
+			path = EditorUtility.SaveFilePanel("Save Story Entry", ProjectPathManager.LastExportPath, "entry", "sdexml");
 			mainEditor.fileName = path;
 		} else {
 			path = mainEditor.fileName;
@@ -236,6 +236,7 @@ public static class SDEXMLManager {
 			serializer.Serialize(stream, storyEntry);
 		}
 		
+		ProjectPathManager.LastExportPath = path;
 		return true;
 	}
 	

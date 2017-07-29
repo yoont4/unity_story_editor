@@ -53,10 +53,10 @@ public class StoryDialogEditor : EditorWindow {
 	
 	public string fileName = "";
 	
-	[MenuItem("Window/Story & Dialog Editor")]
+	[MenuItem("Window/Story-Dialog Editor")]
 	public static void OpenWindow() {
 		StoryDialogEditor window = GetWindow<StoryDialogEditor>();
-		window.titleContent = new GUIContent("Story & Dialog Editor");
+		window.titleContent = new GUIContent("Story-Dialog Editor");
 	}
 	
 	// TEST CODE: CLEARS THE CONSOLE
