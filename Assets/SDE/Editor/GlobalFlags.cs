@@ -40,7 +40,7 @@ public static class GlobalFlags {
 	}
 	
 	private static void ExportFlags() {
-		string path = ProjectPathManager.BasePath + "/_GlobalFlagBuild.cs";
+		string path = ProjectPathManager.BasePath + "/GlobalFlagBuild.cs";
 		Debug.Log("exporting global flags to: " + path);
 		
 		Encoding encoding = Encoding.GetEncoding("UTF-8");

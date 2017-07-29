@@ -42,7 +42,7 @@ public static class GlobalVariables {
 	}
 	
 	private static void ExportVariables() {
-		string path = ProjectPathManager.BasePath + "/_GlobalVariablesBuild.cs";
+		string path = ProjectPathManager.BasePath + "/GlobalVariablesBuild.cs";
 		Debug.Log("exporting global variables to: " + path);
 		
 		Encoding encoding = Encoding.GetEncoding("UTF-8");
