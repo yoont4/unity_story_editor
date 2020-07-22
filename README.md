@@ -1,7 +1,7 @@
 # unity_story_editor
 story/dialog editor.
 
-Glimpse of the editor:
+Glimpse of the editor: 
 ![alt text](http://i.imgur.com/YjL9uMs.gif "Story Editor loading sample")
 
 NOTES FROM THE FUTURE:
